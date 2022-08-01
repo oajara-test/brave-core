@@ -1501,6 +1501,7 @@ dependencies = [
 [[package]]
 name = "nested-sta-rs"
 version = "0.1.0"
+source = "git+https://github.com/brave-experiments/nested-sta-rs?rev=ad9816d4e14964f23680362c65bba8358dbe895a#ad9816d4e14964f23680362c65bba8358dbe895a"
 dependencies = [
  "bincode",
  "lazy_static",
