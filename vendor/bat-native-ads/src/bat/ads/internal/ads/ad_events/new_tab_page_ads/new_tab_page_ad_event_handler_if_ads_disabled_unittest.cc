@@ -17,6 +17,7 @@
 #include "bat/ads/internal/ads/serving/serving_features.h"
 #include "bat/ads/internal/base/unittest/unittest_base.h"
 #include "bat/ads/internal/base/unittest/unittest_time_util.h"
+#include "bat/ads/internal/catalog/catalog_util.h"
 #include "bat/ads/internal/creatives/new_tab_page_ads/creative_new_tab_page_ad_info.h"
 #include "bat/ads/internal/creatives/new_tab_page_ads/creative_new_tab_page_ad_unittest_util.h"
 #include "bat/ads/internal/creatives/new_tab_page_ads/new_tab_page_ad_builder.h"
@@ -297,7 +298,7 @@ TEST_F(BatAdsNewTabPageAdEventHandlerIfAdsDisabledTest,
 
   FireAdEvents(ad_event, ads_per_day - 1);
 
-  AdvanceClockBy(base::Days(1) - base::Seconds(1));
+  AdvanceClockBy(GetCatalogPing() - base::Seconds(1));
 
   const std::string placement_id =
       base::GUID::GenerateRandomV4().AsLowercaseString();
@@ -324,7 +325,7 @@ TEST_F(BatAdsNewTabPageAdEventHandlerIfAdsDisabledTest,
 
   FireAdEvents(ad_event, ads_per_day);
 
-  AdvanceClockBy(base::Days(1) - base::Seconds(1));
+  AdvanceClockBy(GetCatalogPing() - base::Seconds(1));
 
   const std::string placement_id =
       base::GUID::GenerateRandomV4().AsLowercaseString();
