@@ -29,6 +29,15 @@ RegisterPolymerTemplateModifications({
             icon="cr:extension" label="${I18nBehavior.i18n('siteSettingsAutoplay')}">
         </site-details-permission>
       `)
+      const isGoogleSignInFeatureEnabled = loadTimeData.getBoolean('isGoogleSignInFeatureEnabled')
+      if (isGoogleSignInFeatureEnabled) {
+        firstPermissionItem.insertAdjacentHTML('beforebegin', `
+          <site-details-permission
+              category="[[contentSettingsTypesEnum_.GOOGLE_SIGN_IN]]"
+              icon="cr:extension" label="${I18nBehavior.i18n('siteSettingsGoogleSignIn')}">
+          </site-details-permission>
+        `)
+      }
       const isNativeBraveWalletEnabled = loadTimeData.getBoolean('isNativeBraveWalletFeatureEnabled')
       if (isNativeBraveWalletEnabled) {
           firstPermissionItem.insertAdjacentHTML('beforebegin', `

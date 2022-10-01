@@ -65,6 +65,8 @@
 #include "brave/components/de_amp/browser/de_amp_throttle.h"
 #include "brave/components/debounce/browser/debounce_navigation_throttle.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_navigation_throttle.h"
+#include "brave/components/google_sign_in_permission/browser/google_sign_in_permission_throttle.h"
+#include "brave/components/google_sign_in_permission/browser/google_sign_in_permission_util.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/playlist/buildflags/buildflags.h"
 #include "brave/components/playlist/features.h"
@@ -98,6 +100,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_ui_browser_interface_broker_registry.h"
@@ -113,6 +116,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -529,6 +533,30 @@ BraveContentBrowserClient::AllowWebBluetooth(
   return ContentBrowserClient::AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
 }
 
+bool BraveContentBrowserClient::CanCreateWindow(
+    content::RenderFrameHost* opener,
+    const GURL& opener_url,
+    const GURL& opener_top_level_frame_url,
+    const url::Origin& source_origin,
+    content::mojom::WindowContainerType container_type,
+    const GURL& target_url,
+    const content::Referrer& referrer,
+    const std::string& frame_name,
+    WindowOpenDisposition disposition,
+    const blink::mojom::WindowFeatures& features,
+    bool user_gesture,
+    bool opener_suppressed,
+    bool* no_javascript_access) {
+  // Check base implementation first
+  bool can_create_window = ChromeContentBrowserClient::CanCreateWindow(
+      opener, opener_url, opener_top_level_frame_url, source_origin,
+      container_type, target_url, referrer, frame_name, disposition, features,
+      user_gesture, opener_suppressed, no_javascript_access);
+
+  return can_create_window &&
+         permissions::CanCreateWindow(opener, opener_url, target_url);
+}
+
 void BraveContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
     blink::AssociatedInterfaceRegistry* associated_registry,
@@ -768,6 +796,12 @@ BraveContentBrowserClient::CreateURLLoaderThrottles(
                   ads_service, request)) {
         result.push_back(std::move(ads_status_header_throttle));
       }
+    }
+
+    if (auto google_sign_in_permission_throttle =
+            permissions::GoogleSignInPermissionThrottle::MaybeCreateThrottleFor(
+                request, wc_getter, settings_map)) {
+      result.push_back(std::move(google_sign_in_permission_throttle));
     }
   }
 
