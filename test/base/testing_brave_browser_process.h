@@ -53,6 +53,8 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
   brave::URLSanitizerComponentInstaller* URLSanitizerComponentInstaller()
       override;
   brave_shields::HTTPSEverywhereService* https_everywhere_service() override;
+  brave_component_updater::HttpsUpgradeExceptionsService*
+  https_upgrade_exceptions_service() override;
   brave_component_updater::LocalDataFilesService* local_data_files_service()
       override;
 #if BUILDFLAG(ENABLE_TOR)

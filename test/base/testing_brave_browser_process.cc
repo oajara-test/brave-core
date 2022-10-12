@@ -77,6 +77,12 @@ TestingBraveBrowserProcess::URLSanitizerComponentInstaller() {
   return nullptr;
 }
 
+brave_component_updater::HttpsUpgradeExceptionsService*
+TestingBraveBrowserProcess::https_upgrade_exceptions_service() {
+  NOTREACHED();
+  return nullptr;
+}
+
 brave_shields::HTTPSEverywhereService*
 TestingBraveBrowserProcess::https_everywhere_service() {
   NOTREACHED();

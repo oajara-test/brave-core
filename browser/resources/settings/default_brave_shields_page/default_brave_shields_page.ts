@@ -66,6 +66,17 @@ class BraveShieldsPage extends BraveShieldsPageBase {
             ];
           }
       },
+      httpsUpgradeControlTypes_: {
+          readOnly: true,
+          type: Array,
+          value: function () {
+            return [
+                { value: 'block', name: loadTimeData.getString('strictHttpsUpgrade') },
+                { value: 'block_third_party', name: loadTimeData.getString('standardHttpsUpgrade') },
+                { value: 'allow', name: loadTimeData.getString('disabledHttpsUpgrade') }
+            ];
+          }
+      },
       isBraveRewardsSupported_: {
         readOnly: true,
         type: Boolean,
@@ -76,9 +87,14 @@ class BraveShieldsPage extends BraveShieldsPageBase {
       adControlType_: String,
       cookieControlType_: String,
       fingerprintingControlType_: String,
+      httpsUpgradeControlType_: String,
       isAdBlockRoute_: {
         type: Boolean,
         value: false
+      },
+      isHttpsByDefaultEnabled_: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('isHttpsByDefaultEnabled')
       }
     }
   }
@@ -91,7 +107,7 @@ class BraveShieldsPage extends BraveShieldsPageBase {
     this.onAdControlChange_ = this.onAdControlChange_.bind(this)
     this.onCookieControlChange_ = this.onCookieControlChange_.bind(this)
     this.onFingerprintingControlChange_ = this.onFingerprintingControlChange_.bind(this)
-    this.onHTTPSEverywhereControlChange_ = this.onHTTPSEverywhereControlChange_.bind(this)
+    this.onHttpsUpgradeControlChange_ = this.onHttpsUpgradeControlChange_.bind(this)
     this.onNoScriptControlChange_ = this.onNoScriptControlChange_.bind(this)
     Promise.all([this.browserProxy_.isAdControlEnabled(), this.browserProxy_.isFirstPartyCosmeticFilteringEnabled()])
       .then(([adControlEnabled, hide1pContent]) => {
@@ -109,6 +125,10 @@ class BraveShieldsPage extends BraveShieldsPageBase {
 
     this.browserProxy_.getFingerprintingControlType().then(value => {
       this.fingerprintingControlType_ = value
+    })
+
+    this.browserProxy_.getHttpsUpgradeControlType().then(value => {
+      this.httpsUpgradeControlType_ = value
     })
   }
 
@@ -142,8 +162,8 @@ class BraveShieldsPage extends BraveShieldsPageBase {
     this.browserProxy_.setFingerprintingControlType(this.$.fingerprintingControlType.value)
   }
 
-  onHTTPSEverywhereControlChange_ () {
-    this.browserProxy_.setHTTPSEverywhereEnabled(this.$.httpsEverywhereControlType.checked)
+  onHttpsUpgradeControlChange_ () {
+    this.browserProxy_.setHttpsUpgradeControlType(this.$.httpsUpgradeControlType.value)
   }
 
   onNoScriptControlChange_ () {
