@@ -103,6 +103,11 @@ group("brave") {
       ":generate_version",
       "//chrome",
     ]
+    if (enable_brave_vpn) {
+      if (is_win) {
+        deps += [ "//brave//vpn" ]
+      }
+    }
   }
 }
 

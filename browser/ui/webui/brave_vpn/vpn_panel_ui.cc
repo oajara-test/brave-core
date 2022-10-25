@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "brave/browser/brave_vpn/brave_vpn_service_factory.h"
 #include "brave/browser/brave_vpn/vpn_utils.h"
-#include "brave/components/brave_vpn/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/brave_vpn_resources.h"
 #include "brave/components/brave_vpn/resources/panel/grit/brave_vpn_panel_generated_map.h"
 #include "brave/components/constants/webui_url_constants.h"
 #include "brave/components/l10n/common/localization_util.h"

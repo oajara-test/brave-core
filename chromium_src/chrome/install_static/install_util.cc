@@ -22,6 +22,10 @@
 #define BUILDFLAG_INTERNAL_USE_GOOGLE_UPDATE_INTEGRATION() (1)
 #endif
 
+namespace {
+const wchar_t kVpnServiceName[] = L"BraveVPNService";
+}  // namespace
+
 #define GetChromeChannel GetChromeChannel_ChromiumImpl
 
 #include "src/chrome/install_static/install_util.cc"
@@ -34,6 +38,14 @@
 #endif
 
 namespace install_static {
+std::wstring GetVpnServiceName() {
+  return kVpnServiceName;
+}
+
+std::wstring GetVpnServiceDisplayName() {
+  static constexpr wchar_t kBraveVpnServiceDisplayName[] = L" Vpn Service";
+  return GetBaseAppName() + kBraveVpnServiceDisplayName;
+}
 
 version_info::Channel GetChromeChannel() {
 #if defined(OFFICIAL_BUILD)

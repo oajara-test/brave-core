@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "brave/components/brave_vpn/brave_vpn_constants.h"
 
 #define DEFAULT_PHONE_BOOK NULL
 
@@ -126,7 +127,7 @@ std::wstring GetPhonebookPath() {
 
 // https://docs.microsoft.com/en-us/windows/win32/api/ras/nf-ras-rasenumconnectionsa
 bool DisconnectEntry(const std::wstring& entry_name) {
-  auto connection_result = CheckConnection(entry_name);
+  auto connection_result = GetEntryState(entry_name);
   if (connection_result == CheckConnectionResult::DISCONNECTING) {
     VLOG(2) << __func__
             << " Don't try to disconnect while brave vpn entry is already in "
@@ -190,7 +191,7 @@ bool DisconnectEntry(const std::wstring& entry_name) {
 
 // https://docs.microsoft.com/en-us/windows/win32/api/ras/nf-ras-rasdiala
 bool ConnectEntry(const std::wstring& entry_name) {
-  auto connection_result = CheckConnection(entry_name);
+  auto connection_result = GetEntryState(entry_name);
   if (connection_result == CheckConnectionResult::CONNECTING ||
       connection_result == CheckConnectionResult::CONNECTED) {
     VLOG(2)
@@ -262,7 +263,7 @@ bool CreateEntry(const std::wstring& entry_name,
                  const std::wstring& hostname,
                  const std::wstring& username,
                  const std::wstring& password) {
-  auto connection_result = CheckConnection(entry_name);
+  auto connection_result = GetEntryState(entry_name);
   if (connection_result == CheckConnectionResult::CONNECTING ||
       connection_result == CheckConnectionResult::CONNECTED) {
     VLOG(2) << __func__
@@ -379,16 +380,14 @@ CheckConnectionResult GetConnectionState(HRASCONN h_ras_conn) {
   // Checking connection status using RasGetConnectStatus
   dw_ret = RasGetConnectStatus(h_ras_conn, &ras_conn_status);
   if (ERROR_SUCCESS != dw_ret) {
-    LOG(ERROR) << "RasGetConnectStatus failed: Error = " << dw_ret;
+    VLOG(2) << "RasGetConnectStatus failed: Error = " << dw_ret;
     return CheckConnectionResult::DISCONNECTED;
   }
 
   switch (ras_conn_status.rasconnstate) {
-    case RASCS_ConnectDevice:
-      VLOG(2) << "Connecting device...";
-      return CheckConnectionResult::CONNECTING;
     case RASCS_Connected:
       VLOG(2) << "Connected";
+
       return CheckConnectionResult::CONNECTED;
     case RASCS_Disconnected:
       VLOG(2) << "Disconnected";
@@ -396,11 +395,11 @@ CheckConnectionResult GetConnectionState(HRASCONN h_ras_conn) {
     default:
       break;
   }
-
-  return CheckConnectionResult::DISCONNECTED;
+  VLOG(2) << "Connecting device...";
+  return CheckConnectionResult::CONNECTING;
 }
 
-CheckConnectionResult CheckConnection(const std::wstring& entry_name) {
+CheckConnectionResult GetEntryState(const std::wstring& entry_name) {
   VLOG(2) << "Check connection state for " << entry_name;
   if (entry_name.empty())
     return CheckConnectionResult::DISCONNECTED;

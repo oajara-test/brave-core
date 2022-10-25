@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "brave/components/brave_vpn/brave_vpn_constants.h"
 #include "brave/components/brave_vpn/utils_win.h"
 
 // Most of Windows implementations are based on Brian Clifton
@@ -94,7 +95,7 @@ void BraveVPNOSConnectionAPIWin::RemoveVPNConnectionImpl(
 void BraveVPNOSConnectionAPIWin::CheckConnectionImpl(const std::string& name) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&internal::CheckConnection, base::UTF8ToWide(name)),
+      base::BindOnce(&internal::GetEntryState, base::UTF8ToWide(name)),
       base::BindOnce(&BraveVPNOSConnectionAPIWin::OnCheckConnection,
                      weak_factory_.GetWeakPtr(), name));
 }

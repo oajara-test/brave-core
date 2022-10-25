@@ -1,0 +1,87 @@
+# Copyright (c) 2022 The Brave Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//build/toolchain/win/midl.gni")
+import("//build/util/process_version.gni")
+import("//chrome/process_version_rc_template.gni")
+
+# Must be in a config because of how GN orders flags (otherwise /W4 will appear
+# after this, and turn it back on).
+config("no-missing-braces") {
+  # Macros invoked by WRL CoCreatableClass omit optional braces.
+  cflags = [ "-Wno-missing-braces" ]
+}
+
+# This service needs to work with Windows 7, so explicitly setting the defines
+# to reflect this. Otherwise, WRL uses APIs that are only available in later
+# Windows versions.
+config("winver") {
+  defines = [
+    "NTDDI_VERSION=NTDDI_WIN7",
+    "_WIN32_WINNT=_WIN32_WINNT_WIN7",
+    "WINVER=_WIN32_WINNT_WIN7",
+  ]
+}
+
+source_set("lib") {
+  sources = [
+    "vpn_dns_handler.cc",
+    "vpn_dns_handler.h",
+    "vpn_utils.cc",
+    "vpn_utils.h",
+  ]
+
+  deps = [
+    "//base",
+    "//brave//components/brave_vpn:brave_vpn_constants",
+    "//brave//components/brave_vpn:brave_vpn_win_utils",
+    "//third_party/abseil-cpp:absl",
+  ]
+  libs = [
+    "Fwpuclnt.lib",
+    "Iphlpapi.lib",
+  ]
+}
+
+executable("vpn") {
+  sources = [
+    "main.cc",
+    "service_main.cc",
+    "service_main.h",
+    "vpn.rc",
+  ]
+
+  configs -= [ "//build/config/compiler:cet_shadow_stack" ]
+  configs -= [ "//build/config/win:winver" ]
+  configs += [ ":winver" ]
+
+  deps = [
+    ":lib",
+    ":version_resources",
+    "//base",
+    "//build/win:default_exe_manifest",
+    "//chrome/install_static:install_static_util",
+  ]
+}
+
+process_version_rc_template("version_resources") {
+  sources = [ "vpn.ver" ]
+  output = "$target_gen_dir/vpn_exe.rc"
+}
+
+source_set("unit_tests") {
+  testonly = true
+  assert(is_win)
+  sources = [ "vpn_dns_handler_unittest.cc" ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//base/test:test_support",
+    "//brave/components/brave_vpn:brave_vpn_constants",
+    "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
+  ]
+}
