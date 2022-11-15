@@ -27,7 +27,7 @@ class BatAdsSearchResultAdIntegrationTest : public UnitTestBase {
     ForcePermissionRules();
 
     // Need to trigger several search result ad events.
-    privacy::SetUnblindedTokens(11);
+    privacy::BuildAndSetUnblindedTokens(/*count*/ 11);
   }
 };
 

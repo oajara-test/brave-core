@@ -1,7 +1,6 @@
 /* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed w
- * h this file,
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "bat/ads/internal/privacy/tokens/unblinded_payment_tokens/unblinded_payment_tokens.h"
@@ -20,6 +19,17 @@ const UnblindedPaymentTokenInfo& UnblindedPaymentTokens::GetToken() const {
   DCHECK_NE(Count(), 0);
 
   return unblinded_payment_tokens_.front();
+}
+
+UnblindedPaymentTokenList UnblindedPaymentTokens::GetTokens(
+    const size_t max_count) const {
+  UnblindedPaymentTokenList unblinded_payment_tokens =
+      unblinded_payment_tokens_;
+  if (unblinded_payment_tokens.size() > max_count) {
+    unblinded_payment_tokens.resize(max_count);
+  }
+
+  return unblinded_payment_tokens;
 }
 
 const UnblindedPaymentTokenList& UnblindedPaymentTokens::GetAllTokens() const {
@@ -74,7 +84,7 @@ void UnblindedPaymentTokens::RemoveAllTokens() {
 }
 
 bool UnblindedPaymentTokens::TokenExists(
-    const UnblindedPaymentTokenInfo& unblinded_payment_token) {
+    const UnblindedPaymentTokenInfo& unblinded_payment_token) const {
   return base::Contains(unblinded_payment_tokens_, unblinded_payment_token);
 }
 
