@@ -2717,7 +2717,8 @@ void JsonRpcService::OnGetSolanaAccountInfo(
   }
 
   absl::optional<SolanaAccountInfo> account_info;
-  if (!solana::ParseGetAccountInfo(api_request_result.body(), &account_info)) {
+  if (!solana::ParseGetAccountInfo(api_request_result.value_body(),
+                                   &account_info)) {
     mojom::SolanaProviderError error;
     std::string error_message;
     ParseErrorResult<mojom::SolanaProviderError>(api_request_result.body(),
