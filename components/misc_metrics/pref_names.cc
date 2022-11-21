@@ -8,3 +8,7 @@
 const char kMiscMetricsPagesLoadedCount[] = "brave.core_metrics.pages_loaded";
 const char kMiscMetricsMenuGroupActionCounts[] =
     "brave.misc_metrics.menu_group_actions";
+const char kMiscMetricsMenuShownStorage[] =
+    "brave.misc_metrics.menu_shown_storage";
+const char kMiscMetricsMenuDismissStorage[] =
+    "brave.misc_metrics.menu_dismiss_storage";
