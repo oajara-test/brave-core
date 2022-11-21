@@ -54,7 +54,7 @@ void BraveStartupBrowserCreatorImpl::Launch(
     chrome::startup::IsProcessStartup process_startup,
     std::unique_ptr<OldLaunchModeRecorder> launch_mode_recorder) {
 #if BUILDFLAG(ENABLE_TOR)
-  if (StartupBrowserCreatorImpl::command_line_.HasSwitch(switches::kTor)) {
+  if (StartupBrowserCreatorImpl::command_line_->HasSwitch(switches::kTor)) {
     LOG(INFO) << "Switching to Tor profile and starting Tor service.";
     profile = TorProfileManager::GetInstance().GetTorProfile(profile);
 
