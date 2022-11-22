@@ -192,6 +192,14 @@ def main():
                 continue
             cxx_version = line[len(_VERSION_PREFIX):].strip()
 
+    # Hard-coding the version for cxxbridge-cmd to 1.0.75 as upstream chromium
+    # has updated it to 1.0.81, which requires rust >= v1.60.  Currently,
+    # there is a blocker preventing the update of the rust compiler on macos.
+    # Once this issue is sorted out, the hardcoding of this version should be
+    # removed.
+    # Issue: https://github.com/rust-lang/rust/issues/102754
+    cxx_version = '1.0.75'
+
     tools = [
         {
             "name": "cbindgen",
