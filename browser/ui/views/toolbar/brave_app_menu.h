@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 
 namespace misc_metrics {
@@ -36,7 +37,7 @@ class BraveAppMenu : public AppMenu {
 
   void RecordMenuUsage(int command_id);
 
-  std::unique_ptr<misc_metrics::MenuMetrics> menu_metrics_;
+  base::raw_ptr<misc_metrics::MenuMetrics> menu_metrics_;
 };
 
 #endif  // BRAVE_BROWSER_UI_VIEWS_TOOLBAR_BRAVE_APP_MENU_H_

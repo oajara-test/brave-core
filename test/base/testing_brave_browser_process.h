@@ -74,6 +74,7 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
 #endif
   brave_ads::ResourceComponent* resource_component() override;
   brave::BraveFarblingService* brave_farbling_service() override;
+  misc_metrics::MenuMetrics* menu_metrics() override;
 
   // Populate the mock process with services. Consumer is responsible for
   // cleaning these up after completion of a test.

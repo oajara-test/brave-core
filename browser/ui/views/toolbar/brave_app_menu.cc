@@ -5,10 +5,10 @@
 
 #include "brave/browser/ui/views/toolbar/brave_app_menu.h"
 
+#include "brave/browser/brave_browser_process.h"
 #include "brave/components/brave_vpn/buildflags/buildflags.h"
 #include "brave/components/misc_metrics/menu_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser_process.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
@@ -20,10 +20,8 @@
 using views::MenuItemView;
 
 BraveAppMenu::BraveAppMenu(Browser* browser, int run_types)
-    : AppMenu(browser, run_types) {
-  menu_metrics_ = std::make_unique<misc_metrics::MenuMetrics>(
-      g_browser_process->local_state());
-}
+    : AppMenu(browser, run_types),
+      menu_metrics_(g_brave_browser_process->menu_metrics()) {}
 
 BraveAppMenu::~BraveAppMenu() = default;
 
