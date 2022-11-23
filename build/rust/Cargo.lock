@@ -55,7 +55,7 @@ checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 [[package]]
 name = "adss-rs"
 version = "0.1.0"
-source = "git+https://github.com/brave/sta-rs#7934114df2f0a1639080acbcc1be6d8b67e9ef19"
+source = "git+https://github.com/brave/sta-rs?rev=fe9915741f7b6630#fe9915741f7b6630bcbd97af5a22370d5aa58292"
 dependencies = [
  "rand 0.8.5",
  "sharks",
@@ -288,9 +288,9 @@ dependencies = [
  "brave-news-cxx",
  "brave-wallet-cxx",
  "challenge-bypass-ristretto-ffi",
+ "constellation-cxx",
  "filecoin-cxx",
  "json-cxx",
- "nested-star-cxx",
  "skus-cxx",
  "speedreader-ffi",
 ]
@@ -435,6 +435,15 @@ name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
+
+[[package]]
+name = "constellation-cxx"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "star-constellation",
+]
 
 [[package]]
 name = "convert_case"
@@ -1530,30 +1539,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nested-sta-rs"
-version = "0.1.0"
-source = "git+https://github.com/brave-experiments/nested-sta-rs?rev=ad9816d4e14964f23680362c65bba8358dbe895a#ad9816d4e14964f23680362c65bba8358dbe895a"
-dependencies = [
- "bincode",
- "lazy_static",
- "ppoprf",
- "rand 0.7.3",
- "rand_core 0.6.4",
- "serde",
- "serde_json",
- "sta-rs",
-]
-
-[[package]]
-name = "nested-star-cxx"
-version = "0.1.0"
-dependencies = [
- "cxx",
- "cxx-build",
- "nested-sta-rs",
-]
-
-[[package]]
 name = "new_debug_unreachable"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1825,7 +1810,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 [[package]]
 name = "ppoprf"
 version = "0.0.1"
-source = "git+https://github.com/brave/sta-rs#7934114df2f0a1639080acbcc1be6d8b67e9ef19"
+source = "git+https://github.com/brave/sta-rs?rev=fe9915741f7b6630#fe9915741f7b6630bcbd97af5a22370d5aa58292"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -2303,9 +2288,9 @@ checksum = "0486718e92ec9a68fbed73bb5ef687d71103b142595b406835649bebd33f72c7"
 
 [[package]]
 name = "serde"
-version = "1.0.145"
+version = "1.0.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
+checksum = "d193d69bae983fc11a79df82342761dfbf28a99fc8d203dca4c3c1b590948965"
 dependencies = [
  "serde_derive",
 ]
@@ -2330,9 +2315,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.145"
+version = "1.0.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81fa1584d3d1bcacd84c277a0dfe21f5b0f6accf4a23d04d4c6d61f1af522b4c"
+checksum = "4f1d362ca8fc9c3e3a7484440752472d68a6caa98f1ab81d99b5dfe517cec852"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2353,9 +2338,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.79"
+version = "1.0.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
+checksum = "020ff22c755c2ed3f8cf162dbb41a7268d934702f3ed3631656ea597e08fc3db"
 dependencies = [
  "itoa 1.0.1",
  "ryu",
@@ -2440,7 +2425,7 @@ dependencies = [
 [[package]]
 name = "sharks"
 version = "0.5.0"
-source = "git+https://github.com/brave/sta-rs#7934114df2f0a1639080acbcc1be6d8b67e9ef19"
+source = "git+https://github.com/brave/sta-rs?rev=fe9915741f7b6630#fe9915741f7b6630bcbd97af5a22370d5aa58292"
 dependencies = [
  "bitvec 1.0.1",
  "byteorder",
@@ -2556,7 +2541,7 @@ dependencies = [
 [[package]]
 name = "sta-rs"
 version = "0.1.0"
-source = "git+https://github.com/brave/sta-rs#7934114df2f0a1639080acbcc1be6d8b67e9ef19"
+source = "git+https://github.com/brave/sta-rs?rev=fe9915741f7b6630#fe9915741f7b6630bcbd97af5a22370d5aa58292"
 dependencies = [
  "adss-rs",
  "ppoprf",
@@ -2571,6 +2556,21 @@ name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
+
+[[package]]
+name = "star-constellation"
+version = "0.1.0"
+source = "git+https://github.com/brave/constellation?rev=6c91f94d7b307f7dec08e1a86edcbf789d420185#6c91f94d7b307f7dec08e1a86edcbf789d420185"
+dependencies = [
+ "bincode",
+ "lazy_static",
+ "ppoprf",
+ "rand 0.8.5",
+ "rand_core 0.6.4",
+ "serde",
+ "serde_json",
+ "sta-rs",
+]
 
 [[package]]
 name = "stfu8"
@@ -2611,7 +2611,7 @@ dependencies = [
 [[package]]
 name = "strobe-rng"
 version = "0.1.0"
-source = "git+https://github.com/brave/sta-rs#7934114df2f0a1639080acbcc1be6d8b67e9ef19"
+source = "git+https://github.com/brave/sta-rs?rev=fe9915741f7b6630#fe9915741f7b6630bcbd97af5a22370d5aa58292"
 dependencies = [
  "rand_core 0.6.4",
  "strobe-rs",
@@ -2619,9 +2619,9 @@ dependencies = [
 
 [[package]]
 name = "strobe-rs"
-version = "0.7.1"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1eeeca13db3ebad86026e7c7cad15f5779507c6053bb196207d142430bcbee1d"
+checksum = "fabb238a1cccccfa4c4fb703670c0d157e1256c1ba695abf1b93bd2bb14bab2d"
 dependencies = [
  "bitflags",
  "byteorder",
