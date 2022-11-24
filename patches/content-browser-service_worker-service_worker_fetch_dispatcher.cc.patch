@@ -1,0 +1,28 @@
+diff --git a/content/browser/service_worker/service_worker_fetch_dispatcher.cc b/content/browser/service_worker/service_worker_fetch_dispatcher.cc
+index aa6de1483aba2e589a4a366e574e78cbf078dbb1..64ba22eb07539b71dce0fc0f913a18755b5240c5 100644
+--- a/content/browser/service_worker/service_worker_fetch_dispatcher.cc
++++ b/content/browser/service_worker/service_worker_fetch_dispatcher.cc
+@@ -95,6 +95,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
+       : client_(std::move(client)),
+         url_(request.url),
+         devtools_enabled_(request.devtools_request_id.has_value()) {
++    LOG(ERROR) << "[1] SW DISPATCHER ASKING FOR URL=" << url_;
+     if (!devtools_enabled_)
+       return;
+     AddDevToolsCallback(
+@@ -507,6 +508,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
+       "ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher",
+       TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_OUT, "event_type",
+       ServiceWorkerMetrics::EventTypeToString(GetEventType()));
++  LOG(ERROR) << "[2] SW DISPATCHER ASKING FOR URL=" << request_->url;
+ }
+ 
+ ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {
+@@ -639,6 +641,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
+         fetch_event_id);
+   }
+ 
++  LOG(ERROR) << "[3] SW DISPATCHER ASKING FOR URL=" << request_->url;
+   // Dispatch the fetch event.
+   auto params = blink::mojom::DispatchFetchEventParams::New();
+   params->request = std::move(request_);

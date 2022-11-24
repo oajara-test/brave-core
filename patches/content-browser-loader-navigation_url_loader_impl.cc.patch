@@ -1,0 +1,32 @@
+diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
+index 95ab3cd395b8a7fec22feb350278f3e0272285dc..8d6161d6b0f62fd8d3a9bf35e883a9eca1668ed0 100644
+--- a/content/browser/loader/navigation_url_loader_impl.cc
++++ b/content/browser/loader/navigation_url_loader_impl.cc
+@@ -468,6 +468,8 @@ void NavigationURLLoaderImpl::CreateInterceptors(
+         signed_exchange_prefetch_metric_recorder,
+     const std::string& accept_langs) {
+   if (prefetched_signed_exchange_cache) {
++    LOG(ERROR) << "[0] URL LOADER IMPL URL=" << url_
++               << "; RESOURCE REQUEST URL=" << resource_request_->url;
+     std::unique_ptr<NavigationLoaderInterceptor>
+         prefetched_signed_exchange_interceptor =
+             prefetched_signed_exchange_cache->MaybeCreateInterceptor(
+@@ -622,6 +624,8 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+   // See if the next interceptor wants to handle the request.
+   if (interceptor_index_ < interceptors_.size()) {
+     auto* next_interceptor = interceptors_[interceptor_index_++].get();
++    LOG(ERROR) << "[3] URL LOADER IMPL URL=" << url_
++               << "; RESOURCE REQUEST URL=" << resource_request_->url;
+     next_interceptor->MaybeCreateLoader(
+         *resource_request_, browser_context_,
+         base::BindOnce(&NavigationURLLoaderImpl::MaybeStartLoader,
+@@ -1309,6 +1313,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
+       std::move(url_loader_network_observer), std::move(devtools_observer),
+       std::move(accept_ch_frame_observer));
+ 
++  LOG(ERROR) << "[1] URL LOADER IMPL URL=" << url_
++             << "; RESOURCE REQUEST URL=" << resource_request_->url;
++
+   std::string accept_langs =
+       GetContentClient()->browser()->GetAcceptLangs(browser_context_);
+ 

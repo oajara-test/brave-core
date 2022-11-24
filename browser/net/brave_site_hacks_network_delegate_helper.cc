@@ -47,13 +47,16 @@ void ApplyPotentialQueryStringFilter(std::shared_ptr<BraveRequestInfo> ctx) {
       // Same-site redirects are exempted.
       return;
     }
-  } else if (ctx->initiator_url.is_valid() &&
-             net::registry_controlled_domains::SameDomainOrHost(
+  } else if (ctx->initiator_url.is_valid()) {
+      LOG(ERROR) << "[1] SITE_HACKS URL=" << ctx->request_url
+                 << "; INITIATOR_URL=" << ctx->initiator_url;
+      if (net::registry_controlled_domains::SameDomainOrHost(
                  ctx->initiator_url, ctx->request_url,
                  net::registry_controlled_domains::
                      INCLUDE_PRIVATE_REGISTRIES)) {
-    // Same-site requests are exempted.
-    return;
+          // Same-site requests are exempted.
+          return;
+      }
   }
   auto filtered_url = ApplyQueryFilter(ctx->request_url);
   if (filtered_url.has_value()) {

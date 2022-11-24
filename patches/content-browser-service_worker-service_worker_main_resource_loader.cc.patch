@@ -1,0 +1,21 @@
+diff --git a/content/browser/service_worker/service_worker_main_resource_loader.cc b/content/browser/service_worker/service_worker_main_resource_loader.cc
+index 88eed2b8eb24cde754e59387197a6e46a2789d2e..ea4a6b80817176128ef5c316c2811e4f35e2ef61 100644
+--- a/content/browser/service_worker/service_worker_main_resource_loader.cc
++++ b/content/browser/service_worker/service_worker_main_resource_loader.cc
+@@ -14,6 +14,7 @@
+ #include "base/metrics/histogram_functions.h"
+ #include "base/metrics/histogram_macros.h"
+ #include "base/strings/strcat.h"
++#include "base/strings/string_split.h"
+ #include "base/trace_event/trace_event.h"
+ #include "content/browser/service_worker/service_worker_container_host.h"
+ #include "content/browser/service_worker/service_worker_context_core.h"
+@@ -126,6 +127,8 @@ void ServiceWorkerMainResourceLoader::StartRequest(
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+ 
+   resource_request_ = resource_request;
++  LOG(ERROR) << "[1] SW LOADER ASKING FOR URL=" << resource_request_.url;
++
+   if (container_host_ && container_host_->fetch_request_window_id()) {
+     resource_request_.fetch_window_id =
+         absl::make_optional(container_host_->fetch_request_window_id());

@@ -1,8 +1,17 @@
 diff --git a/content/browser/renderer_host/navigation_request.cc b/content/browser/renderer_host/navigation_request.cc
-index 28605cda32c8a499271ff358bbdbaa2261012c88..f693c0e8e983c66c3904bfbbe37daf4e67574a77 100644
+index 28605cda32c8a499271ff358bbdbaa2261012c88..4c4c702f2a3adee93fbb67133325c47a26ed138e 100644
 --- a/content/browser/renderer_host/navigation_request.cc
 +++ b/content/browser/renderer_host/navigation_request.cc
-@@ -2904,6 +2904,7 @@ void NavigationRequest::OnRequestRedirected(
+@@ -1590,6 +1590,8 @@ NavigationRequest::NavigationRequest(
+   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing",
+                                     navigation_id_);
+ 
++  LOG(ERROR) << "[1] NAVIGATION REQUEST URL=" << common_params_->url;
++
+   if (GetInitiatorFrameToken().has_value()) {
+     RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
+         GetInitiatorProcessID(), GetInitiatorFrameToken().value());
+@@ -2904,6 +2906,7 @@ void NavigationRequest::OnRequestRedirected(
    common_params_->url = redirect_info.new_url;
    common_params_->method = redirect_info.new_method;
    common_params_->referrer->url = GURL(redirect_info.new_referrer);
@@ -10,7 +19,16 @@ index 28605cda32c8a499271ff358bbdbaa2261012c88..f693c0e8e983c66c3904bfbbe37daf4e
    common_params_->referrer = Referrer::SanitizeForRequest(
        common_params_->url, *common_params_->referrer);
  
-@@ -4391,6 +4392,7 @@ void NavigationRequest::OnStartChecksComplete(
+@@ -4313,6 +4316,8 @@ void NavigationRequest::OnStartChecksComplete(
+   // comment in the header for |loader_|.
+   DCHECK(!loader_);
+ 
++  LOG(ERROR) << "[3] NAVIGATION REQUEST URL=" << common_params_->url;
++
+   // Only initialize the ServiceWorkerMainResourceHandle if it can be created
+   // for this frame.
+   bool can_create_service_worker =
+@@ -4391,6 +4396,7 @@ void NavigationRequest::OnStartChecksComplete(
    headers.MergeFrom(TakeModifiedRequestHeaders());
    begin_params_->headers = headers.ToString();
  

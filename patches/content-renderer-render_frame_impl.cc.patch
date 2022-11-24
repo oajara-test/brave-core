@@ -1,8 +1,61 @@
 diff --git a/content/renderer/render_frame_impl.cc b/content/renderer/render_frame_impl.cc
-index d7f19a4efc3540d8bac48d00c37436362043f074..5b1e662bf87994848264716c939478ae3b98d49d 100644
+index d7f19a4efc3540d8bac48d00c37436362043f074..832feda8445ddba637f6e65a15b170669586db83 100644
 --- a/content/renderer/render_frame_impl.cc
 +++ b/content/renderer/render_frame_impl.cc
-@@ -4422,6 +4422,7 @@ bool RenderFrameImpl::ShouldUseUserAgentOverride() const {
+@@ -581,8 +581,51 @@ blink::mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
+       info->url_request.RequestorOrigin().CanAccess(current_origin),
+       has_download_sandbox_flag, from_ad);
+ 
++  GURL url = info->url_request.Url();
++  const url::Origin request_initiator = info->url_request.RequestorOrigin();
++  LOG(ERROR) << "[1] RENDER FRAME IMPL URL=" << url
++      << "; REQUEST_INITIATOR=" << request_initiator;
++  if (url.DomainIs("twitter.com") &&
++      (request_initiator == url::Origin() ||
++       !request_initiator.DomainIs("twitter.com")) &&
++      url.has_query()) {
++      std::vector<std::string> query_params =
++          base::SplitString(url.query_piece(), "&",
++                            base::KEEP_WHITESPACE,
++                            base::SplitResult::SPLIT_WANT_ALL);
++      query_params.erase(
++            std::remove_if(query_params.begin(), query_params.end(),
++                           [](const auto& p) { return p.starts_with("t="); }),
++            query_params.end());
++
++      GURL::Replacements replacements;
++      std::string new_query_str = base::JoinString(query_params, "&");
++      replacements.SetQueryStr(new_query_str);
++      //url = url.ReplaceComponents(replacements);
++      LOG(ERROR) << "[2] RENDER FRAME IMPL NEW URL = " << url;
++  }
++  if (url.DomainIs("fmarier.org") &&
++      (request_initiator == url::Origin() ||
++       !request_initiator.DomainIs("fmarier.org")) &&
++      url.has_query()) {
++      std::vector<std::string> query_params =
++          base::SplitString(url.query_piece(), "&",
++                            base::KEEP_WHITESPACE,
++                            base::SplitResult::SPLIT_WANT_ALL);
++      query_params.erase(
++            std::remove_if(query_params.begin(), query_params.end(),
++                           [](const auto& p) { return p.starts_with("fbclid="); }),
++            query_params.end());
++
++      GURL::Replacements replacements;
++      std::string new_query_str = base::JoinString(query_params, "&");
++      replacements.SetQueryStr(new_query_str);
++      //url = url.ReplaceComponents(replacements);
++      LOG(ERROR) << "[2] RENDER FRAME IMPL NEW URL = " << url;
++  }
++
+   return blink::mojom::CommonNavigationParams::New(
+-      info->url_request.Url(), info->url_request.RequestorOrigin(),
++      url, info->url_request.RequestorOrigin(),
+       std::move(referrer), url_request_extra_data->transition_type(),
+       navigation_type, download_policy,
+       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
+@@ -4422,6 +4465,7 @@ bool RenderFrameImpl::ShouldUseUserAgentOverride() const {
    // Temporarily return early and fix properly as part of
    // https://crbug.com/426555.
    if (web_view->MainFrame()->IsWebRemoteFrame())

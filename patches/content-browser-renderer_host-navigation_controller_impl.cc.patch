@@ -1,5 +1,5 @@
 diff --git a/content/browser/renderer_host/navigation_controller_impl.cc b/content/browser/renderer_host/navigation_controller_impl.cc
-index 3830d72e9b6aa205935afdbb634337373d94cf57..88df587edad8391993a0959c3bb8ce0bf3d059c4 100644
+index 3830d72e9b6aa205935afdbb634337373d94cf57..5d11378af76d478e5f6893c55d1115529c24c092 100644
 --- a/content/browser/renderer_host/navigation_controller_impl.cc
 +++ b/content/browser/renderer_host/navigation_controller_impl.cc
 @@ -3551,16 +3551,17 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
@@ -23,3 +23,52 @@ index 3830d72e9b6aa205935afdbb634337373d94cf57..88df587edad8391993a0959c3bb8ce0b
      return nullptr;
    }
  
+@@ -3843,6 +3844,48 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
+     CHECK(!frame_entry || url_to_load == frame_entry->url());
+   }
+ 
++  GURL url = url_to_load;
++  auto request_initiator = params.initiator_origin;
++  LOG(ERROR) << "[1] NAVIGATION CONTROLLER IMPL URL=" << url;
++  if (url.DomainIs("twitter.com") &&
++      (!request_initiator ||
++       !request_initiator.value().DomainIs("twitter.com")) &&
++      url.has_query()) {
++      std::vector<std::string> query_params =
++          base::SplitString(url.query_piece(), "&",
++                            base::KEEP_WHITESPACE,
++                            base::SplitResult::SPLIT_WANT_ALL);
++      query_params.erase(
++            std::remove_if(query_params.begin(), query_params.end(),
++                           [](const auto& p) { return p.starts_with("t="); }),
++            query_params.end());
++
++      GURL::Replacements replacements;
++      std::string new_query_str = base::JoinString(query_params, "&");
++      replacements.SetQueryStr(new_query_str);
++      url_to_load = url.ReplaceComponents(replacements);
++      LOG(ERROR) << "[2] NAVIGATION CONTROLLER IMPL NEW URL = " << url_to_load;
++  }
++  if (url.DomainIs("fmarier.org") &&
++      (!request_initiator ||
++       !request_initiator.value().DomainIs("fmarier.org")) &&
++      url.has_query()) {
++      std::vector<std::string> query_params =
++          base::SplitString(url.query_piece(), "&",
++                            base::KEEP_WHITESPACE,
++                            base::SplitResult::SPLIT_WANT_ALL);
++      query_params.erase(
++            std::remove_if(query_params.begin(), query_params.end(),
++                           [](const auto& p) { return p.starts_with("fbclid="); }),
++            query_params.end());
++
++      GURL::Replacements replacements;
++      std::string new_query_str = base::JoinString(query_params, "&");
++      replacements.SetQueryStr(new_query_str);
++      url_to_load = url.ReplaceComponents(replacements);
++      LOG(ERROR) << "[2] NAVIGATION CONTROLLER IMPL NEW URL = " << url_to_load;
++  }
++
+   if (node->render_manager()->is_attaching_inner_delegate()) {
+     // Avoid starting any new navigations since this node is now preparing for
+     // attaching an inner delegate.
