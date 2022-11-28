@@ -155,8 +155,39 @@ void Account::ProcessDeposit(const std::string& creative_instance_id,
                              const AdType& ad_type,
                              const ConfirmationType& confirmation_type,
                              const double value) const {
+  if (!ShouldRewardUser()) {
+    return ProcessDepositIfShouldNotRewardUser(creative_instance_id, ad_type,
+                                               confirmation_type);
+  }
+
+  return ProcessDepositIfShouldRewardUser(creative_instance_id, ad_type,
+                                          confirmation_type, value);
+}
+
+void Account::ProcessDepositIfShouldNotRewardUser(
+    const std::string& creative_instance_id,
+    const AdType& ad_type,
+    const ConfirmationType& confirmation_type) const {
+  const TransactionInfo transaction = transactions::Get(
+      creative_instance_id, ad_type, confirmation_type, /*value*/ 0.0);
+
+  BLOG(3, "Successfully processed deposit for "
+              << transaction.ad_type << " with creative instance id "
+              << transaction.creative_instance_id << " and "
+              << transaction.confirmation_type);
+
+  NotifyDidProcessDeposit(transaction);
+
+  return confirmations_->Confirm(transaction);
+}
+
+void Account::ProcessDepositIfShouldRewardUser(
+    const std::string& creative_instance_id,
+    const AdType& ad_type,
+    const ConfirmationType& confirmation_type,
+    const double value) const {
   transactions::Add(
-      creative_instance_id, value, ad_type, confirmation_type,
+      creative_instance_id, ad_type, confirmation_type, value,
       [=](const bool success, const TransactionInfo& transaction) {
         if (!success) {
           FailedToProcessDeposit(creative_instance_id, ad_type,
@@ -251,82 +282,82 @@ void Account::NotifyInvalidWallet() const {
 
 void Account::NotifyDidProcessDeposit(
     const TransactionInfo& transaction) const {
-  for (AccountObserver& observer : observers_) {
+    for (AccountObserver& observer : observers_) {
     observer.OnDidProcessDeposit(transaction);
-  }
+    }
 }
 
 void Account::NotifyFailedToProcessDeposit(
     const std::string& creative_instance_id,
     const AdType& ad_type,
     const ConfirmationType& confirmation_type) const {
-  for (AccountObserver& observer : observers_) {
+    for (AccountObserver& observer : observers_) {
     observer.OnFailedToProcessDeposit(creative_instance_id, ad_type,
                                       confirmation_type);
-  }
+    }
 }
 
-void Account::NotifyStatementOfAccountsDidChange() const {
-  for (AccountObserver& observer : observers_) {
+  void Account::NotifyStatementOfAccountsDidChange() const {
+    for (AccountObserver& observer : observers_) {
     observer.OnStatementOfAccountsDidChange();
+    }
   }
-}
 
-void Account::OnPrefDidChange(const std::string& path) {
-  if (path == prefs::kEnabled) {
+  void Account::OnPrefDidChange(const std::string& path) {
+    if (path == prefs::kEnabled) {
     MaybeGetIssuers();
+    }
   }
-}
 
-void Account::OnDidConfirm(const ConfirmationInfo& confirmation) {
-  DCHECK(IsValid(confirmation));
+  void Account::OnDidConfirm(const ConfirmationInfo& confirmation) {
+    DCHECK(IsValid(confirmation));
 
-  TopUpUnblindedTokens();
-}
+    TopUpUnblindedTokens();
+  }
 
-void Account::OnFailedToConfirm(const ConfirmationInfo& confirmation) {
-  DCHECK(IsValid(confirmation));
+  void Account::OnFailedToConfirm(const ConfirmationInfo& confirmation) {
+    DCHECK(IsValid(confirmation));
 
-  TopUpUnblindedTokens();
-}
+    TopUpUnblindedTokens();
+  }
 
-void Account::OnDidFetchIssuers(const IssuersInfo& issuers) {
-  if (!IsIssuersValid(issuers)) {
+  void Account::OnDidFetchIssuers(const IssuersInfo& issuers) {
+    if (!IsIssuersValid(issuers)) {
     BLOG(0, "Invalid issuers");
     return;
+    }
+
+    if (HasIssuersChanged(issuers)) {
+      BLOG(1, "Updated issuers");
+      SetIssuers(issuers);
+    } else {
+      BLOG(1, "Issuers already up to date");
+    }
+
+    TopUpUnblindedTokens();
   }
 
-  if (HasIssuersChanged(issuers)) {
-    BLOG(1, "Updated issuers");
-    SetIssuers(issuers);
-  } else {
-    BLOG(1, "Issuers already up to date");
+  void Account::OnDidRedeemUnblindedPaymentTokens(
+      const privacy::UnblindedPaymentTokenList& unblinded_payment_tokens) {
+    const database::table::Transactions database_table;
+    database_table.Update(unblinded_payment_tokens,
+                          base::BindOnce([](const bool success) {
+                            if (!success) {
+                              BLOG(0, "Failed to update transactions");
+                              return;
+                            }
+
+                            BLOG(3, "Successfully updated transactions");
+                          }));
   }
 
-  TopUpUnblindedTokens();
-}
+  void Account::OnDidRefillUnblindedTokens() {
+    AdsClientHelper::GetInstance()->ClearScheduledCaptcha();
+  }
 
-void Account::OnDidRedeemUnblindedPaymentTokens(
-    const privacy::UnblindedPaymentTokenList& unblinded_payment_tokens) {
-  const database::table::Transactions database_table;
-  database_table.Update(unblinded_payment_tokens,
-                        base::BindOnce([](const bool success) {
-                          if (!success) {
-                            BLOG(0, "Failed to update transactions");
-                            return;
-                          }
-
-                          BLOG(3, "Successfully updated transactions");
-                        }));
-}
-
-void Account::OnDidRefillUnblindedTokens() {
-  AdsClientHelper::GetInstance()->ClearScheduledCaptcha();
-}
-
-void Account::OnCaptchaRequiredToRefillUnblindedTokens(
-    const std::string& captcha_id) {
-  const WalletInfo& wallet = GetWallet();
+  void Account::OnCaptchaRequiredToRefillUnblindedTokens(
+      const std::string& captcha_id) {
+    const WalletInfo& wallet = GetWallet();
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const bool should_show_tooltip_notification = false;
 #else   // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -335,6 +366,6 @@ void Account::OnCaptchaRequiredToRefillUnblindedTokens(
 
   AdsClientHelper::GetInstance()->ShowScheduledCaptchaNotification(
       wallet.id, captcha_id, should_show_tooltip_notification);
-}
+  }
 
 }  // namespace ads
