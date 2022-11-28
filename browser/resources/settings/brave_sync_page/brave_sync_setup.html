@@ -43,6 +43,7 @@
         <span hidden="[[isGettingSyncCode_]]">$i18n{braveSyncStartNewChain}</span>
       </cr-button>
       <cr-button
+        id="enterSyncCodeButton"
         on-click="handleJoinSyncChain_"
         disabled="[[isGettingSyncCode_]]"
       >
@@ -58,5 +59,6 @@
     sync-code="{{syncCode}}"
     sync-code-validation-error="{{syncCodeValidationError_}}"
     on-done="handleSyncCodeDialogDone_"
+    on-show-get-code="handleShowGetCode_"
   ></settings-brave-sync-code-dialog>
 </template>

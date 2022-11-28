@@ -24,7 +24,8 @@ import { I18nMixin } from 'chrome://resources/cr_elements/i18n_mixin.js';
 
 import { Route, RouteObserverMixin, Router } from '../router.js';
 import { SyncBrowserProxyImpl, StatusAction } from '../people_page/sync_browser_proxy.js';
-import {getTemplate} from './brave_sync_subpage.html.js'
+import { BraveSyncBrowserProxy } from './brave_sync_browser_proxy.js';
+import { getTemplate } from './brave_sync_subpage.html.js'
 
 const SettingBraveSyncSubpageBase = I18nMixin(RouteObserverMixin(PolymerElement))
 
@@ -70,10 +71,19 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
       },
 
       /** @private */
-      hasSyncWordsDecryptionError_:{
+      hasSyncWordsDecryptionError_ : {
         type: Boolean,
         value: false,
-        computed: 'computeHasSyncWordsDecryptionError_(syncStatus.hasSyncWordsDecryptionError)',
+        computed: 'computeHasSyncWordsDecryptionError_(' +
+          'syncStatus.hasSyncWordsDecryptionError)',
+      },
+
+      /** @private */
+      hasSyncWordsDecryptionErrorUnlockedSs_ : {
+        type: Boolean,
+        value: false,
+        computed: 'computeHasSyncWordsDecryptionErrorUnlockedSs_(' +
+            'syncStatus.hasSyncWordsDecryptionError)',
       },
 
       /** @private */
@@ -96,6 +106,8 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
 
   /** @private {?SyncBrowserProxy} */
   browserProxy_ = SyncBrowserProxyImpl.getInstance()
+
+  braveSyncBrowserProxy_ = BraveSyncBrowserProxy.getInstance();
 
   /**
   * The beforeunload callback is used to show the 'Leave site' dialog. This
@@ -187,6 +199,17 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
   */
   computeHasSyncWordsDecryptionError_() {
     return this.syncStatus != undefined && !!this.syncStatus.hasSyncWordsDecryptionError
+      && !this.syncStatus.isOsEncryptionAvailable
+  }
+
+  /**
+  * @return {boolean}
+  * @private
+  */
+  computeHasSyncWordsDecryptionErrorUnlockedSs_() {
+    return this.syncStatus != undefined &&
+      !!this.syncStatus.hasSyncWordsDecryptionError &&
+      !!this.syncStatus.isOsEncryptionAvailable
   }
 
   /** @protected */
@@ -268,12 +291,33 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
   */
   onSetupSuccess_() {
     this.setupSuccessful_ = true
-    // This navigation causes the firstSetupInProgress flag to be marked as false
-    // via `didNavigateAwayFromSyncPage`.
+    // This navigation causes the firstSetupInProgress flag to be marked as
+    // false via `didNavigateAwayFromSyncPage`.
     const router = Router.getInstance()
     if (router.getCurrentRoute() == router.getRoutes().BRAVE_SYNC_SETUP) {
       router.navigateTo(router.getRoutes().BRAVE_SYNC)
     }
+  }
+
+  /**
+  * Called when we see that OS safe storage is not locked, but we can't decrypt
+  * the passphrase. So we proposing user to clear data and re-joid the chain.
+  */
+  onRejoin_ = async function (e) {
+    const messageText = this.i18n('braveSyncResetConfirmation')
+    const shouldReset = confirm(messageText)
+    if (!shouldReset) {
+      return
+    }
+    this.pageStatus_ = 'spinner'
+    await this.braveSyncBrowserProxy_.stopSyncClearData();
+     window.setTimeout(() => {
+       let element_sync_code_button = this.shadowRoot
+          .querySelector("#sync-section > settings-brave-sync-setup")
+          .shadowRoot.querySelector("#enterSyncCodeButton")
+       const event = new MouseEvent('click');
+       element_sync_code_button.dispatchEvent(event);
+    }, 1000)
   }
 }
 

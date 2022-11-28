@@ -84,10 +84,13 @@ void BraveSyncHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupReset", base::BindRepeating(&BraveSyncHandler::HandleReset,
                                             base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback(
       "SyncDeleteDevice",
       base::BindRepeating(&BraveSyncHandler::HandleDeleteDevice,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncStopClearData",
+      base::BindRepeating(&BraveSyncHandler::HandleStopClearData,
                           base::Unretained(this)));
 }
 
@@ -346,4 +349,16 @@ void BraveSyncHandler::OnCodeGeneratorResponse(
 
   qr_code_service_remote_.reset();
   ResolveJavascriptCallback(callback_id, base::Value(data_url));
+}
+
+void BraveSyncHandler::HandleStopClearData(const base::Value::List& args) {
+  AllowJavascript();
+  CHECK_EQ(1U, args.size());
+
+  auto* sync_service = GetSyncService();
+  if (sync_service) {
+    sync_service->StopAndClear();
+  }
+
+  ResolveJavascriptCallback(args[0].Clone(), base::Value(true));
 }

@@ -35,10 +35,24 @@
   </div>
 </div>
 
-<!-- Sync words decryption error -->
+<!-- Sync words decryption error, safe storage locked-->
 <div class="cr-row first" hidden="[[!hasSyncWordsDecryptionError_]]">
   <div class="flex cr-padded-text">
     $i18nRaw{braveSyncPassphraseDecryptionErrorMessage}
+  </div>
+</div>
+
+<!-- Sync words decryption error, safe storage unlocked-->
+<div class="cr-row first" hidden="[[!hasSyncWordsDecryptionErrorUnlockedSs_]]">
+  <div class="flex cr-padded-text">
+    <p>$i18nRaw{braveSyncPassphraseDecryptionErrorUnlockedSsMessage}</p>
+    <div class="actions">
+      <cr-button class="action-button"
+        on-click="onRejoin_"
+      >
+        $i18n{braveSyncLeaveAndRejoinTheChainButton}
+      </cr-button>
+    </div>
   </div>
 </div>
 

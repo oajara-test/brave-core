@@ -41,6 +41,9 @@ export class BraveSyncBrowserProxy {
   deleteDevice(deviceId: string): Promise<boolean> {
     return sendWithPromise('SyncDeleteDevice', deviceId);
   }
+  stopSyncClearData(): Promise<boolean> {
+    return sendWithPromise('SyncStopClearData');
+  }
   static getInstance() {
     return instance || (instance = new BraveSyncBrowserProxy())
   }
