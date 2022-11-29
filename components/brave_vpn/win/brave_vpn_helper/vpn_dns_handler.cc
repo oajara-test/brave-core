@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/brave_vpn_dns_delegate.h"
 #include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_utils.h"
 #include "brave/components/brave_vpn/win/utils.h"
 
@@ -22,7 +23,10 @@ constexpr int kCheckConnectionIntervalInSeconds = 3;
 
 namespace brave_vpn {
 
-VpnDnsHandler::VpnDnsHandler() = default;
+VpnDnsHandler::VpnDnsHandler(BraveVpnDnsDelegate* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate_);
+}
 VpnDnsHandler::~VpnDnsHandler() {
   CloseWatchers();
 }
@@ -147,7 +151,7 @@ void VpnDnsHandler::CloseWatchers() {
 
 void VpnDnsHandler::Exit() {
   CloseWatchers();
-  SignalExit();
+  delegate_->SignalExit();
 }
 
 void VpnDnsHandler::OnObjectSignaled(HANDLE object) {

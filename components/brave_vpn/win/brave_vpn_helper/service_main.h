@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/brave_vpn_dns_delegate.h"
 #include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_dns_handler.h"
 
 namespace base {
@@ -20,7 +21,7 @@ class CommandLine;
 
 namespace brave_vpn {
 
-class ServiceMain : public brave_vpn::VpnDnsHandler {
+class ServiceMain : public brave_vpn::BraveVpnDnsDelegate {
  public:
   static ServiceMain* GetInstance();
 
@@ -33,12 +34,12 @@ class ServiceMain : public brave_vpn::VpnDnsHandler {
   // Start() is the entry point called by WinMain.
   int Start();
 
-  // brave_vpn::VpnDnsHandler:
+  // brave_vpn::BraveVpnDnsDelegate:
   void SignalExit() override;
 
  private:
   ServiceMain();
-  ~ServiceMain() override;
+  ~ServiceMain();
 
   // This function handshakes with the service control manager and starts
   // the service.
@@ -67,6 +68,7 @@ class ServiceMain : public brave_vpn::VpnDnsHandler {
   // The action routine to be executed.
   int (ServiceMain::*run_routine_)();
 
+  VpnDnsHandler dns_handler_{this};
   SERVICE_STATUS_HANDLE service_status_handle_;
   SERVICE_STATUS service_status_;
   base::WaitableEvent exit_signal_;

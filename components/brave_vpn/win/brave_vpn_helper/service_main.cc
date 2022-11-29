@@ -140,7 +140,7 @@ HRESULT ServiceMain::Run() {
       base::MessagePumpType::UI);
   base::RunLoop loop;
   quit_ = loop.QuitClosure();
-  StartVPNConnectionChangeMonitoring();
+  dns_handler_.StartVPNConnectionChangeMonitoring();
   loop.Run();
   return S_OK;
 }

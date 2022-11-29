@@ -22,13 +22,24 @@ namespace internal {
 enum class CheckConnectionResult;
 }  // namespace internal
 
+class BraveVpnDnsDelegate;
 class MockVpnDnsHandler;
 
 class VpnDnsHandler : public base::win::ObjectWatcher::Delegate {
  public:
-  VpnDnsHandler();
+  explicit VpnDnsHandler(BraveVpnDnsDelegate* delegate);
   ~VpnDnsHandler() override;
 
+  void StartVPNConnectionChangeMonitoring();
+
+ protected:
+  // base::win::ObjectWatcher::Delegate overrides:
+  void OnObjectSignaled(HANDLE object) override;
+
+  internal::CheckConnectionResult GetVpnEntryState();
+  void OnCheckConnection(internal::CheckConnectionResult result);
+  bool CloseEngineSession();
+  void Exit();
   bool SetFilters(const std::wstring& connection_name);
   bool RemoveFilters(const std::wstring& connection_name);
   bool IsActive() const;
@@ -36,16 +47,6 @@ class VpnDnsHandler : public base::win::ObjectWatcher::Delegate {
   void SetCloseEngineResultForTesting(bool value);
   void SetPlatformFiltersResultForTesting(bool value);
   void CheckConnectionStatus();
-
- protected:
-  // base::win::ObjectWatcher::Delegate overrides:
-  void OnObjectSignaled(HANDLE object) override;
-  void StartVPNConnectionChangeMonitoring();
-  internal::CheckConnectionResult GetVpnEntryState();
-  void OnCheckConnection(internal::CheckConnectionResult result);
-  bool CloseEngineSession();
-  void Exit();
-  virtual void SignalExit() = 0;
 
  private:
   friend class MockVpnDnsHandler;
@@ -60,7 +61,7 @@ class VpnDnsHandler : public base::win::ObjectWatcher::Delegate {
       connection_result_for_testing_;
   absl::optional<bool> platform_filters_result_for_testing_;
   absl::optional<bool> close_engine_result_for_testing_;
-
+  BraveVpnDnsDelegate* delegate_ = nullptr;
   HANDLE engine_ = nullptr;
   HANDLE event_handle_for_vpn_ = nullptr;
   base::win::ObjectWatcher connected_disconnected_event_watcher_;

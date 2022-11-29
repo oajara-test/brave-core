@@ -16,6 +16,7 @@ config("no-missing-braces") {
 
 source_set("lib") {
   sources = [
+    "brave_vpn_dns_delegate.h",
     "vpn_dns_handler.cc",
     "vpn_dns_handler.h",
     "vpn_utils.cc",

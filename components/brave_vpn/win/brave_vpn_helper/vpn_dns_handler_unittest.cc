@@ -13,27 +13,36 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/brave_vpn_dns_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace brave_vpn {
 
-class MockVpnDnsHandler : public VpnDnsHandler {
+class MockVpnDnsHandler : public VpnDnsHandler, public BraveVpnDnsDelegate {
  public:
   explicit MockVpnDnsHandler(base::OnceClosure callback)
-      : quit_callback_(std::move(callback)) {
+      : VpnDnsHandler(this), quit_callback_(std::move(callback)) {
     SetCloseEngineResultForTesting(true);
     SetPlatformFiltersResultForTesting(true);
   }
   ~MockVpnDnsHandler() override {}
 
-  void SignalExit() override { std::move(quit_callback_).Run(); }
+  bool IsActive() const { return VpnDnsHandler::IsActive(); }
   void StartMonitoring() { StartVPNConnectionChangeMonitoring(); }
+  void CheckConnectionStatus() { VpnDnsHandler::CheckConnectionStatus(); }
   void SubscribeForRasNotifications(HANDLE event_handle) override {
     event_handle_ = event_handle;
   }
-
+  void SetConnectionResultForTesting(internal::CheckConnectionResult result) {
+    VpnDnsHandler::SetConnectionResultForTesting(result);
+  }
+  void SetPlatformFiltersResultForTesting(bool value) {
+    VpnDnsHandler::SetPlatformFiltersResultForTesting(value);
+  }
+  bool SetFilters(const std::wstring& connection_name) {
+    return VpnDnsHandler::SetFilters(connection_name);
+  }
   bool Subscribed() const { return event_handle_ != nullptr; }
-
   HANDLE GetEventHandle() { return event_handle_; }
 
   void OnObjectSignaled(HANDLE object) override {
@@ -48,6 +57,9 @@ class MockVpnDnsHandler : public VpnDnsHandler {
     SetEvent(event);
     loop.Run();
   }
+
+  // BraveVpnDnsDelegate
+  void SignalExit() override { std::move(quit_callback_).Run(); }
 
  private:
   HANDLE event_handle_ = nullptr;
