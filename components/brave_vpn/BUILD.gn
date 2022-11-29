@@ -29,10 +29,10 @@ static_library("brave_vpn") {
   ]
 
   deps = [
-    ":brave_vpn_constants",
     "mojom",
     "//base",
     "//brave/components/api_request_helper:api_request_helper",
+    "//brave/components/brave_vpn/common",
     "//brave/components/p3a_utils",
     "//brave/components/resources:strings",
     "//brave/components/skus/browser",
@@ -43,7 +43,6 @@ static_library("brave_vpn") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/version_info",
-    "//net",
     "//services/network/public/cpp",
     "//third_party/abseil-cpp:absl",
     "//ui/base",
@@ -63,11 +62,8 @@ static_library("brave_vpn") {
     ]
 
     if (is_win) {
-      sources += [
-        "brave_vpn_os_connection_api_win.cc",
-        "brave_vpn_os_connection_api_win.h",
-      ]
-      deps += [ ":brave_vpn_win_utils" ]
+      deps += [ "//brave/components/brave_vpn/win" ]
+      allow_circular_includes_from = [ "//brave/components/brave_vpn/win" ]
     }
 
     if (is_mac) {
@@ -82,31 +78,6 @@ static_library("brave_vpn") {
 
     deps += [ "//third_party/icu" ]
   }
-}
-
-source_set("brave_vpn_constants") {
-  sources = [ "brave_vpn_constants.h" ]
-  deps = []
-}
-
-source_set("brave_vpn_win_utils") {
-  visibility = [
-    ":brave_vpn",
-    ":vpntool",
-    "//brave/vpn:lib",
-  ]
-
-  sources = []
-  deps = [
-    ":brave_vpn_constants",
-    "//base",
-  ]
-  libs = [ "rasapi32.lib" ]
-
-  sources = [
-    "utils_win.cc",
-    "utils_win.h",
-  ]
 }
 
 source_set("unit_tests") {
@@ -125,8 +96,8 @@ source_set("unit_tests") {
 
     deps = [
       ":brave_vpn",
-      ":brave_vpn_constants",
       "//base",
+      "//brave/components/brave_vpn/common",
       "//brave/components/p3a_utils",
       "//brave/components/skus/browser",
       "//brave/components/skus/common",
@@ -141,18 +112,5 @@ source_set("unit_tests") {
       "//testing/gtest",
       "//third_party/abseil-cpp:absl",
     ]
-  }
-}
-
-executable("vpntool") {
-  sources = []
-  deps = [
-    ":brave_vpn_win_utils",
-    "//base",
-  ]
-
-  if (is_win) {
-    sources += [ "winvpntool.cc" ]
-    libs = [ "rasapi32.lib" ]
   }
 }

@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "brave/components/brave_vpn/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/common/brave_vpn_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace brave_vpn {

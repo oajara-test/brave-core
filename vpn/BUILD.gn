@@ -35,8 +35,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//brave//components/brave_vpn:brave_vpn_constants",
-    "//brave//components/brave_vpn:brave_vpn_win_utils",
+    "//brave//components/brave_vpn/common",
+    "//brave//components/brave_vpn/win:utils",
     "//third_party/abseil-cpp:absl",
   ]
   libs = [
@@ -80,7 +80,7 @@ source_set("unit_tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//brave/components/brave_vpn:brave_vpn_constants",
+    "//brave/components/brave_vpn/common",
     "//testing/gtest",
     "//third_party/abseil-cpp:absl",
   ]

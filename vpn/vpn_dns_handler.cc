@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "brave/components/brave_vpn/brave_vpn_constants.h"
-#include "brave/components/brave_vpn/utils_win.h"
+#include "brave/components/brave_vpn/common/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/win/utils.h"
 #include "brave/vpn/vpn_utils.h"
 
 namespace {

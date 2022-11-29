@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/windows_types.h"
-#include "brave/components/brave_vpn/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/common/brave_vpn_constants.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/callback_work_item.h"
