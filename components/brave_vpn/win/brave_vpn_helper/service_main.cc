@@ -37,7 +37,6 @@ bool ServiceMain::InitWithCommandLine(const base::CommandLine* command_line) {
     LOG(ERROR) << "No positional parameters expected.";
     return false;
   }
-
   // Run interactively if needed.
   if (command_line->HasSwitch(kConsoleSwitchName))
     run_routine_ = &ServiceMain::RunInteractive;

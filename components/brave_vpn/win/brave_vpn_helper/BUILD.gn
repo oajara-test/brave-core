@@ -38,6 +38,8 @@ source_set("lib") {
 
 executable("brave_vpn_helper") {
   sources = [
+    "brave_vpn_helper_crash_reporter_client.cc",
+    "brave_vpn_helper_crash_reporter_client.h",
     "main.cc",
     "service_main.cc",
     "service_main.h",
@@ -49,6 +51,12 @@ executable("brave_vpn_helper") {
     "//base",
     "//brave/components/brave_vpn/common",
     "//build/win:default_exe_manifest",
+    "//chrome/install_static:install_static_util",
+    "//components/browser_watcher:browser_watcher_client",
+    "//components/crash/core/app",
+    "//components/crash/core/app:crash_export_thunks",
+    "//components/crash/core/app:run_as_crashpad_handler",
+    "//components/version_info:channel",
   ]
 }
 

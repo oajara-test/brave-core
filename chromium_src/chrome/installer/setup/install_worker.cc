@@ -4,6 +4,8 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <shlobj.h>
 
+#include "build/buildflag.h"
+
 #if defined(OFFICIAL_BUILD)
 #include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_constants.h"
