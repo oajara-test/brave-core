@@ -13,10 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 OBJC_EXPORT
 @interface BraveCertificateUtility : NSObject
-@property(nonatomic, readonly, class) NSArray<NSData*>* acceptableSPKIHashes;
-
-+ (nullable NSString*)pemEncodeCertificate:(SecCertificateRef)certificate;
-+ (nullable NSData*)hashCertificateSPKI:(SecCertificateRef)certificate;
++ (int)verifyTrust:(SecTrustRef)trust host:(NSString*)host;
 @end
 
 NS_ASSUME_NONNULL_END
