@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include "brave/vpn/vpn_utils.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_utils.h"
 
 #include <fwpmu.h>
 #include <iphlpapi.h>
@@ -16,6 +16,56 @@
 namespace brave_vpn {
 
 namespace {
+
+// Microsoft-Windows-NetworkProfile
+// fbcfac3f-8459-419f-8e48-1f0b49cdb85e
+constexpr GUID kNetworkProfileGUID = {
+    0xfbcfac3f,
+    0x8459,
+    0x419f,
+    {0x8e, 0x48, 0x1f, 0x0b, 0x49, 0xcd, 0xb8, 0x5e}};
+
+bool SetServiceTriggerForVPNConnection(SC_HANDLE hService,
+                                       const std::string& brave_vpn_entry) {
+  // Allocate and set the SERVICE_TRIGGER_SPECIFIC_DATA_ITEM structure
+  SERVICE_TRIGGER_SPECIFIC_DATA_ITEM deviceData = {0};
+  deviceData.dwDataType = SERVICE_TRIGGER_DATA_TYPE_STRING;
+  deviceData.cbData = sizeof(brave_vpn_entry);
+  deviceData.pData = (PBYTE)brave_vpn_entry.c_str();
+
+  // Allocate and set the SERVICE_TRIGGER structure
+  SERVICE_TRIGGER serviceTrigger = {0};
+  serviceTrigger.dwTriggerType = SERVICE_TRIGGER_TYPE_CUSTOM;
+  serviceTrigger.dwAction = SERVICE_TRIGGER_ACTION_SERVICE_START;
+  serviceTrigger.pTriggerSubtype = const_cast<GUID*>(&kNetworkProfileGUID);
+  serviceTrigger.cDataItems = 1;
+  serviceTrigger.pDataItems = &deviceData;
+
+  // Allocate and set the SERVICE_TRIGGER_INFO structure
+  SERVICE_TRIGGER_INFO serviceTriggerInfo = {0};
+  serviceTriggerInfo.cTriggers = 1;
+  serviceTriggerInfo.pTriggers = &serviceTrigger;
+
+  // Call ChangeServiceConfig2 with the SERVICE_CONFIG_TRIGGER_INFO level
+  // and pass to it the address of the SERVICE_TRIGGER_INFO structure
+  return ChangeServiceConfig2(hService, SERVICE_CONFIG_TRIGGER_INFO,
+                              &serviceTriggerInfo);
+}
+
+bool SetServiceFailActions(SC_HANDLE service) {
+  SC_ACTION failActions[] = {
+      {SC_ACTION_RESTART, 1}, {SC_ACTION_RESTART, 1}, {SC_ACTION_RESTART, 1}};
+  // The time after which to reset the failure count to zero if there are no
+  // failures, in seconds. 86400 in sec = 1 day.
+  SERVICE_FAILURE_ACTIONS servFailActions = {
+      .dwResetPeriod = 86400,
+      .lpRebootMsg = NULL,
+      .lpCommand = NULL,
+      .cActions = sizeof(failActions) / sizeof(SC_ACTION),
+      .lpsaActions = failActions};
+  return ChangeServiceConfig2(service, SERVICE_CONFIG_FAILURE_ACTIONS,
+                              &servFailActions);
+}
 
 /* UUID of WFP sublayer used by all instances
  * 23e10e29-eb83-4d2c-9d77-f6e9b547f39c */
@@ -267,6 +317,31 @@ bool SubscribeRasConnectionNotification(HANDLE event_handle) {
         << std::hex << result;
   }
   return success;
+}
+
+bool ConfigureServiceAutoRestart(const std::wstring& service_name,
+                                 const std::string& brave_vpn_entry) {
+  SC_HANDLE scm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT);
+  if (!scm)
+    return false;
+  SC_HANDLE service =
+      ::OpenService(scm, service_name.c_str(), SERVICE_ALL_ACCESS);
+  if (!service) {
+    return ::CloseServiceHandle(scm) != FALSE;
+  }
+
+  auto result = SetServiceFailActions(service) &&
+                SetServiceTriggerForVPNConnection(service, brave_vpn_entry);
+  if (!result) {
+    LOG(ERROR) << "ChangeServiceConfig2 failed:" << GetLastError();
+  }
+  if (!::CloseServiceHandle(service)) {
+    LOG(ERROR) << "CloseServiceHandle service failed:" << GetLastError();
+  }
+  if (!::CloseServiceHandle(scm)) {
+    LOG(ERROR) << "CloseServiceHandle scm failed:" << GetLastError();
+  }
+  return result;
 }
 
 }  // namespace brave_vpn

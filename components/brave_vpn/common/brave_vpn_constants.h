@@ -1,10 +1,12 @@
 // Copyright (c) 2021 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef BRAVE_COMPONENTS_BRAVE_VPN_BRAVE_VPN_CONSTANTS_H_
-#define BRAVE_COMPONENTS_BRAVE_VPN_BRAVE_VPN_CONSTANTS_H_
+#ifndef BRAVE_COMPONENTS_BRAVE_VPN_COMMON_BRAVE_VPN_CONSTANTS_H_
+#define BRAVE_COMPONENTS_BRAVE_VPN_COMMON_BRAVE_VPN_CONSTANTS_H_
+
+#include "build/buildflag.h"
 
 namespace brave_vpn {
 
@@ -19,6 +21,13 @@ enum class CheckConnectionResult {
 };
 }
 #endif
+
+const wchar_t kBraveVPNHelperExecutable[] = L"brave_vpn_helper.exe";
+const wchar_t kBraveVpnServiceName[] = L"BraveVPNService";
+
+const char kBraveVpnHelperConfigureTriggers[] = "--configure-triggers";
+constexpr wchar_t kBraveVpnHelperRegistryStoragePath[] =
+    L"Software\\BraveSoftware\\Brave\\Vpn";
 
 constexpr char kManageUrlProd[] = "https://account.brave.com/account/";
 constexpr char kManageUrlStaging[] =
@@ -61,4 +70,4 @@ constexpr char kTokenNoLongerValid[] = "Token No Longer Valid";
 
 }  // namespace brave_vpn
 
-#endif  // BRAVE_COMPONENTS_BRAVE_VPN_BRAVE_VPN_CONSTANTS_H_
+#endif  // BRAVE_COMPONENTS_BRAVE_VPN_COMMON_BRAVE_VPN_CONSTANTS_H_

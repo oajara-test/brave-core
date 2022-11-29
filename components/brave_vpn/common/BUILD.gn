@@ -9,5 +9,5 @@ assert(enable_brave_vpn)
 
 source_set("common") {
   sources = [ "brave_vpn_constants.h" ]
-  deps = []
+  deps = [ "//build:buildflag_header_h" ]
 }

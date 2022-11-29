@@ -45,6 +45,6 @@ executable("vpntool") {
   deps = [
     ":win",
     "//base",
-    "//brave/components/brave_vpn/win:utils"
+    "//brave/components/brave_vpn/win:utils",
   ]
 }

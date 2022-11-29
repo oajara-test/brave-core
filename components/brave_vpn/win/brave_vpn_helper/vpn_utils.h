@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef BRAVE_VPN_VPN_UTILS_H_
-#define BRAVE_VPN_VPN_UTILS_H_
+#ifndef BRAVE_COMPONENTS_BRAVE_VPN_WIN_BRAVE_VPN_HELPER_VPN_UTILS_H_
+#define BRAVE_COMPONENTS_BRAVE_VPN_WIN_BRAVE_VPN_HELPER_VPN_UTILS_H_
 
 #include <windows.h>
 #include <string>
@@ -19,6 +19,9 @@ HANDLE OpenWpmSession();
 bool CloseWpmSession(HANDLE engine);
 // Subscribes for RAS connection notification of any os vpn entry.
 bool SubscribeRasConnectionNotification(HANDLE event_handle);
+// Configure VPN Service autorestart.
+bool ConfigureServiceAutoRestart(const std::wstring& service_name,
+                                 const std::string& brave_vpn_entry);
 }  // namespace brave_vpn
 
-#endif  // BRAVE_VPN_VPN_UTILS_H_
+#endif  // BRAVE_COMPONENTS_BRAVE_VPN_WIN_BRAVE_VPN_HELPER_VPN_UTILS_H_

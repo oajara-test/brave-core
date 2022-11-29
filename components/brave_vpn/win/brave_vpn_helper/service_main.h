@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_VPN_SERVICE_MAIN_H_
-#define BRAVE_VPN_SERVICE_MAIN_H_
+#ifndef BRAVE_COMPONENTS_BRAVE_VPN_WIN_BRAVE_VPN_HELPER_SERVICE_MAIN_H_
+#define BRAVE_COMPONENTS_BRAVE_VPN_WIN_BRAVE_VPN_HELPER_SERVICE_MAIN_H_
 
 #include <windows.h>
 #include <memory>
@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
-#include "brave/vpn/vpn_dns_handler.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_dns_handler.h"
 
 namespace base {
 class CommandLine;
@@ -76,4 +76,4 @@ class ServiceMain : public brave_vpn::VpnDnsHandler {
 
 }  // namespace brave_vpn
 
-#endif  // BRAVE_VPN_SERVICE_MAIN_H_
+#endif  // BRAVE_COMPONENTS_BRAVE_VPN_WIN_BRAVE_VPN_HELPER_SERVICE_MAIN_H_

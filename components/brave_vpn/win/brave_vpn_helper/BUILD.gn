@@ -14,17 +14,6 @@ config("no-missing-braces") {
   cflags = [ "-Wno-missing-braces" ]
 }
 
-# This service needs to work with Windows 7, so explicitly setting the defines
-# to reflect this. Otherwise, WRL uses APIs that are only available in later
-# Windows versions.
-config("winver") {
-  defines = [
-    "NTDDI_VERSION=NTDDI_WIN7",
-    "_WIN32_WINNT=_WIN32_WINNT_WIN7",
-    "WINVER=_WIN32_WINNT_WIN7",
-  ]
-}
-
 source_set("lib") {
   sources = [
     "vpn_dns_handler.cc",
@@ -39,36 +28,32 @@ source_set("lib") {
     "//brave//components/brave_vpn/win:utils",
     "//third_party/abseil-cpp:absl",
   ]
+
   libs = [
     "Fwpuclnt.lib",
     "Iphlpapi.lib",
   ]
 }
 
-executable("vpn") {
+executable("brave_vpn_helper") {
   sources = [
     "main.cc",
     "service_main.cc",
     "service_main.h",
-    "vpn.rc",
   ]
-
-  configs -= [ "//build/config/compiler:cet_shadow_stack" ]
-  configs -= [ "//build/config/win:winver" ]
-  configs += [ ":winver" ]
 
   deps = [
     ":lib",
     ":version_resources",
     "//base",
+    "//brave/components/brave_vpn/common",
     "//build/win:default_exe_manifest",
-    "//chrome/install_static:install_static_util",
   ]
 }
 
 process_version_rc_template("version_resources") {
-  sources = [ "vpn.ver" ]
-  output = "$target_gen_dir/vpn_exe.rc"
+  sources = [ "brave_vpn_helper.ver" ]
+  output = "$target_gen_dir/brave_vpn_helper_exe.rc"
 }
 
 source_set("unit_tests") {

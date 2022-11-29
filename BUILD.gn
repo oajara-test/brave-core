@@ -103,11 +103,6 @@ group("brave") {
       ":generate_version",
       "//chrome",
     ]
-    if (enable_brave_vpn) {
-      if (is_win) {
-        deps += [ "//brave//vpn" ]
-      }
-    }
   }
 }
 
@@ -558,9 +553,11 @@ action("audit_deps") {
 }
 
 group("tools") {
-  assert(is_win)
+  deps = []
   if (enable_brave_vpn) {
-    deps = [ "//brave/components/brave_vpn/win:vpntool" ]
+    if (is_win) {
+      deps += [ "//brave/components/brave_vpn/win:vpntool" ]
+    }
   }
 }
 

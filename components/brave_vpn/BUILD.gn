@@ -112,5 +112,9 @@ source_set("unit_tests") {
       "//testing/gtest",
       "//third_party/abseil-cpp:absl",
     ]
+
+    if (is_win) {
+      deps += [ "//brave/components/brave_vpn/win/brave_vpn_helper:unit_tests" ]
+    }
   }
 }

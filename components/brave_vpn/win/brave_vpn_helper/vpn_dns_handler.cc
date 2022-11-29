@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include "brave/vpn/vpn_dns_handler.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_dns_handler.h"
 
 #include <string>
 
@@ -12,8 +12,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_utils.h"
 #include "brave/components/brave_vpn/win/utils.h"
-#include "brave/vpn/vpn_utils.h"
 
 namespace {
 // Repeating interval to check the connection is live.

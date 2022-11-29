@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/vpn/service_main.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/service_main.h"
 
 #include <utility>
 
@@ -16,7 +16,8 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/install_static/install_util.h"
+#include "brave/components/brave_vpn/common/brave_vpn_constants.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/vpn_utils.h"
 
 namespace brave_vpn {
 namespace {
@@ -41,6 +42,12 @@ bool ServiceMain::InitWithCommandLine(const base::CommandLine* command_line) {
   if (command_line->HasSwitch(kConsoleSwitchName))
     run_routine_ = &ServiceMain::RunInteractive;
 
+  // Run interactively if needed.
+  if (command_line->HasSwitch(brave_vpn::kBraveVpnHelperConfigureTriggers)) {
+    return ConfigureServiceAutoRestart(brave_vpn::kBraveVpnServiceName,
+                                       brave_vpn::kBraveVPNEntryName);
+  }
+
   return true;
 }
 
@@ -61,7 +68,7 @@ ServiceMain::ServiceMain()
 ServiceMain::~ServiceMain() = default;
 
 int ServiceMain::RunAsService() {
-  const std::wstring& service_name(install_static::GetVpnServiceName());
+  const std::wstring& service_name(brave_vpn::kBraveVpnServiceName);
   const SERVICE_TABLE_ENTRY dispatch_table[] = {
       {const_cast<LPTSTR>(service_name.c_str()),
        &ServiceMain::ServiceMainEntry},
@@ -78,9 +85,8 @@ int ServiceMain::RunAsService() {
 
 void ServiceMain::ServiceMainImpl() {
   VLOG(1) << __func__ << " BraveVPN Service started";
-  service_status_handle_ =
-      ::RegisterServiceCtrlHandler(install_static::GetVpnServiceName().c_str(),
-                                   &ServiceMain::ServiceControlHandler);
+  service_status_handle_ = ::RegisterServiceCtrlHandler(
+      brave_vpn::kBraveVpnServiceName, &ServiceMain::ServiceControlHandler);
   if (service_status_handle_ == nullptr) {
     LOG(ERROR) << "RegisterServiceCtrlHandler failed";
     return;

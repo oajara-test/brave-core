@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/process/memory.h"
 #include "base/win/process_startup_helper.h"
-#include "brave/vpn/service_main.h"
+#include "brave/components/brave_vpn/win/brave_vpn_helper/service_main.h"
 
 int main(int argc, char* argv[]) {
   // Initialize the CommandLine singleton from the environment.
@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
   base::win::RegisterInvalidParamHandler();
+
   auto* command_line = base::CommandLine::ForCurrentProcess();
   base::win::SetupCRT(*command_line);
 
