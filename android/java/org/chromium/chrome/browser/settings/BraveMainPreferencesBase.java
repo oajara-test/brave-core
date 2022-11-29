@@ -28,8 +28,11 @@ import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.settings.BraveHomepageSettings;
 import org.chromium.chrome.browser.notifications.BraveNotificationWarningDialog;
+import org.chromium.chrome.browser.notifications.BravePermissionUtils;
+import org.chromium.chrome.browser.notifications.permissions.BraveNotificationPermissionRationaleDialog;
 import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBridge;
 import org.chromium.chrome.browser.ntp_background_images.util.NTPUtil;
+import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
 import org.chromium.chrome.browser.partnercustomizations.CloseBraveManager;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.privacy.settings.BravePrivacySettings;
@@ -129,15 +132,27 @@ public class BraveMainPreferencesBase
                 && BraveNotificationWarningDialog.shouldShowNotificationWarningDialog(
                         getActivity())) {
             mNotificationClicked = false;
-            showNotificationWarningDialog();
+            if (BraveNotificationWarningDialog.shouldShowRewardWarningDialog(getActivity())
+                    || BraveNotificationWarningDialog.shouldShowPrivacyWarningDialog(
+                            getActivity())) {
+                showNotificationWarningDialog();
+            } else {
+                showNotificationRationale();
+            }
         }
+    }
+
+    private void showNotificationRationale() {
+        BraveNotificationPermissionRationaleDialog notificationWarningDialog =
+                BraveNotificationPermissionRationaleDialog.newInstance();
+        notificationWarningDialog.show(getChildFragmentManager(),
+                BraveNotificationWarningDialog.NOTIFICATION_WARNING_DIALOG_TAG);
     }
 
     private void showNotificationWarningDialog() {
         BraveNotificationWarningDialog notificationWarningDialog =
                 BraveNotificationWarningDialog.newInstance(
                         BraveNotificationWarningDialog.FROM_LAUNCHED_BRAVE_SETTINGS);
-        notificationWarningDialog.setCancelable(false);
         notificationWarningDialog.show(getChildFragmentManager(),
                 BraveNotificationWarningDialog.NOTIFICATION_WARNING_DIALOG_TAG);
     }

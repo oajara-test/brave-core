@@ -124,6 +124,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.informers.BraveAndroidSyncDisabledInformer;
 import org.chromium.chrome.browser.notifications.BraveNotificationWarningDialog;
 import org.chromium.chrome.browser.notifications.BravePermissionUtils;
+import org.chromium.chrome.browser.notifications.permissions.BraveNotificationPermissionRationaleDialog;
 import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionController;
 import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionRationaleDialogController;
 import org.chromium.chrome.browser.notifications.retention.RetentionNotificationUtil;
@@ -1260,11 +1261,17 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
         }
     }
 
+    public void showNotificationRationale() {
+        BraveNotificationPermissionRationaleDialog notificationRationaleDialog =
+                BraveNotificationPermissionRationaleDialog.newInstance();
+        notificationRationaleDialog.show(getSupportFragmentManager(),
+                BraveNotificationPermissionRationaleDialog.NOTIFICATION_RATIONALE_DIALOG_TAG);
+    }
+
     private void showNotificationWarningDialog() {
         BraveNotificationWarningDialog notificationWarningDialog =
                 BraveNotificationWarningDialog.newInstance(
                         BraveNotificationWarningDialog.FROM_LAUNCHED_BRAVE_ACTIVITY);
-        notificationWarningDialog.setCancelable(false);
         notificationWarningDialog.setDismissListener(closeDialogListener);
         notificationWarningDialog.show(getSupportFragmentManager(),
                 BraveNotificationWarningDialog.NOTIFICATION_WARNING_DIALOG_TAG);
@@ -1279,11 +1286,15 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
             };
 
     private void checkAndshowNotificationWarningDialog() {
-        if (BraveNotificationWarningDialog.shouldShowNotificationWarningDialog(this)
-                && !OnboardingPrefManager.getInstance()
-                            .isNotificationPermissionEnablingDialogShown()) {
-            showNotificationWarningDialog();
-            OnboardingPrefManager.getInstance().setNotificationPermissionEnablingDialogShown(true);
+        OnboardingPrefManager.getInstance().updateLaunchCount();
+        if (OnboardingPrefManager.getInstance().launchCount() == 3
+                && BraveNotificationWarningDialog.shouldShowNotificationWarningDialog(this)) {
+            if (BraveNotificationWarningDialog.shouldShowRewardWarningDialog(this)
+                    || BraveNotificationWarningDialog.shouldShowPrivacyWarningDialog(this)) {
+                showNotificationWarningDialog();
+            } else {
+                showNotificationRationale();
+            }
         } else {
             checkForNotificationData();
         }
@@ -1657,7 +1668,7 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
                 openNewOrSelectExistingTab(openUrl);
             }
         }
-        checkAndshowNotificationWarningDialog();
+        checkForNotificationData();
     }
 
     @Override
