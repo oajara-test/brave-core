@@ -31,7 +31,7 @@ class VpnDnsHandler : public base::win::ObjectWatcher::Delegate {
 
   bool SetFilters(const std::wstring& connection_name);
   bool RemoveFilters(const std::wstring& connection_name);
-  bool IsDNSFiltersActive() const;
+  bool IsActive() const;
   void SetConnectionResultForTesting(internal::CheckConnectionResult result);
   void SetCloseEngineResultForTesting(bool value);
   void SetPlatformFiltersResultForTesting(bool value);
@@ -52,7 +52,6 @@ class VpnDnsHandler : public base::win::ObjectWatcher::Delegate {
   FRIEND_TEST_ALL_PREFIXES(VpnDnsHandlerTest,
                            ConnectingSuccessFiltersInstalled);
 
-  HANDLE OpenEngineSession();
   bool SetupPlatformFilters(HANDLE engine_handle, const std::string& name);
   void CloseWatchers();
   virtual void SubscribeForRasNotifications(HANDLE event_handle);

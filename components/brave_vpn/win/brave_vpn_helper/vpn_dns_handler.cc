@@ -27,10 +27,6 @@ VpnDnsHandler::~VpnDnsHandler() {
   CloseWatchers();
 }
 
-HANDLE VpnDnsHandler::OpenEngineSession() {
-  return OpenWpmSession();
-}
-
 bool VpnDnsHandler::SetupPlatformFilters(HANDLE engine_handle,
                                          const std::string& name) {
   if (platform_filters_result_for_testing_.has_value())
@@ -61,12 +57,12 @@ bool VpnDnsHandler::CloseEngineSession() {
 
 bool VpnDnsHandler::SetFilters(const std::wstring& connection_name) {
   VLOG(1) << __func__ << ":" << connection_name;
-  if (IsDNSFiltersActive()) {
+  if (IsActive()) {
     VLOG(1) << "Filters activated for:" << connection_name;
     return true;
   }
 
-  engine_ = OpenEngineSession();
+  engine_ = OpenWpmSession();
   if (!engine_) {
     VLOG(1) << "Failed to open engine session";
     return false;
@@ -81,13 +77,13 @@ bool VpnDnsHandler::SetFilters(const std::wstring& connection_name) {
   return true;
 }
 
-bool VpnDnsHandler::IsDNSFiltersActive() const {
+bool VpnDnsHandler::IsActive() const {
   return engine_ != nullptr;
 }
 
 bool VpnDnsHandler::RemoveFilters(const std::wstring& connection_name) {
   VLOG(1) << __func__ << ":" << connection_name;
-  if (!IsDNSFiltersActive()) {
+  if (!IsActive()) {
     VLOG(1) << "No active filters";
     return true;
   }
@@ -117,7 +113,7 @@ void VpnDnsHandler::OnCheckConnection(internal::CheckConnectionResult result) {
   switch (result) {
     case internal::CheckConnectionResult::CONNECTED:
       VLOG(1) << "BraveVPN connected, set filters";
-      if (IsDNSFiltersActive()) {
+      if (IsActive()) {
         VLOG(1) << "Filters are already installed";
         return;
       }
@@ -171,7 +167,7 @@ void VpnDnsHandler::SubscribeForRasNotifications(HANDLE event_handle) {
 
 void VpnDnsHandler::StartVPNConnectionChangeMonitoring() {
   DCHECK(!event_handle_for_vpn_);
-  DCHECK(!IsDNSFiltersActive());
+  DCHECK(!IsActive());
 
   event_handle_for_vpn_ = CreateEvent(NULL, false, false, NULL);
   SubscribeForRasNotifications(event_handle_for_vpn_);

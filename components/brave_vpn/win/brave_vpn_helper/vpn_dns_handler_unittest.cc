@@ -71,7 +71,7 @@ TEST_F(VpnDnsHandlerTest, Disconnected) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::DISCONNECTED);
   handler.StartMonitoring();
@@ -83,19 +83,19 @@ TEST_F(VpnDnsHandlerTest, ConnectingFailed) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::CONNECTING);
   handler.StartMonitoring();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::DISCONNECTED);
 
   // Repeating interval to check the connection is live.
   // kCheckConnectionIntervalInSeconds
   FastForwardBy(base::Seconds(3));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   // Disconnected status should stop service.
   EXPECT_TRUE(callback_called);
 }
@@ -104,7 +104,7 @@ TEST_F(VpnDnsHandlerTest, ConnectingSuccessFailedToSetFilters) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::CONNECTING);
   handler.StartMonitoring();
@@ -116,7 +116,7 @@ TEST_F(VpnDnsHandlerTest, ConnectingSuccessFailedToSetFilters) {
   // Repeating interval to check the connection is live.
   // kCheckConnectionIntervalInSeconds
   FastForwardBy(base::Seconds(3));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   // Failed to set filters, stop service
   EXPECT_TRUE(callback_called);
 }
@@ -125,7 +125,7 @@ TEST_F(VpnDnsHandlerTest, ConnectingSuccessFiltersInstalled) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::CONNECTING);
   handler.StartMonitoring();
@@ -137,7 +137,7 @@ TEST_F(VpnDnsHandlerTest, ConnectingSuccessFiltersInstalled) {
   // Repeating interval to check the connection is live.
   // kCheckConnectionIntervalInSeconds
   FastForwardBy(base::Seconds(3));
-  EXPECT_TRUE(handler.IsDNSFiltersActive());
+  EXPECT_TRUE(handler.IsActive());
   // Waiting for signals from RAS.
   EXPECT_FALSE(callback_called);
   EXPECT_TRUE(handler.Subscribed());
@@ -148,13 +148,13 @@ TEST_F(VpnDnsHandlerTest, ConnectingSuccessFiltersInstalled) {
   handler.OnObjectSignaled(nullptr);
   base::RunLoop().RunUntilIdle();
   // Ignore notification and keep same state.
-  EXPECT_TRUE(handler.IsDNSFiltersActive());
+  EXPECT_TRUE(handler.IsActive());
   EXPECT_FALSE(callback_called);
   EXPECT_TRUE(handler.Subscribed());
 
   // BraveVpn changed state.
   handler.FireRasNotification(handler.GetEventHandle());
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   // Vpn disconnected and service stoped.
   EXPECT_TRUE(callback_called);
 }
@@ -163,14 +163,14 @@ TEST_F(VpnDnsHandlerTest, Connected) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   // Disconnected.
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::CONNECTED);
   handler.StartMonitoring();
   base::RunLoop().RunUntilIdle();
   // Set filters immediately as vpn is connected.
-  EXPECT_TRUE(handler.IsDNSFiltersActive());
+  EXPECT_TRUE(handler.IsActive());
   EXPECT_FALSE(callback_called);
   EXPECT_TRUE(handler.Subscribed());
 
@@ -180,7 +180,7 @@ TEST_F(VpnDnsHandlerTest, Connected) {
   // BraveVpn changed state.
   handler.FireRasNotification(handler.GetEventHandle());
   // Vpn disconnected and service stoped.
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   EXPECT_TRUE(callback_called);
 }
 
@@ -188,13 +188,13 @@ TEST_F(VpnDnsHandlerTest, CheckConnectedState) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   // Connected.
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::CONNECTED);
   handler.CheckConnectionStatus();
   // Set filters immediately as vpn is connected.
-  EXPECT_TRUE(handler.IsDNSFiltersActive());
+  EXPECT_TRUE(handler.IsActive());
   EXPECT_FALSE(callback_called);
 }
 
@@ -202,13 +202,13 @@ TEST_F(VpnDnsHandlerTest, CheckConnectingState) {
   bool callback_called = false;
   MockVpnDnsHandler handler(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   // Connecting.
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::CONNECTING);
   handler.CheckConnectionStatus();
   // Do nothing and wait until connected event.
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   EXPECT_FALSE(callback_called);
 }
 
@@ -218,14 +218,14 @@ TEST_F(VpnDnsHandlerTest, CheckDisconnectedState) {
       base::BindLambdaForTesting([&]() { callback_called = true; }));
   handler.SetPlatformFiltersResultForTesting(true);
   handler.SetFilters(std::wstring());
-  EXPECT_TRUE(handler.IsDNSFiltersActive());
+  EXPECT_TRUE(handler.IsActive());
   // Disconnected.
   handler.SetConnectionResultForTesting(
       internal::CheckConnectionResult::DISCONNECTED);
   handler.CheckConnectionStatus();
   base::RunLoop().RunUntilIdle();
   // Remove filters
-  EXPECT_FALSE(handler.IsDNSFiltersActive());
+  EXPECT_FALSE(handler.IsActive());
   EXPECT_TRUE(callback_called);
 }
 
