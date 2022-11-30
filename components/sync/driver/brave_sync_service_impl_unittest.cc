@@ -303,8 +303,7 @@ TEST_F(BraveSyncServiceImplTest, OnSelfDeviceInfoDeleted) {
   NiceMock<DataTypeManagerMock> data_type_manager_mock;
   std::unique_ptr<DataTypeManager> data_type_manager_mock_ptr =
       std::unique_ptr<DataTypeManager>(&data_type_manager_mock);
-  std::unique_ptr<DataTypeManager> data_type_manager_original =
-      std::move(brave_sync_service_impl()->data_type_manager_);
+
   brave_sync_service_impl()->data_type_manager_ =
       std::move(data_type_manager_mock_ptr);
 
@@ -324,10 +323,9 @@ TEST_F(BraveSyncServiceImplTest, OnSelfDeviceInfoDeleted) {
 
   brave_sync_service_impl()->RemoveObserver(&observer_mock);
 
-  // Revert DataTypeManager to its original pointer
+  // brave_sync_service_impl()->data_type_manager_ is owned by local var
+  // |data_type_manager_mock|, so release ownership for the correct destruction
   brave_sync_service_impl()->data_type_manager_.release();
-  brave_sync_service_impl()->data_type_manager_ =
-      std::move(data_type_manager_original);
 
   OSCryptMocker::TearDown();
 }
