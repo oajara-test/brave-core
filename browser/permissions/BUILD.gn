@@ -21,7 +21,6 @@ if (!is_android) {
       "//brave/components/brave_wallet/browser",
       "//brave/components/brave_wallet/browser:permission_utils",
       "//brave/components/brave_wallet/common",
-      "//brave/components/google_sign_in_permission/common:common",
       "//chrome/browser",
       "//chrome/browser/ui",
       "//chrome/test:test_support",

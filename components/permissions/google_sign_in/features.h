@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef BRAVE_COMPONENTS_GOOGLE_SIGN_IN_PERMISSION_COMMON_FEATURES_H_
-#define BRAVE_COMPONENTS_GOOGLE_SIGN_IN_PERMISSION_COMMON_FEATURES_H_
+#ifndef BRAVE_COMPONENTS_PERMISSIONS_GOOGLE_SIGN_IN_FEATURES_H_
+#define BRAVE_COMPONENTS_PERMISSIONS_GOOGLE_SIGN_IN_FEATURES_H_
 
 #include "base/feature_list.h"
 
@@ -14,4 +14,4 @@ BASE_DECLARE_FEATURE(kBraveGoogleSignInPermission);
 
 }  // namespace permissions::features
 
-#endif  // BRAVE_COMPONENTS_GOOGLE_SIGN_IN_PERMISSION_COMMON_FEATURES_H_
+#endif  // BRAVE_COMPONENTS_PERMISSIONS_GOOGLE_SIGN_IN_FEATURES_H_

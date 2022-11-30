@@ -21,7 +21,7 @@
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/content_settings/core/browser/brave_content_settings_utils.h"
 #include "brave/components/content_settings/core/common/content_settings_util.h"
-#include "brave/components/google_sign_in_permission/browser/google_sign_in_permission_util.h"
+#include "brave/components/permissions/google_sign_in/google_sign_in_permission_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"

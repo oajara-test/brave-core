@@ -8,7 +8,7 @@
 #include "brave/components/brave_shields/common/brave_shield_constants.h"
 #include "brave/components/constants/brave_paths.h"
 #include "brave/components/constants/pref_names.h"
-#include "brave/components/google_sign_in_permission/common/features.h"
+#include "brave/components/permissions/google_sign_in/features.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

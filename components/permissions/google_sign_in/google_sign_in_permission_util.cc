@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include "brave/components/google_sign_in_permission/browser/google_sign_in_permission_util.h"
+#include "brave/components/permissions/google_sign_in/google_sign_in_permission_util.h"
 
 #include <utility>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "brave/components/constants/pref_names.h"
-#include "brave/components/google_sign_in_permission/common/features.h"
+#include "brave/components/permissions/google_sign_in/features.h"
 #include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
