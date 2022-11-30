@@ -753,10 +753,11 @@ BraveContentBrowserClient::CreateURLLoaderThrottles(
     const bool isMainFrame =
         request.resource_type ==
         static_cast<int>(blink::mojom::ResourceType::kMainFrame);
-    // Speedreader
-#if BUILDFLAG(ENABLE_SPEEDREADER)
     auto* settings_map = HostContentSettingsMapFactory::GetForProfile(
         Profile::FromBrowserContext(browser_context));
+
+    // Speedreader
+#if BUILDFLAG(ENABLE_SPEEDREADER)
 
     auto* tab_helper =
         speedreader::SpeedreaderTabHelper::FromWebContents(contents);

@@ -32,11 +32,12 @@ constexpr auto& kMicIconValue = vector_icons::kMicIcon;
 //
 // TODO(jocelyn): Might need to update icon when we have ethereum.enable UI
 // support in Android.
-#define IDR_ANDROID_INFOBAR_PERMISSION_COOKIE \
-  kAndroidInfobarPermissionCookie;            \
-  case RequestType::kWidevine:                \
-  case RequestType::kBraveEthereum:           \
-  case RequestType::kBraveSolana:             \
+#define IDR_ANDROID_INFOBAR_PERMISSION_COOKIE     \
+  kAndroidInfobarPermissionCookie;                \
+  case RequestType::kWidevine:                    \
+  case RequestType::kBraveEthereum:               \
+  case RequestType::kBraveSolana:                 \
+  case RequestType::kBraveGoogleSignInPermission: \
     return IDR_ANDROID_INFOBAR_PERMISSION_COOKIE
 
 // Add Brave cases into GetIconIdDesktop.
