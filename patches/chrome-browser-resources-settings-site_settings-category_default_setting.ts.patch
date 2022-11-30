@@ -14,8 +14,7 @@ index 397fc0ebfb0291dddf3c97d9ea36e97200ee3947..11d999e4addf380a95aa203c390e45c0
        case ContentSettingsTypes.USB_DEVICES:
        case ContentSettingsTypes.VR:
        case ContentSettingsTypes.WINDOW_MANAGEMENT:
-+      case ContentSettingsTypes.GOOGLE_SIGN_IN:
-+      case ContentSettingsTypes.ETHEREUM: case ContentSettingsTypes.SOLANA:
++      case ContentSettingsTypes.ETHEREUM: case ContentSettingsTypes.SOLANA: case ContentSettingsTypes.GOOGLE_SIGN_IN:
          // "Ask" vs "Blocked".
          this.browserProxy.setDefaultValueForContentType(
              this.category,
