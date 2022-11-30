@@ -71,18 +71,18 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
       },
 
       /** @private */
-      hasSyncWordsDecryptionError_ : {
+      hasLockedSafeStorage_ : {
         type: Boolean,
         value: false,
-        computed: 'computeHasSyncWordsDecryptionError_(' +
+        computed: 'computeLockedSafeStorage_(' +
           'syncStatus.hasSyncWordsDecryptionError)',
       },
 
       /** @private */
-      hasSyncWordsDecryptionErrorUnlockedSs_ : {
+      hasUnlockedSafeStorageCannotDecryptSeed_ : {
         type: Boolean,
         value: false,
-        computed: 'computeHasSyncWordsDecryptionErrorUnlockedSs_(' +
+        computed: 'computeUnlockedSafeStorageCannotDecryptSeed_(' +
             'syncStatus.hasSyncWordsDecryptionError)',
       },
 
@@ -197,7 +197,7 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
   * @return {boolean}
   * @private
   */
-  computeHasSyncWordsDecryptionError_() {
+  computeLockedSafeStorage_() {
     return this.syncStatus != undefined && !!this.syncStatus.hasSyncWordsDecryptionError
       && !this.syncStatus.isOsEncryptionAvailable
   }
@@ -206,7 +206,7 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
   * @return {boolean}
   * @private
   */
-  computeHasSyncWordsDecryptionErrorUnlockedSs_() {
+  computeUnlockedSafeStorageCannotDecryptSeed_() {
     return this.syncStatus != undefined &&
       !!this.syncStatus.hasSyncWordsDecryptionError &&
       !!this.syncStatus.isOsEncryptionAvailable
