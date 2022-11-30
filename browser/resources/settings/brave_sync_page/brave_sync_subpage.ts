@@ -310,7 +310,7 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
       return
     }
     this.pageStatus_ = 'spinner'
-    await this.braveSyncBrowserProxy_.stopSyncClearData();
+    await this.braveSyncBrowserProxy_.resetSyncChain();
      window.setTimeout(() => {
        let element_sync_code_button = this.shadowRoot
           .querySelector("#sync-section > settings-brave-sync-setup")
