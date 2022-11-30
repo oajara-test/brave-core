@@ -4,7 +4,22 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <shlobj.h>
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/logging.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
+#include "base/version.h"
+#include "brave/components/brave_vpn/buildflags/buildflags.h"
 #include "build/buildflag.h"
+#include "chrome/install_static/install_util.h"
+#include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/callback_work_item.h"
+#include "chrome/installer/util/install_service_work_item.h"
+#include "chrome/installer/util/work_item_list.h"
 
 #if defined(OFFICIAL_BUILD)
 #include "chrome/install_static/buildflags.h"
@@ -14,20 +29,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
-#include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/process/launch.h"
-#include "base/process/process.h"
-#include "brave/components/brave_vpn/buildflags/buildflags.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
-#include "chrome/install_static/install_util.h"
-#include "chrome/installer/setup/setup_util.h"
-#include "chrome/installer/util/callback_work_item.h"
-#include "chrome/installer/util/install_service_work_item.h"
-#include "chrome/installer/util/work_item_list.h"
 
 namespace {
 
@@ -60,7 +62,7 @@ void AddBraveVPNServiceWorkItems(const base::FilePath& vpn_service_path,
   DCHECK(::IsUserAnAdmin());
 
   if (vpn_service_path.empty()) {
-    LOG(DFATAL) << "The path to brave_vpn_helper.exe is invalid.";
+    LOG(ERROR) << "The path to brave_vpn_helper.exe is invalid.";
     return;
   }
   WorkItem* install_service_work_item = new installer::InstallServiceWorkItem(

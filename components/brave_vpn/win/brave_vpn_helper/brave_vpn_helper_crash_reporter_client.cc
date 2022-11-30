@@ -22,10 +22,6 @@
 #include "components/crash/core/app/crashpad.h"
 #include "components/version_info/channel.h"
 
-namespace {
-constexpr char kBraveVPNHelperProcessType[] = "brave-vpn-helper";
-}  // namespace
-
 BraveVPNHelperCrashReporterClient::BraveVPNHelperCrashReporterClient() =
     default;
 
@@ -52,7 +48,7 @@ void BraveVPNHelperCrashReporterClient::InitializeCrashReportingForProcess(
   install_static::GetUserDataDirectory(&user_data_dir, nullptr);
 
   crash_reporter::InitializeCrashpadWithEmbeddedHandler(
-      true, kBraveVPNHelperProcessType,
+      true, brave_vpn::kBraveVPNHelperProcessType,
       install_static::WideToUTF8(user_data_dir), base::FilePath());
 }
 

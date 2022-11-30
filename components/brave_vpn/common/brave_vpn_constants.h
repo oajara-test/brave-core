@@ -22,6 +22,8 @@ enum class CheckConnectionResult {
 }
 #endif
 
+constexpr char kBraveVPNHelperProcessType[] = "brave-vpn-helper";
+
 const wchar_t kBraveVPNHelperExecutable[] = L"brave_vpn_helper.exe";
 const wchar_t kBraveVpnServiceName[] = L"BraveVPNService";
 
