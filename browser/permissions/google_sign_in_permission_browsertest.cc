@@ -39,6 +39,10 @@ const char kEmbeddingPageUrl[] = "/google_sign_in_link.html";
 const char kTestDomain[] = "a.com";
 const char kThirdPartyTestDomain[] = "b.com";
 
+// Used to identify the buttons on the test page
+const char kAuthButtonHtmlId[] = "auth-button";
+const char kReloadButtonHtmlId[] = "reload-button";
+
 }  // namespace
 
 class GoogleSignInBrowserTest : public InProcessBrowserTest {
@@ -168,20 +172,20 @@ class GoogleSignInBrowserTest : public InProcessBrowserTest {
                                                  value);
   }
 
-  void ClickGoogleSignInButton() {
-    std::string click_script =
+  void ClickButtonWithId(const std::string& id) {
+    std::string click_script = base::StringPrintf(
         R"(
         new Promise(async (resolve, reject) => {
             try {
-              const button = document.getElementById("auth-button");
+              const button = document.getElementById('%s');
               button.click();
-              console.log(button)
               resolve(true);
             } catch(error) {
               reject(error);
             }
           })
-      )";
+      )",
+        id.c_str());
 
     ASSERT_EQ(true, EvalJs(contents(), click_script));
   }
@@ -230,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, PermissionAllow) {
       permissions::PermissionRequestManager::ACCEPT_ALL);
 
   // Have website issue request for Google auth URL
-  ClickGoogleSignInButton();
+  ClickButtonWithId(kAuthButtonHtmlId);
   prompt_factory()->WaitForPermissionBubble();
   // Make sure prompt came up
   EXPECT_EQ(1, prompt_factory()->show_count());
@@ -280,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, PermissionDeny) {
       permissions::PermissionRequestManager::DENY_ALL);
 
   // Have website issue request for Google auth URL
-  ClickGoogleSignInButton();
+  ClickButtonWithId(kAuthButtonHtmlId);
   prompt_factory()->WaitForPermissionBubble();
   // Make sure prompt comes up
   EXPECT_EQ(1, prompt_factory()->show_count());
@@ -307,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, PermissionDeny) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), embedding_url_));
   content::TestNavigationObserver error_observer(contents());
 
-  ClickGoogleSignInButton();
+  ClickButtonWithId(kAuthButtonHtmlId);
   WaitForLoadStopWithoutSuccessCheck(contents());
   error_observer.Wait();
   // Navigation blocked
@@ -342,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, PermissionDismiss) {
       permissions::PermissionRequestManager::DISMISS);
 
   // Have website issue request for Google auth URL
-  ClickGoogleSignInButton();
+  ClickButtonWithId(kAuthButtonHtmlId);
   prompt_factory()->WaitForPermissionBubble();
 
   // Confirm that content settings did not change
@@ -371,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, PrefTurnedOff) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), embedding_url_));
   content::TestNavigationObserver error_observer(contents());
 
-  ClickGoogleSignInButton();
+  ClickButtonWithId(kAuthButtonHtmlId);
   WaitForLoadStopWithoutSuccessCheck(contents());
   error_observer.Wait();
   // Navigation blocked
@@ -385,6 +389,32 @@ IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, PrefTurnedOff) {
 
   // No prompt shown
   EXPECT_EQ(0, prompt_factory()->show_count());
+}
+
+IN_PROC_BROWSER_TEST_F(GoogleSignInBrowserTest, JSReloadOnBlockedPage) {
+  SetGoogleSignInPref(true);
+  EXPECT_EQ(0, prompt_factory()->show_count());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), embedding_url_));
+  content::TestNavigationObserver error_observer(contents());
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::DENY_ALL);
+
+  ClickButtonWithId(kAuthButtonHtmlId);
+  WaitForLoadStopWithoutSuccessCheck(contents());
+  error_observer.Wait();
+  // Navigation blocked
+  EXPECT_EQ(false, error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+
+  // Click reload button on blocked page
+  ClickButtonWithId(kReloadButtonHtmlId);
+  WaitForLoadStopWithoutSuccessCheck(contents());
+  error_observer.Wait();
+
+  // Navigation is still blocked
+  EXPECT_EQ(false, error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
 }
 
 class GoogleSignInFlagDisabledTest : public GoogleSignInBrowserTest {
