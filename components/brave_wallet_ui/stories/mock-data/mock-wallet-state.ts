@@ -17,7 +17,7 @@ import { mockMoonCatNFT } from './mock-asset-options'
 
 // mocks
 import { mockNetwork } from '../../common/constants/mocks'
-import { mockedErc20ApprovalTransaction } from './mock-transaction-info'
+import { mockedErc20ApprovalTransaction, mockTransactionInfo } from './mock-transaction-info'
 
 const mockAccount: WalletAccountType = {
   accountType: 'Primary',
@@ -293,7 +293,9 @@ export const mockWalletState: WalletState = {
   selectedNetwork: mockNetworkList[0],
   selectedPendingTransaction: mockedErc20ApprovalTransaction,
   selectedPortfolioTimeline: BraveWallet.AssetPriceTimeframe.OneDay,
-  transactions: {},
+  transactions: {
+    [mockAccount.address]: [mockTransactionInfo]
+  },
   transactionSpotPrices: [
     {
       assetTimeframeChange: '',

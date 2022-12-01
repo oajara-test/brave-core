@@ -4,7 +4,10 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import {
+  // useDispatch,
+  useSelector
+} from 'react-redux'
 import { useHistory } from 'react-router'
 import * as EthereumBlockies from 'ethereum-blockies'
 
@@ -12,24 +15,19 @@ import {
   BraveWallet,
   WalletAccountType,
   WalletState,
-  WalletRoutes,
-  SerializableTransactionInfo
+  WalletRoutes
 } from '../../../constants/types'
-import { SwapExchangeProxy } from '../../../common/constants/registry'
 
 // Utils
 import { toProperCase } from '../../../utils/string-utils'
 import { formatDateAsRelative, serializedTimeDeltaToJSDate } from '../../../utils/datetime-utils'
 import Amount from '../../../utils/amount'
 import { copyToClipboard } from '../../../utils/copy-to-clipboard'
-import { getCoinFromTxDataUnion } from '../../../utils/network-utils'
 import { getLocale } from '../../../../common/locale'
-import { isSolanaTransaction } from '../../../utils/tx-utils'
-import { WalletActions } from '../../../common/actions'
+// import { WalletActions } from '../../../common/actions'
 
 // Hooks
-import { useExplorer, useTransactionParser } from '../../../common/hooks'
-import { useTransactionsNetwork } from '../../../common/hooks/use-transactions-network'
+import { useExplorer } from '../../../common/hooks'
 
 // Styled Components
 import {
@@ -60,9 +58,12 @@ import { StatusBubble } from '../../shared/style'
 import TransactionFeesTooltip from '../transaction-fees-tooltip'
 import TransactionPopup, { TransactionPopupItem } from '../transaction-popup'
 import TransactionTimestampTooltip from '../transaction-timestamp-tooltip'
+import { ParsedTransactionWithoutFiatValues } from '../../../common/hooks/transaction-parser'
+import { useGetAllNetworksQuery } from '../../../common/slices/api.slice'
+import { networkEntityInitalState } from '../../../common/slices/entities/network.entity'
 
 export interface Props {
-  transaction: SerializableTransactionInfo
+  transaction: ParsedTransactionWithoutFiatValues
   account: WalletAccountType | undefined
   accounts: WalletAccountType[]
   displayAccountName: boolean
@@ -93,43 +94,54 @@ export const PortfolioTransactionItem = React.forwardRef<HTMLDivElement, Props>(
   const history = useHistory()
 
   // redux
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
+
   const {
-    defaultCurrencies,
     userVisibleTokensInfo
   } = useSelector(({ wallet }: { wallet: WalletState }) => wallet)
+  // const defaultCurrencies = useUnsafeWalletSelector(WalletSelectors.defaultCurrencies)
+
+  // queries
+  const { data: networksRegistry = networkEntityInitalState } = useGetAllNetworksQuery()
+  // const networks = getEntitiesListFromEntityState(networksRegistry)
 
   // state
   const [showTransactionPopup, setShowTransactionPopup] = React.useState<boolean>(false)
 
-  const isSolanaTxn = isSolanaTransaction(transaction)
-  const isFilecoinTransaction = getCoinFromTxDataUnion(transaction.txDataUnion) === BraveWallet.CoinType.FIL
+  const isSolanaTxn = transaction.isSolanaTransaction
+  const isFilecoinTransaction = transaction.isFilecoinTransaction
 
   // custom hooks
-  const transactionsNetwork = useTransactionsNetwork(transaction)
+  const transactionsNetwork = networksRegistry.entities[transaction.chainId]
+
   const onClickViewOnBlockExplorer = useExplorer(transactionsNetwork)
-  const parseTransaction = useTransactionParser(transactionsNetwork)
 
   // methods
   const onShowTransactionPopup = () => setShowTransactionPopup(true)
 
   const onClickCopyTransactionHash = React.useCallback(
-    () => copyToClipboard(transaction.txHash),
-    [transaction.txHash]
+    () => copyToClipboard(transaction.hash),
+    [transaction.hash]
   )
 
   const onClickRetryTransaction = React.useCallback(
-    () => dispatch(WalletActions.retryTransaction(transaction)),
+    () => {
+      // dispatch(WalletActions.retryTransaction(transaction))
+    },
     [transaction]
   )
 
   const onClickSpeedupTransaction = React.useCallback(
-    () => dispatch(WalletActions.speedupTransaction(transaction)),
+    () => {
+      // dispatch(WalletActions.speedupTransaction(transaction))
+    },
     [transaction]
   )
 
   const onClickCancelTransaction = React.useCallback(
-    () => dispatch(WalletActions.cancelTransaction(transaction)),
+    () => {
+      // dispatch(WalletActions.cancelTransaction(transaction))
+    },
     [transaction]
   )
 
@@ -186,10 +198,7 @@ export const PortfolioTransactionItem = React.forwardRef<HTMLDivElement, Props>(
   }, [onSelectAsset, findToken])
 
   // memos
-  const transactionDetails = React.useMemo(
-    () => parseTransaction(transaction),
-    [transaction, parseTransaction]
-  )
+  const transactionDetails = transaction
 
   const fromOrb = React.useMemo(() => {
     return EthereumBlockies.create({ seed: transactionDetails.sender.toLowerCase(), size: 8, scale: 16 }).toDataURL()
@@ -302,7 +311,7 @@ export const PortfolioTransactionItem = React.forwardRef<HTMLDivElement, Props>(
       }
 
       // Detect sending to 0x Exchange Proxy
-      case transaction.txDataUnion.ethTxData1559?.baseData.to.toLowerCase() === SwapExchangeProxy: {
+      case transaction.isSendingToZeroXExchangeProxy: {
         const text = getLocale('braveWalletSwap')
         return displayAccountName ? text.toLowerCase() : text
       }
@@ -396,9 +405,9 @@ export const PortfolioTransactionItem = React.forwardRef<HTMLDivElement, Props>(
           <BalanceColumn>
             <DetailTextDark>
               {/* We need to return a Transaction Time Stamp to calculate Fiat value here */}
-              {transactionDetails.fiatValue.formatAsFiat(defaultCurrencies.fiat)}
+              {/* {transactionDetails.fiatValue.formatAsFiat(defaultCurrencies.fiat)} */}
             </DetailTextDark>
-            <DetailTextLight>{transactionDetails.formattedNativeCurrencyTotal}</DetailTextLight>
+            {/* <DetailTextLight>{transactionDetails.formattedNativeCurrencyTotal}</DetailTextLight> */}
           </BalanceColumn>
 
           {/* Will remove this conditional for solana once https://github.com/brave/brave-browser/issues/22040 is implemented. */}
@@ -414,10 +423,10 @@ export const PortfolioTransactionItem = React.forwardRef<HTMLDivElement, Props>(
                     }
                   </TransactionFeeTooltipBody>
                   <TransactionFeeTooltipBody>
-                    {
+                    {/* {
                       new Amount(transactionDetails.gasFeeFiat)
                         .formatAsFiat(defaultCurrencies.fiat)
-                    }
+                    } */}
                   </TransactionFeeTooltipBody>
                 </>
               }
@@ -440,7 +449,7 @@ export const PortfolioTransactionItem = React.forwardRef<HTMLDivElement, Props>(
               {[BraveWallet.TransactionStatus.Approved, BraveWallet.TransactionStatus.Submitted, BraveWallet.TransactionStatus.Confirmed, BraveWallet.TransactionStatus.Dropped].includes(transactionDetails.status) &&
                 <>
                   <TransactionPopupItem
-                    onClick={onClickViewOnBlockExplorer('tx', transaction.txHash)}
+                    onClick={onClickViewOnBlockExplorer('tx', transaction.hash)}
                     text={getLocale('braveWalletTransactionExplorer')}
                   />
                   <TransactionPopupItem
