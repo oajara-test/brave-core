@@ -104,12 +104,18 @@ void BraveSyncServiceImpl::OnSelfDeviceInfoDeleted(base::OnceClosure cb) {
   // This function will follow normal reset process and set SyncRequested to
   // false
 
-  // We need this to avoid |StopAndClear| call below when re-joining sync
+  // We need this to avoid |StopAndClear| call below when initiating sync
   // chain after clear data when the sync passphrase wasn't decrypted.
   // Otherwise we have these calls:
+  // ---
   // BraveSyncServiceImplDelegate::OnDeviceInfoChange()
+  // ...
   // ClientTagBasedModelTypeProcessor::ClearAllMetadataAndResetStateImpl()
+  // ...
   // ClientTagBasedModelTypeProcessor::OnSyncStarting()
+  // ---
+  // Note that `ClearAllTrackedMetadataAndResetState` will only be called during
+  // init when sync seed decryption key mismatched.
   if (GetTransportState() != TransportState::CONFIGURING) {
     StopAndClear();
   }
