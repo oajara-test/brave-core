@@ -62,15 +62,9 @@ bool BraveSyncServiceImpl::IsSetupInProgress() const {
 }
 
 void BraveSyncServiceImpl::StopAndClear() {
-  // Suspend/resume actually does the code flow shorter, avoiding double nested
-  // call of StopAndClear
-  SuspendDeviceObserverForOwnReset();
-
   // Clear prefs before StopAndClear() to make NotifyObservers() be invoked
   brave_sync_prefs_.Clear();
   SyncServiceImpl::StopAndClear();
-
-  ResumeDeviceObserver();
 }
 
 std::string BraveSyncServiceImpl::GetOrCreateSyncCode() {
