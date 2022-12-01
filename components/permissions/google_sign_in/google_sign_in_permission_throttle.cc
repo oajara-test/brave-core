@@ -139,8 +139,12 @@ void GoogleSignInPermissionThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
   const auto& request_url = request->url;
-  const auto& request_initiator_url =
+  auto request_initiator_url =
       request->request_initiator.value_or(url::Origin()).GetURL();
+  if (!request_initiator_url.is_valid()) {
+    // Try to get the embedding URL from the Referrer
+    request_initiator_url = request->referrer;
+  }
 
   HandleRequest(defer, request_url, request_initiator_url, wc_getter_,
                 settings_map_, delegate_);
