@@ -4,6 +4,7 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "chrome/browser/net/stub_resolver_config_reader.h"
+#include "base/feature_list.h"
 #include "brave/components/brave_vpn/buildflags/buildflags.h"
 #include "build/buildflag.h"
 #include "chrome/browser/net/secure_dns_config.h"
@@ -14,6 +15,10 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+#if BUILDFLAG(ENABLE_BRAVE_VPN)
+#include "brave/components/brave_vpn/features.h"
+#endif
+
 #if BUILDFLAG(IS_WIN)
 namespace {
 
@@ -21,6 +26,11 @@ bool ShouldOverride(net::SecureDnsMode secure_dns_mode,
                     PrefService* local_state,
                     SecureDnsConfig::ManagementMode management_mode,
                     bool is_managed) {
+#if BUILDFLAG(ENABLE_BRAVE_VPN)
+  if (!base::FeatureList::IsEnabled(
+          brave_vpn::features::kBraveVPNDnsProtection)) {
+    return false;
+  }
   if (secure_dns_mode == net::SecureDnsMode::kSecure)
     return false;
   if (management_mode != SecureDnsConfig::ManagementMode::kNoOverride ||
@@ -36,6 +46,9 @@ bool ShouldOverride(net::SecureDnsMode secure_dns_mode,
     return false;
   auto* servers_to_override = value->GetIfString();
   return servers_to_override && !servers_to_override->empty();
+#else   // BUILDFLAG(ENABLE_BRAVE_VPN)
+  return false;
+#endif  // BUILDFLAG(ENABLE_BRAVE_VPN)
 }
 
 bool MaybeOverrideDnsClientEnabled(
