@@ -53,7 +53,7 @@ export class SettingsBraveSyncPageElement extends SettingsBraveSyncPageElementBa
       },
       syncLabel_: {
         type: String,
-        computed: 'computeSyncLabel_(syncStatus_.firstSetupInProgress)'
+        computed: 'computeSyncLabel_(syncStatus_)'
       },
     };
   }
