@@ -99,6 +99,9 @@ provideStrings({
   braveWalletDecimalPlacesError: 'Too many decimal places',
   braveWalletBuyTapBuyNotSupportedMessage: 'Buy not supported for selected network',
   braveWalletSearchingForDomain: 'Searching for domain...',
+  braveWalletEnsOffChainLookupTitle: 'We will use offchain gateways to resolve your .eth domain.',
+  braveWalletEnsOffChainLookupDescription: 'Brave supports ENS domain lookup to prevent .eth domain from being leaked or going different resolver. Your transaction will be protected with an amazing protection!',
+  braveWalletEnsOffChainButton: 'Use ENS domain',
 
   // Send Tab
   braveWalletSendToken: 'Send token',

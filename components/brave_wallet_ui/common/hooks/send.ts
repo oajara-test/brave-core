@@ -106,11 +106,16 @@ export default function useSend (isSendTab?: boolean) {
   }
 
   const handleDomainLookupResponse = React.useCallback((address: string, error: BraveWallet.ProviderError, requireOffchainConsent: boolean) => {
+    if (requireOffchainConsent) {
+      setAddressError('')
+      setAddressWarning('')
+      setShowEnsOffchainLookupOptions(true)
+      return
+    }
     if (address && error === BraveWallet.ProviderError.kSuccess) {
       setAddressError('')
       setAddressWarning('')
       setToAddress(address)
-      setShowEnsOffchainLookupOptions(requireOffchainConsent)
       // If found UD address is the same as the selectedAccounts Wallet Address
       if (address.toLowerCase() === selectedAccount?.address?.toLowerCase()) {
         setAddressError(getLocale('braveWalletSameAddressError'))
@@ -473,6 +478,7 @@ export default function useSend (isSendTab?: boolean) {
     sendAmountValidationError,
     showEnsOffchainLookupOptions,
     ensOffchainLookupOptions,
+    setShowEnsOffchainLookupOptions,
     setEnsOffchainLookupOptions,
     searchingForDomain
   }
