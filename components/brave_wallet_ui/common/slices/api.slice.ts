@@ -19,7 +19,7 @@ import {
   SetUserAssetVisiblePayloadType
 } from '../constants/action_types'
 
-// entity adaptors
+// entities
 import {
   networkEntityAdapter,
   networkEntityInitalState,
@@ -28,26 +28,44 @@ import {
 import {
   AccountInfoEntityState,
   accountInfoEntityAdaptor,
-  accountInfoEntityAdaptorInitialState
+  accountInfoEntityAdaptorInitialState,
+  AccountInfoEntity
 } from './entities/account-info.entity'
 import {
   blockchainTokenEntityAdaptor,
   blockchainTokenEntityAdaptorInitialState,
   BlockchainTokenEntityAdaptorState
 } from './entities/blockchain-token.entity'
+import { AccountTokenBalanceForChainId } from './entities/token-balance.entity'
 
 // utils
 import { cacher } from '../../utils/query-cache-utils'
 import getAPIProxy from '../async/bridge'
 import WalletApiProxy from '../wallet_api_proxy'
-import { addLogoToToken, getAssetIdKey, GetBlockchainTokenIdArg } from '../../utils/asset-utils'
+import {
+  addLogoToToken,
+  getAssetIdKey,
+  GetBlockchainTokenIdArg,
+  isNativeAsset
+} from '../../utils/asset-utils'
 import { getEntitiesListFromEntityState } from '../../utils/entities.utils'
 import { makeNetworkAsset } from '../../options/asset-options'
 import { getTokenParam } from '../../utils/api-utils'
+import { getAccountType } from '../../utils/account-utils'
+import { getFilecoinKeyringIdFromNetwork, getNetworksByCoinType } from '../../utils/network-utils'
 
 export type AssetPriceById = BraveWallet.AssetPrice & {
   id: EntityId
   fromAssetId: EntityId
+}
+
+const emptyBalance = '0x0'
+
+type getTokenCurrentBalanceArg = {
+  token: GetBlockchainTokenIdArg & {
+    isNft: boolean
+  }
+  account: Pick<AccountInfoEntity, 'address' | 'coin' | 'keyringId'>
 }
 
 export function createWalletApi (
@@ -94,7 +112,15 @@ export function createWalletApi (
           const walletInfo: WalletInfoBase = await dispatch(
             walletApi.endpoints.getWalletInfoBase.initiate()
           ).unwrap()
-          const accountInfos: BraveWallet.AccountInfo[] = walletInfo.accountInfos
+          const accountInfos = walletInfo.accountInfos.map<AccountInfoEntity>(
+            (info) => {
+              return {
+                ...info,
+                accountType: getAccountType(info),
+                deviceId: info.hardware ? info.hardware.deviceId : ''
+              }
+            }
+          )
           return {
             data: accountInfoEntityAdaptor.setAll(
               accountInfoEntityAdaptorInitialState,
@@ -522,6 +548,8 @@ export function createWalletApi (
               getEntitiesListFromEntityState(networksState)
 
             const tokenIdsByChainId: Record<string, string[]> = {}
+            const visibleTokenIds: string[] = []
+            const visibleTokenIdsByChainId: Record<string, string[]> = {}
 
             const userTokenListsForNetworks = await Promise.all(
               networksList.map(async (network) => {
@@ -531,6 +559,16 @@ export function createWalletApi (
                 tokenIdsByChainId[network.chainId] =
                   fullTokensListForNetwork.map(getAssetIdKey)
 
+                const visibleTokensListForNetwork: BraveWallet.BlockchainToken[] =
+                  fullTokensListForNetwork.filter((t) => t.visible)
+
+                visibleTokenIdsByChainId[network.chainId] =
+                  visibleTokensListForNetwork.map(getAssetIdKey)
+
+                visibleTokenIds.push(
+                  ...visibleTokenIdsByChainId[network.chainId]
+                )
+
                 return fullTokensListForNetwork
               })
             )
@@ -539,7 +577,10 @@ export function createWalletApi (
               blockchainTokenEntityAdaptor.setAll(
                 {
                   ...blockchainTokenEntityAdaptorInitialState,
-                  idsByChainId: tokenIdsByChainId
+                  idsByChainId: tokenIdsByChainId,
+                  tokenIdsByChainId,
+                  visibleTokenIds,
+                  visibleTokenIdsByChainId
                 },
                 userTokenListsForNetworks.flat(1)
               )
@@ -693,6 +734,289 @@ export function createWalletApi (
           }
         },
         invalidatesTags: cacher.invalidatesList('UserBlockchainTokens')
+      }),
+      //
+      // Token balances
+      //
+      getTokenCurrentBalance: query<
+        AccountTokenBalanceForChainId,
+        getTokenCurrentBalanceArg
+      >({
+        async queryFn (
+          { account, token },
+          { dispatch },
+          extraOptions,
+          baseQuery
+        ) {
+          const { jsonRpcService } = baseQuery(undefined).data // apiProxy
+
+          // get networks
+          const networksRegistry: NetworkEntityState = await dispatch(
+            walletApi.endpoints.getAllNetworks.initiate()
+          ).unwrap()
+          const networksList = getEntitiesListFromEntityState(networksRegistry)
+
+          // coin networks
+          const coinTypeNetworks = getNetworksByCoinType(
+            networksList,
+            account.coin
+          )
+
+          // entity lookup ids
+          const accountEntityId: EntityId = account.address
+          const chainId: EntityId = token?.chainId ?? ''
+          const tokenEntityId: EntityId =
+            blockchainTokenEntityAdaptor.selectId(token)
+
+          // check if coin is hosted on any coinType networks
+          const coinNetworksContainsToken = coinTypeNetworks.some(
+            (coinNetwork) => coinNetwork.chainId === token.chainId
+          )
+
+          // create default response
+          const emptyBalanceResult: AccountTokenBalanceForChainId = {
+            accountEntityId,
+            balance: emptyBalance,
+            chainId,
+            tokenEntityId
+          }
+
+          // Native asset balances
+          if (isNativeAsset(token)) {
+            const network: BraveWallet.NetworkInfo | undefined =
+              networksRegistry.entities[token.chainId]
+
+            if (!network) {
+              return { data: emptyBalanceResult }
+            }
+
+            const chainId = network.chainId
+            emptyBalanceResult.chainId = network.chainId
+
+            const nativeAssetDefaultBalanceResult = emptyBalanceResult
+
+            // Get CoinType SOL balances
+            if (network.coin === BraveWallet.CoinType.SOL) {
+              const {
+                balance,
+                error
+              } = await jsonRpcService.getSolanaBalance(
+                account.address,
+                network.chainId
+              )
+
+              if (
+                network?.chainId === BraveWallet.LOCALHOST_CHAIN_ID &&
+                error !== 0
+              ) {
+                return { data: emptyBalanceResult }
+              }
+
+              const accountBalance: AccountTokenBalanceForChainId = {
+                ...nativeAssetDefaultBalanceResult,
+                balance: balance.toString()
+              }
+
+              return {
+                data: accountBalance
+              }
+            }
+
+            // Get CoinType FIL balances
+            if (network.coin === BraveWallet.CoinType.FIL) {
+              if (
+                !coinNetworksContainsToken ||
+                account.keyringId === getFilecoinKeyringIdFromNetwork(network)
+              ) {
+                return {
+                  data: {
+                    ...emptyBalanceResult,
+                    chainId
+                  } as AccountTokenBalanceForChainId
+                }
+              }
+
+              const {
+                balance,
+                error,
+                errorMessage
+              } = await jsonRpcService.getBalance(
+                account.address,
+                account.coin,
+                network.chainId
+              )
+
+              if (error && errorMessage) {
+                return { error: errorMessage }
+              }
+
+              const accountBalance: AccountTokenBalanceForChainId = {
+                accountEntityId,
+                balance,
+                chainId,
+                tokenEntityId
+              }
+
+              return {
+                data: accountBalance
+              }
+            }
+
+            // LOCALHOST will return an error until a local instance is
+            // detected, we now will will return a 0 balance until it's detected.
+            if (
+              chainId === BraveWallet.LOCALHOST_CHAIN_ID &&
+              network.coin !== BraveWallet.CoinType.SOL
+            ) {
+              const {
+                balance,
+                error
+              } = await jsonRpcService.getBalance(
+                account.address,
+                account.coin,
+                network.chainId
+              )
+
+              if (error !== 0) {
+                return {
+                  data: emptyBalanceResult
+                }
+              }
+
+              return {
+                data: {
+                  ...nativeAssetDefaultBalanceResult,
+                  balance
+                }
+              }
+            }
+
+            // Get CoinType ETH balances
+            const {
+              balance,
+              error,
+              errorMessage
+            } = await jsonRpcService.getBalance(
+              account.address,
+              account.coin,
+              network.chainId
+            )
+
+            if (error && errorMessage) {
+              return { error: errorMessage }
+            }
+
+            return {
+              data: {
+                ...nativeAssetDefaultBalanceResult,
+                balance
+              }
+            }
+          }
+
+          // Token balances
+          if (!coinNetworksContainsToken) {
+            return {
+              data: emptyBalanceResult
+            }
+          }
+
+          const tokenDefaultBalanceResult = emptyBalanceResult
+
+          switch (account.coin) {
+            // ETH-type Network tokens
+            case BraveWallet.CoinType.ETH: {
+              const { balance, error, errorMessage } = token.isErc721
+                // ERC721 NFT
+                ? await jsonRpcService.getERC721TokenBalance(
+                    token.contractAddress,
+                    token.tokenId ?? '',
+                    account.address,
+                    chainId
+                  )
+                // ERC20 Token
+                : await jsonRpcService.getERC20TokenBalance(
+                    token.contractAddress,
+                    account.address,
+                    token?.chainId ?? ''
+                  )
+
+              if (error && errorMessage) {
+                return { error: errorMessage }
+              }
+
+              return {
+                data: {
+                  ...tokenDefaultBalanceResult,
+                  balance
+                } as AccountTokenBalanceForChainId
+              }
+            }
+            // Solana-type Network Tokens
+            case BraveWallet.CoinType.SOL: {
+              const { amount, uiAmountString, error, errorMessage } =
+                await jsonRpcService.getSPLTokenAccountBalance(
+                  account.address,
+                  token.contractAddress,
+                  token.chainId
+                )
+
+              if (error && errorMessage) {
+                return { error: errorMessage }
+              }
+
+              const accountTokenBalance: AccountTokenBalanceForChainId = {
+                ...tokenDefaultBalanceResult,
+                balance: token.isNft ? uiAmountString : amount
+              }
+
+              return {
+                data: accountTokenBalance
+              }
+            }
+            // Get CoinType FIL balances
+            case BraveWallet.CoinType.FIL: {
+              const chainId: string = await dispatch(
+                walletApi.endpoints.getChainIdForCoin.initiate(account.coin)
+              ).unwrap()
+
+              // Get network keyring id
+              const filecoinKeyringIdFromNetwork = getFilecoinKeyringIdFromNetwork({
+                chainId,
+                coin: account.coin
+              })
+
+              if (account.keyringId === filecoinKeyringIdFromNetwork) {
+                const { balance, error, errorMessage } =
+                  await jsonRpcService.getBalance(
+                    account.address,
+                    account.coin,
+                    chainId
+                  )
+
+                if (error && errorMessage) {
+                  return { error: errorMessage }
+                }
+
+                return {
+                  data: {
+                    ...tokenDefaultBalanceResult,
+                    balance
+                  } as AccountTokenBalanceForChainId
+                }
+              }
+
+              return {
+                data: emptyBalanceResult
+              }
+            }
+          }
+
+          // Other network type tokens
+          return {
+            data: emptyBalanceResult
+          }
+        }
       })
     })
   })
@@ -712,11 +1036,13 @@ export const {
   useGetAllNetworksQuery,
   useGetChainIdForCoinQuery,
   useGetDefaultAccountAddressesQuery,
+  useGetDefaultFiatCurrencyQuery,
   useGetERC721MetadataQuery,
   useGetIsTestNetworksEnabledQuery,
   useGetSelectedAccountAddressQuery,
   useGetSelectedChainIdQuery,
   useGetSelectedCoinQuery,
+  useGetTokenCurrentBalanceQuery,
   useGetTokenSpotPriceQuery,
   useGetTokensRegistryQuery,
   useGetUserTokensRegistryQuery,
@@ -726,18 +1052,24 @@ export const {
   useLazyGetAllNetworksQuery,
   useLazyGetChainIdForCoinQuery,
   useLazyGetDefaultAccountAddressesQuery,
+  useLazyGetDefaultFiatCurrencyQuery,
   useLazyGetERC721MetadataQuery,
   useLazyGetIsTestNetworksEnabledQuery,
   useLazyGetSelectedAccountAddressQuery,
   useLazyGetSelectedChainIdQuery,
   useLazyGetSelectedCoinQuery,
+  useLazyGetTokenCurrentBalanceQuery,
   useLazyGetTokenSpotPriceQuery,
   useLazyGetTokensRegistryQuery,
   useLazyGetUserTokensRegistryQuery,
   useLazyGetWalletInfoBaseQuery,
   usePrefetch,
+  useRemoveUserTokenMutation,
+  useSetDefaultFiatCurrencyMutation,
   useSetSelectedAccountMutation,
-  useSetSelectedCoinMutation
+  useSetSelectedCoinMutation,
+  useUpdateUserAssetVisibleMutation,
+  useUpdateUserTokenMutation
 } = walletApi
 
 export type WalletApiSliceState = ReturnType<typeof walletApi['reducer']>
@@ -774,3 +1106,22 @@ async function fetchUserAssetsForNetwork (
 
   return tokenList
 }
+// BalancePayload
+// export type GetBalanceResponse =
+//   | BraveWallet.JsonRpcService_GetBalance_ResponseParams
+//   | BraveWallet.JsonRpcService_GetSolanaBalance_ResponseParams
+//   | BraveWallet.JsonRpcService_GetERC20TokenBalance_ResponseParams
+//   | BraveWallet.JsonRpcService_GetERC721TokenBalance_ResponseParams
+//   | BraveWallet.JsonRpcService_GetERC1155TokenBalance_ResponseParams
+//   | BraveWallet.JsonRpcService_GetSPLTokenAccountBalance_ResponseParams
+
+// const isSplBalanceResponse = (
+//   response: GetBalanceResponse &
+//     Partial<BraveWallet.JsonRpcService_GetSPLTokenAccountBalance_ResponseParams>
+// ): response is BraveWallet.JsonRpcService_GetSPLTokenAccountBalance_ResponseParams => {
+//   return (
+//     response?.uiAmountString !== undefined &&
+//     response?.amount !== undefined &&
+//     response?.decimals !== undefined
+//   )
+// }

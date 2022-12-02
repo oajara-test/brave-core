@@ -203,3 +203,7 @@ export const findTokenByContractAddress = (
     token.contractAddress.toLowerCase() === contractAddress.toLowerCase()
   )
 }
+
+export const isNativeAsset = (
+  token: Pick<BraveWallet.BlockchainToken, 'contractAddress'>
+) => token.contractAddress === ''
