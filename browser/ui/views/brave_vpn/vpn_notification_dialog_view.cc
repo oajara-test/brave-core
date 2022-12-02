@@ -36,7 +36,7 @@ constexpr int kDialogWidth = 400;
 
 // static
 void VpnNotificationDialogView::Show(Browser* browser) {
-  auto* prefs = browser->profile()->GetOriginalProfile()->GetPrefs();
+  auto* prefs = browser->profile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kBraveVPNShowNotificationDialog))
     return;
   // The dialog eats mouse events which results in the close button
@@ -54,8 +54,7 @@ void VpnNotificationDialogView::Show(Browser* browser) {
 }
 
 VpnNotificationDialogView::VpnNotificationDialogView(Browser* browser)
-    : browser_(browser),
-      prefs_(browser->profile()->GetOriginalProfile()->GetPrefs()) {
+    : browser_(browser), prefs_(browser->profile()->GetPrefs()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       gfx::Insets::TLBR(kTopPadding, kPadding, kBottomPadding, kPadding),
