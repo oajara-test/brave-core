@@ -65,8 +65,7 @@ class BraveWalletService : public KeyedService,
                      JsonRpcService* json_rpc_service,
                      TxService* tx_service,
                      PrefService* prefs);
-  // For tests
-  BraveWalletService();
+
   ~BraveWalletService() override;
 
   BraveWalletService(const BraveWalletService&) = delete;
@@ -231,6 +230,10 @@ class BraveWalletService : public KeyedService,
 
   BraveWalletP3A* GetBraveWalletP3A();
 
+ protected:
+  // For tests
+  BraveWalletService();
+
  private:
   friend class EthereumProviderImplUnitTest;
   friend class SolanaProviderImplUnitTest;
@@ -325,7 +328,7 @@ class BraveWalletService : public KeyedService,
   raw_ptr<TxService> tx_service_ = nullptr;
   raw_ptr<PrefService> prefs_ = nullptr;
   BraveWalletP3A brave_wallet_p3a_;
-  AssetDiscoveryManager asset_discovery_manager_;
+  std::unique_ptr<AssetDiscoveryManager> asset_discovery_manager_;
   mojo::ReceiverSet<mojom::BraveWalletService> receivers_;
   PrefChangeRegistrar pref_change_registrar_;
   base::RepeatingTimer p3a_periodic_timer_;

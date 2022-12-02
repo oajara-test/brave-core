@@ -170,7 +170,11 @@ BraveWalletService::BraveWalletService(
       tx_service_(tx_service),
       prefs_(prefs),
       brave_wallet_p3a_(this, keyring_service, prefs),
-      asset_discovery_manager_(this, json_rpc_service, keyring_service, prefs),
+      asset_discovery_manager_(
+          std::make_unique<AssetDiscoveryManager>(this,
+                                                  json_rpc_service,
+                                                  keyring_service,
+                                                  prefs)),
       weak_ptr_factory_(this) {
   if (delegate_)
     delegate_->AddObserver(this);
@@ -1488,7 +1492,7 @@ void BraveWalletService::DiscoverAssetsOnAllSupportedChains() {
     account_addresses.push_back(account_info->address);
   }
 
-  asset_discovery_manager_.DiscoverAssetsOnAllSupportedChainsRefresh(
+  asset_discovery_manager_->DiscoverAssetsOnAllSupportedChainsRefresh(
       account_addresses);
 }
 
