@@ -7,14 +7,11 @@
 
 #include <vector>
 
-#include "base/bind.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "brave/browser/ui/views/brave_vpn/vpn_notification_dialog_view.h"
 #include "brave/components/brave_vpn/brave_vpn_utils.h"
 #include "brave/components/brave_vpn/pref_names.h"
 #include "chrome/browser/net/secure_dns_config.h"
-#include "chrome/browser/net/secure_dns_util.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,12 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/grit/brave_components_strings.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "net/dns/dns_config.h"
-#include "net/dns/public/dns_over_https_config.h"
-#include "net/dns/public/doh_provider_entry.h"
-#include "net/dns/public/secure_dns_mode.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace brave_vpn {
@@ -45,15 +37,16 @@ void SkipDNSDialog(PrefService* prefs, bool checked) {
   prefs->SetBoolean(prefs::kBraveVPNShowDNSPolicyWarningDialog, !checked);
 }
 
-std::string GetDoHServers(const std::string* user_servers) {
-  return user_servers && !user_servers->empty() ? *user_servers
-                                                : kCloudflareDnsProviderURL;
-}
-
 gfx::NativeWindow GetAnchorBrowserWindow() {
   auto* browser = chrome::FindLastActive();
   return browser ? browser->window()->GetNativeWindow()
                  : gfx::kNullNativeWindow;
+}
+
+bool AreConfigsEqual(SecureDnsConfig& one, SecureDnsConfig& two) {
+  return one.mode() == two.mode() &&
+         one.management_mode() == two.management_mode() &&
+         one.doh_servers() == two.doh_servers();
 }
 
 }  // namespace
@@ -102,37 +95,35 @@ bool BraveVpnDnsObserverService::IsLocked() const {
   return !local_state_->GetDict(::prefs::kBraveVpnDnsConfig).empty();
 }
 
-void BraveVpnDnsObserverService::LockDNS(const std::string& servers,
-                                         bool show_notification) {
-  local_state_->SetString(::prefs::kBraveVpnDnsConfig, GetDoHServers(&servers));
-  // Read DNS config to initiate update of actual state.
+void BraveVpnDnsObserverService::LockDNS() {
+  auto old_dns_config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(false);
+
+  local_state_->SetString(::prefs::kBraveVpnDnsConfig,
+                          kCloudflareDnsProviderURL);
+
+  // Trigger StubResolverConfigReader to see if it should override the settings
+  // with kBraveVpnDnsConfig
   SystemNetworkContextManager::GetStubResolverConfigReader()
       ->UpdateNetworkService(false);
-  if (show_notification)
-    ShowVpnNotificationDialog();
+  auto new_dns_config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(false);
+
+  if (old_dns_config.mode() != net::SecureDnsMode::kSecure) {
+    if (AreConfigsEqual(old_dns_config, new_dns_config)) {
+      ShowPolicyWarningMessage();
+    } else {
+      ShowVpnNotificationDialog();
+    }
+  }
 }
 
 void BraveVpnDnsObserverService::OnConnectionStateChanged(
     brave_vpn::mojom::ConnectionState state) {
   if (state == brave_vpn::mojom::ConnectionState::CONNECTED) {
-    auto dns_config = SystemNetworkContextManager::GetStubResolverConfigReader()
-                          ->GetSecureDnsConfiguration(false);
-    // DNS config management_mode can be in kNoOverride state when policies set.
-    // Checking both management_mode and managed pref.
-    auto* doh_pref = local_state_->FindPreference(::prefs::kDnsOverHttpsMode);
-    bool is_managed_pref = doh_pref && doh_pref->IsManaged();
-    bool is_managed_mode = dns_config.management_mode() !=
-                           SecureDnsConfig::ManagementMode::kNoOverride;
-    bool is_managed = (is_managed_mode || is_managed_pref);
-    if (dns_config.mode() != net::SecureDnsMode::kSecure && is_managed) {
-      // If DNS mode configured by policies we notify user that DNS may leak
-      // via configured DNS gateway.
-      if (is_managed) {
-        ShowPolicyWarningMessage();
-        return;
-      }
-    }
-    LockDNS(dns_config.doh_servers().ToString(), !is_managed);
+    LockDNS();
   } else if (state == brave_vpn::mojom::ConnectionState::DISCONNECTED) {
     UnlockDNS();
   }

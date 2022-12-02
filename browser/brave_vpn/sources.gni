@@ -26,7 +26,6 @@ if (enable_brave_vpn) {
       "//brave/app:brave_generated_resources_grit",
       "//brave/browser:browser_process",
       "//chrome/common:constants",
-      "//components/country_codes",
       "//net",
     ]
   }

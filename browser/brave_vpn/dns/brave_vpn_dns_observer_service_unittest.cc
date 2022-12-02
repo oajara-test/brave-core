@@ -151,15 +151,15 @@ TEST_F(BraveVpnDnsObserverServiceUnitTest, AutoEnable) {
       "https://server1.com\nhttps://server2.com/{?dns}";
 
   // Browser DoH mode automatic with custom servers
-  // -> do not override browser config and enable vpn
+  // -> we override browser config and enable vpn
   SetDNSMode(SecureDnsConfig::kModeAutomatic, custom_servers);
   FireBraveVPNStateChange(mojom::ConnectionState::CONNECTING);
   ExpectDNSMode(SecureDnsConfig::kModeAutomatic, custom_servers);
   FireBraveVPNStateChange(mojom::ConnectionState::CONNECTED);
-  ExpectDNSMode(SecureDnsConfig::kModeSecure, custom_servers);
+  ExpectDNSMode(SecureDnsConfig::kModeSecure, kCloudflareDnsProviderURL);
   EXPECT_FALSE(local_state()->GetString(::prefs::kBraveVpnDnsConfig).empty());
   FireBraveVPNStateChange(mojom::ConnectionState::DISCONNECTING);
-  ExpectDNSMode(SecureDnsConfig::kModeSecure, custom_servers);
+  ExpectDNSMode(SecureDnsConfig::kModeSecure, kCloudflareDnsProviderURL);
   FireBraveVPNStateChange(mojom::ConnectionState::DISCONNECTED);
   ExpectDNSMode(SecureDnsConfig::kModeAutomatic, custom_servers);
   EXPECT_TRUE(local_state()->GetString(::prefs::kBraveVpnDnsConfig).empty());

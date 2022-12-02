@@ -62,7 +62,7 @@ class BraveVpnDnsObserverService : public brave_vpn::BraveVPNServiceObserver,
  private:
   friend class BraveVpnDnsObserverServiceUnitTest;
 
-  void LockDNS(const std::string& servers, bool show_notification);
+  void LockDNS();
   void UnlockDNS();
   void ShowPolicyWarningMessage();
   void ShowVpnNotificationDialog();
