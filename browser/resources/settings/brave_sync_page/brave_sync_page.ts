@@ -66,6 +66,10 @@ export class SettingsBraveSyncPageElement extends SettingsBraveSyncPageElementBa
   braveBrowserProxy_: BraveSyncBrowserProxy = BraveSyncBrowserProxy.getInstance();
 
   computeSyncLabel_() {
+    if (this.syncStatus_ !== undefined &&
+        this.syncStatus_.hasSyncWordsDecryptionError) {
+        return this.i18n('braveSyncCouldNotSyncActionLabel');
+    }
     const isAlreadySetup = this.syncStatus_ !== undefined &&
         !this.syncStatus_.firstSetupInProgress;
     const key = isAlreadySetup ? 'braveSyncManageActionLabel' : 'braveSyncSetupActionLabel';
