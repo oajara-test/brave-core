@@ -85,9 +85,6 @@ SecureDnsConfig::ManagementMode MaybeOverrideForcedManagementMode(
     PrefService* local_state,
     SecureDnsConfig::ManagementMode management_mode,
     bool is_managed) {
-  if (management_mode != SecureDnsConfig::ManagementMode::kNoOverride)
-    return management_mode;
-
   if (ShouldOverride(secure_dns_mode, local_state, management_mode,
                      is_managed)) {
     return SecureDnsConfig::ManagementMode::kDisabledManaged;
