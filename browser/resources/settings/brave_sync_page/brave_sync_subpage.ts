@@ -74,16 +74,14 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
       hasLockedSafeStorage_ : {
         type: Boolean,
         value: false,
-        computed: 'computeLockedSafeStorage_(' +
-          'syncStatus.hasSyncWordsDecryptionError)',
+        computed: 'computeLockedSafeStorage_(syncStatus)',
       },
 
       /** @private */
       hasUnlockedSafeStorageCannotDecryptSeed_ : {
         type: Boolean,
         value: false,
-        computed: 'computeUnlockedSafeStorageCannotDecryptSeed_(' +
-            'syncStatus.hasSyncWordsDecryptionError)',
+        computed: 'computeUnlockedSafeStorageCannotDecryptSeed_(syncStatus)',
       },
 
       /** @private */
