@@ -299,7 +299,7 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
 
   /**
   * Called when we see that OS safe storage is not locked, but we can't decrypt
-  * the passphrase. So we proposing user to clear data and re-joid the chain.
+  * the passphrase. So we proposing user to clear data and re-join the chain.
   */
   onRejoin_ = async function (e) {
     const messageText = this.i18n('braveSyncResetConfirmation')
