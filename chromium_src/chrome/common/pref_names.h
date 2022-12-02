@@ -8,11 +8,9 @@
 
 #include "build/build_config.h"
 
-#if BUILDFLAG(IS_WIN)
 namespace prefs {
 extern const char kBraveVpnDnsConfig[];
 }  // namespace prefs
-#endif
 
 #include "src/chrome/common/pref_names.h"
 

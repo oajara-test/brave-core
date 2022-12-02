@@ -5,10 +5,8 @@
 
 #include "chrome/common/pref_names.h"
 
-#if BUILDFLAG(IS_WIN)
 namespace prefs {
 const char kBraveVpnDnsConfig[] = "brave.brave_vpn.dns_config";
 }  // namespace prefs
-#endif
 
 #include "src/chrome/common/pref_names.cc"

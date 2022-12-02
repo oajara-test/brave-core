@@ -3,17 +3,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/brave_vpn/buildflags/buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/grit/generated_resources.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "brave/components/brave_vpn/features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/grit/brave_components_strings.h"
 #include "components/prefs/pref_service.h"
 
+#if BUILDFLAG(ENABLE_BRAVE_VPN)
+#include "brave/components/brave_vpn/features.h"
 namespace {
 
 bool ShouldReplaceSecureDNSDisabledDescription() {
@@ -29,7 +29,7 @@ bool ShouldReplaceSecureDNSDisabledDescription() {
 
 #define AddSecureDnsStrings AddSecureDnsStrings_ChromiumImpl
 
-#endif
+#endif  // BUILDFLAG(ENABLE_BRAVE_VPN)
 
 // Use custom strings for diagnostic (crashes, hangs) reporting settings.
 #undef IDS_SETTINGS_ENABLE_LOGGING_PREF
@@ -40,7 +40,7 @@ bool ShouldReplaceSecureDNSDisabledDescription() {
 
 #include "src/chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.cc"
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(ENABLE_BRAVE_VPN)
 #undef AddSecureDnsStrings
 namespace settings {
 
@@ -57,4 +57,4 @@ void AddSecureDnsStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace settings
 
-#endif
+#endif  // BUILDFLAG(ENABLE_BRAVE_VPN)

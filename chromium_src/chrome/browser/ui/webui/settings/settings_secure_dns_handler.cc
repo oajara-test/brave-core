@@ -25,6 +25,3 @@
   pref_registrar_.Add(prefs::kBraveVpnDnsConfig
 #endif
 #include "src/chrome/browser/ui/webui/settings/settings_secure_dns_handler.cc"
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_BRAVE_VPN)
-#undef kDnsOverHttpsTemplates
-#endif
