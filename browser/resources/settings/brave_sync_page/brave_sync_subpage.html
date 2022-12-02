@@ -73,7 +73,8 @@
     </template>
 
     <template is="dom-if" if="[[isStatus_('setup', pageStatus_)]]">
-      <settings-brave-sync-setup on-setup-success="onSetupSuccess_">
+      <settings-brave-sync-setup on-setup-success="onSetupSuccess_"
+       sync-code-dialog-type="{{syncCodeDialogType}}">
       </settings-brave-sync-setup>
     </template>
   </div>

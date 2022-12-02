@@ -43,7 +43,6 @@
         <span hidden="[[isGettingSyncCode_]]">$i18n{braveSyncStartNewChain}</span>
       </cr-button>
       <cr-button
-        id="enterSyncCodeButton"
         on-click="handleJoinSyncChain_"
         disabled="[[isGettingSyncCode_]]"
       >
@@ -53,9 +52,9 @@
   </div>
 </div>
 
-<template is="dom-if" if="[[syncCodeDialogType_]]" restamp>
+<template is="dom-if" if="[[syncCodeDialogType]]" restamp>
   <settings-brave-sync-code-dialog
-    code-type="{{syncCodeDialogType_}}"
+    code-type="{{syncCodeDialogType}}"
     sync-code="{{syncCode}}"
     sync-code-validation-error="{{syncCodeValidationError_}}"
     on-done="handleSyncCodeDialogDone_"

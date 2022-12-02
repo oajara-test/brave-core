@@ -63,6 +63,11 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
         type: Object,
       },
 
+      syncCodeDialogType: {
+        type: String,
+        notify: true,
+      },
+
       /** @private */
       syncDisabledByAdmin_: {
         type: Boolean,
@@ -310,11 +315,8 @@ class SettingBraveSyncSubpage extends SettingBraveSyncSubpageBase {
     this.pageStatus_ = 'spinner'
     await this.braveSyncBrowserProxy_.resetSyncChain();
      window.setTimeout(() => {
-       let element_sync_code_button = this.shadowRoot
-          .querySelector("#sync-section > settings-brave-sync-setup")
-          .shadowRoot.querySelector("#enterSyncCodeButton")
-       const event = new MouseEvent('click');
-       element_sync_code_button.dispatchEvent(event);
+       this.syncCode = undefined;
+       this.syncCodeDialogType = 'input'
     }, 1000)
   }
 }
