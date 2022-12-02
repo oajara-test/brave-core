@@ -33,9 +33,6 @@ namespace brave_vpn {
 class BraveVpnDnsObserverService : public brave_vpn::BraveVPNServiceObserver,
                                    public KeyedService {
  public:
-  using DnsPolicyReaderCallback =
-      base::RepeatingCallback<absl::optional<std::string>(const std::string&)>;
-
   explicit BraveVpnDnsObserverService(PrefService* local_state,
                                       PrefService* profile_prefs);
   ~BraveVpnDnsObserverService() override;
@@ -68,7 +65,6 @@ class BraveVpnDnsObserverService : public brave_vpn::BraveVPNServiceObserver,
   void ShowVpnNotificationDialog();
 
   base::OnceClosure policy_callback_;
-  DnsPolicyReaderCallback policy_reader_;
   bool skip_notification_dialog_for_testing_ = false;
   raw_ptr<PrefService> local_state_;
   raw_ptr<PrefService> profile_prefs_;

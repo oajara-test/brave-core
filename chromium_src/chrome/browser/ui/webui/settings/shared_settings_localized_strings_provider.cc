@@ -14,6 +14,7 @@
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
 #include "brave/components/brave_vpn/features.h"
+
 namespace {
 
 bool ShouldReplaceSecureDNSDisabledDescription() {
