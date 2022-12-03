@@ -6,6 +6,7 @@
 #include "bat/ads/internal/legacy_migration/confirmations/legacy_confirmation_migration_unittest_util.h"
 
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "bat/ads/internal/ads_client_helper.h"
 #include "bat/ads/internal/legacy_migration/confirmations/legacy_confirmation_migration.h"
 #include "brave/components/brave_ads/common/pref_names.h"
@@ -13,9 +14,11 @@
 namespace ads::confirmations {
 
 void Migrate(const bool should_migrate) {
-  Migrate([should_migrate](const bool success) {
-    CHECK_EQ(success, should_migrate);
-  });
+  Migrate(base::BindOnce(
+      [](const bool should_migrate, const bool success) {
+        CHECK_EQ(success, should_migrate);
+      },
+      should_migrate));
 }
 
 uint64_t GetHash() {

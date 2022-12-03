@@ -21,6 +21,8 @@ declare namespace Rewards {
   export type AddressesType = 'BTC' | 'ETH' | 'BAT' | 'LTC'
   export type Address = { address: string, qr: string | null }
 
+  type ConnectExternalWalletError = import('gen/brave/vendor/bat-native-ledger/include/bat/ledger/public/interfaces/ledger_types.mojom.m.js').ConnectExternalWalletError
+
   export interface State {
     adsData: AdsData
     adsHistory: AdsHistory[]
@@ -49,7 +51,6 @@ declare namespace Rewards {
     monthlyReport: MonthlyReport
     monthlyReportIds: string[]
     parameters: RewardsParameters
-    paymentId: string
     promotions: Promotion[]
     pendingContributions: PendingContribution[]
     pendingContributionTotal: number
@@ -60,24 +61,13 @@ declare namespace Rewards {
     ui: {
       disconnectWalletError: boolean
       modalBackup: boolean
-      modalRedirect:
-          'deviceLimitReachedModal'
+      modalRedirect: ConnectExternalWalletError
         | 'error'
-        | 'flaggedWalletModal'
         | 'hide'
-        | 'kycRequiredModal'
-        | 'mismatchedCountriesModal'
-        | 'mismatchedProviderAccountsModal'
-        | 'providerUnavailableModal'
-        | 'regionNotSupportedModal'
         | 'show'
-        | 'upholdBATNotAllowedModal'
-        | 'upholdInsufficientCapabilitiesModal'
-        | 'walletOwnershipVerificationFailureModal'
       promosDismissed: {
         [key: string]: boolean
       }
-      walletRecoveryStatus: number | null
     }
   }
 
@@ -167,11 +157,6 @@ declare namespace Rewards {
   export interface PromotionResponse {
     result: number
     promotions: Promotion[]
-  }
-
-  export interface RecoverWallet {
-    result: Result
-    balance: number
   }
 
   export interface PromotionFinish {
@@ -283,16 +268,9 @@ declare namespace Rewards {
     wallets: Record<string, number>
   }
 
-  export type WalletType = 'uphold' | 'bitflyer' | 'gemini'
+  type WalletStatus = import('gen/brave/vendor/bat-native-ledger/include/bat/ledger/public/interfaces/ledger_types.mojom.m.js').WalletStatus
 
-  export enum WalletStatus {
-    NOT_CONNECTED = 0,
-    CONNECTED = 1,
-    VERIFIED = 2,
-    DISCONNECTED_NOT_VERIFIED = 3,
-    DISCONNECTED_VERIFIED = 4,
-    PENDING = 5
-  }
+  export type WalletType = 'uphold' | 'bitflyer' | 'gemini'
 
   export interface ExternalWallet {
     address: string
@@ -304,13 +282,6 @@ declare namespace Rewards {
     accountUrl: string
     loginUrl: string
     activityUrl: string
-  }
-
-  export interface ProcessRewardsPageUrl {
-    result: number
-    walletType: string
-    action: string
-    args: Record<string, string>
   }
 
   export interface AdsHistory {

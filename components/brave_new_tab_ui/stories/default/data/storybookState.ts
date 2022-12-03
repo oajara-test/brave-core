@@ -1,4 +1,8 @@
 
+// Copyright (c) 2020 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 import { select, boolean, number, CHANGE } from '@storybook/addon-knobs'
 import { addons } from '@storybook/addons'
 import { defaultTopSitesData } from '../../../data/defaultTopSites'
@@ -39,9 +43,9 @@ function shouldShowBrandedWallpaperData (shouldShow: boolean): NewTab.BrandedWal
 function getWidgetStackOrder (firstWidget: string): NewTab.StackWidget[] {
   switch (firstWidget) {
     case 'braveTalk':
-      return ['rewards', 'binance', 'braveTalk', 'ftx']
+      return ['rewards', 'braveTalk']
     default:
-      return ['braveTalk', 'binance', 'rewards', 'ftx']
+      return ['braveTalk', 'rewards']
   }
 }
 
@@ -93,11 +97,6 @@ export const useNewTabData = (state: NewTab.State = defaultState) => {
     showBraveTalk: boolean('Show Brave Talk?', true),
     braveTalkSupported: boolean('Brave Talk supported?', true),
     braveTalkPromptDismissed: !boolean('Brave Talk prompt?', false),
-    geminiSupported: boolean('Gemini Supported?', true),
-    cryptoDotComSupported: boolean('Crypto.com supported?', true),
-    ftxSupported: boolean('FTX supported?', true),
-    showFTX: boolean('Show FTX?', true),
-    showBinance: boolean('Show Binance?', true),
     hideAllWidgets: boolean('Hide all widgets?', false),
     isBraveTodayOptedIn: boolean('Brave Today opted-in?', false),
     textDirection: select('Text direction', { ltr: 'ltr', rtl: 'rtl' }, 'ltr'),
@@ -106,11 +105,6 @@ export const useNewTabData = (state: NewTab.State = defaultState) => {
       adsBlockedStat: number('Number of blocked items', 1337),
       httpsUpgradesStat: number('Number of HTTPS upgrades', 1337)
     },
-    // TODO(petemill): Support binance state when binance can be included without chrome.* APIs
-    // binanceState: {
-    //   ...state.binanceState,
-    //   binanceSupported: boolean('Binance supported?', true)
-    // },
     initialDataLoaded: true,
     widgetStackOrder: getWidgetStackOrder(select('First widget', ['braveTalk', 'rewards'], 'rewards'))
   }

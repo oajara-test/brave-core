@@ -80,6 +80,10 @@ const mojom::Publisher* PublishersController::GetPublisherForFeed(
   return nullptr;
 }
 
+const Publishers& PublishersController::GetLastPublishers() const {
+  return publishers_;
+}
+
 void PublishersController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -241,7 +245,7 @@ void PublishersController::UpdateDefaultLocale() {
   // wants the format to be "language_COUNTRY".
   const std::string brave_news_locale =
       base::StrCat({brave_l10n::GetDefaultISOLanguageCodeString(), "_",
-                    brave_l10n::GetDefaultISOLanguageCodeString()});
+                    brave_l10n::GetDefaultISOCountryCodeString()});
 
   // Fallback to en_US, if we can't match anything else.
   // TODO(fallaciousreasoning): Implement more complicated fallback

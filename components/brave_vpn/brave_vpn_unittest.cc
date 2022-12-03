@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
@@ -13,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "brave/components/brave_vpn/brave_vpn_constants.h"
 #include "brave/components/brave_vpn/brave_vpn_os_connection_api.h"
 #include "brave/components/brave_vpn/brave_vpn_service.h"
 #include "brave/components/brave_vpn/brave_vpn_service_helper.h"
@@ -34,6 +36,7 @@
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -283,8 +286,11 @@ class BraveVPNServiceTest : public testing::Test {
   void UpdateAndNotifyConnectionStateChange(mojom::ConnectionState state) {
     GetBraveVPNConnectionAPI()->UpdateAndNotifyConnectionStateChange(state);
   }
-  void Suspend() { GetBraveVPNConnectionAPI()->OnSuspend(); }
-  void OnDNSChanged() { GetBraveVPNConnectionAPI()->OnDNSChanged(); }
+
+  void OnNetworkChanged() {
+    GetBraveVPNConnectionAPI()->OnNetworkChanged(
+        net::NetworkChangeNotifier::CONNECTION_WIFI);
+  }
 
   void SetSelectedRegion(const std::string& region) {
     service_->SetSelectedRegion(region);
@@ -311,9 +317,6 @@ class BraveVPNServiceTest : public testing::Test {
   }
 
   bool& needs_connect() { return GetBraveVPNConnectionAPI()->needs_connect_; }
-  bool& reconnect_on_resume() {
-    return GetBraveVPNConnectionAPI()->reconnect_on_resume_;
-  }
 
   void Connect() { GetBraveVPNConnectionAPI()->Connect(); }
 
@@ -363,6 +366,9 @@ class BraveVPNServiceTest : public testing::Test {
     service_->test_timezone_ = timezone;
   }
 
+  void SetMockConnectionAPI(BraveVPNOSConnectionAPI* api) {
+    service_->set_mock_brave_vpn_connection_api(api);
+  }
 #endif
   void RecordP3A(bool new_usage) { service_->RecordP3A(new_usage); }
 
@@ -532,6 +538,12 @@ class BraveVPNServiceTest : public testing::Test {
                             base::Time::Now() + base::Seconds(10));
   }
 
+  void SetInvalidSubscriberCredential() {
+    // Set expired date.
+    SetSubscriberCredential(&local_pref_service_, "subscriber_credential",
+                            base::Time::Now() - base::Seconds(10));
+  }
+
   std::string SetupTestingStoreForEnv(const std::string& env,
                                       bool active_subscription = true) {
     std::string domain = skus::GetDomain("vpn", env);
@@ -587,6 +599,29 @@ TEST_F(BraveVPNServiceTest, ResponseSanitizingTest) {
       },
       loop.QuitClosure()));
   loop.Run();
+}
+
+TEST_F(BraveVPNServiceTest, TicketInfoTest) {
+  base::Value::Dict ticket_value =
+      GetValueWithTicketInfos("brave-vpn@brave.com", "It's cool feature",
+                              "Love the Brave VPN!", "credential");
+
+  // Check ticket dict has four required fields.
+  EXPECT_TRUE(ticket_value.FindString(kSupportTicketEmailKey));
+  EXPECT_TRUE(ticket_value.FindString(kSupportTicketSubjectKey));
+  EXPECT_TRUE(ticket_value.FindString(kSupportTicketPartnerClientIdKey));
+  const auto support_ticket_encoded =
+      *ticket_value.FindString(kSupportTicketSupportTicketKey);
+  EXPECT_TRUE(!support_ticket_encoded.empty());
+
+  // Check body contents
+  std::string support_ticket_decoded;
+  EXPECT_TRUE(
+      base::Base64Decode(support_ticket_encoded, &support_ticket_decoded));
+  const std::string expected_support_ticket =
+      "Love the Brave VPN!\n\nsubscriber-credential: "
+      "credential\npayment-validation-method: brave-premium";
+  EXPECT_EQ(expected_support_ticket, support_ticket_decoded);
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -833,17 +868,34 @@ TEST_F(BraveVPNServiceTest, NeedsConnectTest) {
   OnDisconnected();
   EXPECT_FALSE(needs_connect());
   EXPECT_EQ(ConnectionState::CONNECTING, connection_state());
+}
 
-  // Handle connect after disconnect current connection.
-  connection_state() = ConnectionState::CONNECTED;
+TEST_F(BraveVPNServiceTest, OnDisconnectedWithoutNetwork) {
+  std::string env = skus::GetDefaultEnvironment();
+  // Connection state can be changed with purchased.
+  SetPurchasedState(env, PurchasedState::PURCHASED);
+
+  SetDeviceRegion("eu-es");
   auto network_change_notifier = net::NetworkChangeNotifier::CreateIfNeeded();
   net::test::ScopedMockNetworkChangeNotifier mock_notifier;
   mock_notifier.mock_network_change_notifier()->SetConnectionType(
       net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_NONE,
             net::NetworkChangeNotifier::GetConnectionType());
+
+  // Handle connect after disconnect current connection.
+  // When we need another connect, it should make next connect call
+  // even if network is not available.
+  connection_state() = ConnectionState::CONNECTED;
+  needs_connect() = true;
   OnDisconnected();
   EXPECT_FALSE(needs_connect());
+  EXPECT_EQ(ConnectionState::CONNECTING, connection_state());
+
+  // Set connect failed when we don't want another connect.
+  connection_state() = ConnectionState::CONNECTED;
+  needs_connect() = false;
+  OnDisconnected();
   EXPECT_EQ(ConnectionState::CONNECT_FAILED, connection_state());
 }
 
@@ -997,56 +1049,19 @@ TEST_F(BraveVPNServiceTest, LoadPurchasedStateForAnotherEnvFailed) {
   EXPECT_EQ(GetPurchasedStateSync(), PurchasedState::PURCHASED);
 }
 
-TEST_F(BraveVPNServiceTest, ResumeAfterSuspend) {
-  std::string env = skus::GetDefaultEnvironment();
-  SetPurchasedState(env, PurchasedState::PURCHASED);
-
-  connection_state() = ConnectionState::DISCONNECTED;
-  reconnect_on_resume() = false;
-  Suspend();
-  EXPECT_FALSE(reconnect_on_resume());
-
-  connection_state() = ConnectionState::CONNECTED;
-  reconnect_on_resume() = false;
-  Suspend();
-  EXPECT_TRUE(reconnect_on_resume());
-  EXPECT_EQ(ConnectionState::DISCONNECTING, connection_state());
-
-  connection_state() = ConnectionState::DISCONNECTED;
-  SetTestTimezone("Asia/Seoul");
-  OnFetchTimezones(GetTimeZonesData(), true);
-  EXPECT_EQ(GetPurchasedStateSync(), PurchasedState::PURCHASED);
-  auto network_change_notifier = net::NetworkChangeNotifier::CreateIfNeeded();
-  net::test::ScopedMockNetworkChangeNotifier mock_notifier;
-  mock_notifier.mock_network_change_notifier()->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_NONE,
-            net::NetworkChangeNotifier::GetConnectionType());
-  OnDNSChanged();
-  EXPECT_TRUE(reconnect_on_resume());
-
-  mock_notifier.mock_network_change_notifier()->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
-  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-            net::NetworkChangeNotifier::GetConnectionType());
-  OnDNSChanged();
-  EXPECT_TRUE(reconnect_on_resume());
-
-  mock_notifier.mock_network_change_notifier()->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
-            net::NetworkChangeNotifier::GetConnectionType());
-  OnDNSChanged();
-  EXPECT_FALSE(reconnect_on_resume());
-  EXPECT_EQ(ConnectionState::CONNECTING, connection_state());
-}
-
 TEST_F(BraveVPNServiceTest, CheckInitialPurchasedStateTest) {
   // Purchased state is not checked for fresh user.
   EXPECT_EQ(PurchasedState::NOT_PURCHASED, GetPurchasedStateSync());
 
   // Set valid subscriber credential to pretend it's purchased user.
   SetValidSubscriberCredential();
+  ResetVpnService();
+  EXPECT_EQ(PurchasedState::LOADING, GetPurchasedStateSync());
+
+  // Set in-valid subscriber credential but not empty to pretend it's purchased
+  // user but expired while browser is terminated.
+  // In this case, service should try to reload purchased state at startup.
+  SetInvalidSubscriberCredential();
   ResetVpnService();
   EXPECT_EQ(PurchasedState::LOADING, GetPurchasedStateSync());
 }
@@ -1057,6 +1072,52 @@ TEST_F(BraveVPNServiceTest, SubscribedCredentials) {
   EXPECT_EQ(PurchasedState::PURCHASED, GetPurchasedStateSync());
   OnGetSubscriberCredentialV12("Token No Longer Valid", false);
   EXPECT_EQ(PurchasedState::EXPIRED, GetPurchasedStateSync());
+}
+
+class MockBraveVPNOSConnectionAPI : public BraveVPNOSConnectionAPI {
+ public:
+  MockBraveVPNOSConnectionAPI() = default;
+  ~MockBraveVPNOSConnectionAPI() override = default;
+
+  MOCK_METHOD(void,
+              CreateVPNConnectionImpl,
+              (const BraveVPNConnectionInfo& info),
+              (override));
+  MOCK_METHOD(void,
+              RemoveVPNConnectionImpl,
+              (const std::string& name),
+              (override));
+  MOCK_METHOD(void, ConnectImpl, (const std::string& name), (override));
+  MOCK_METHOD(void, DisconnectImpl, (const std::string& name), (override));
+  MOCK_METHOD(void, CheckConnectionImpl, (const std::string& name), (override));
+};
+
+// Test connection check is asked only when purchased state.
+TEST_F(BraveVPNServiceTest, CheckConnectionStateAfterPurchased) {
+  MockBraveVPNOSConnectionAPI api;
+  SetMockConnectionAPI(&api);
+  std::string env = skus::GetDefaultEnvironment();
+
+  EXPECT_CALL(api, CheckConnectionImpl(testing::_)).Times(0);
+  SetPurchasedState(env, PurchasedState::NOT_PURCHASED);
+  testing::Mock::VerifyAndClearExpectations(&api);
+  EXPECT_CALL(api, CheckConnectionImpl(testing::_)).Times(1);
+  SetPurchasedState(env, PurchasedState::PURCHASED);
+  testing::Mock::VerifyAndClearExpectations(&api);
+
+  SetMockConnectionAPI(nullptr);
+}
+
+TEST_F(BraveVPNServiceTest, CheckConnectionStateAfterNetworkStateChanged) {
+  MockBraveVPNOSConnectionAPI api;
+  SetMockConnectionAPI(&api);
+  std::string env = skus::GetDefaultEnvironment();
+
+  EXPECT_CALL(api, CheckConnectionImpl(testing::_)).Times(1);
+  OnNetworkChanged();
+  testing::Mock::VerifyAndClearExpectations(&api);
+
+  SetMockConnectionAPI(nullptr);
 }
 #endif
 

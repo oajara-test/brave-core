@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import AsyncActionHandler from '../../../common/AsyncActionHandler'
 import * as WalletActions from '../actions/wallet_actions'
@@ -60,6 +60,8 @@ import { Store } from './types'
 import InteractionNotifier from './interactionNotifier'
 import { getCoinFromTxDataUnion, getNetworkInfo } from '../../utils/network-utils'
 import { isSolanaTransaction, shouldReportTransactionP3A } from '../../utils/tx-utils'
+import { walletApi } from '../slices/api.slice'
+import { deserializeOrigin, makeSerializableOriginInfo } from '../../utils/model-serialization-utils'
 
 const handler = new AsyncActionHandler()
 
@@ -79,9 +81,6 @@ async function refreshBalancesPricesAndHistory (store: Store) {
 
 async function refreshWalletInfo (store: Store) {
   const apiProxy = getAPIProxy()
-
-  const selectedCoin = await apiProxy.braveWalletService.getSelectedCoin()
-  store.dispatch(WalletActions.setSelectedCoin(selectedCoin.coin))
 
   await store.dispatch(refreshKeyringInfo())
   await store.dispatch(refreshNetworkInfo())
@@ -122,12 +121,11 @@ async function updateCoinAccountNetworkInfo (store: Store, coin: BraveWallet.Coi
   if (accounts.length === 0) {
     return
   }
-  const { braveWalletService, keyringService, jsonRpcService } = getAPIProxy()
+  const { keyringService, jsonRpcService } = getAPIProxy()
   const coinsChainId = await jsonRpcService.getChainId(coin)
 
   // Update Selected Coin
-  await braveWalletService.setSelectedCoin(coin)
-  await store.dispatch(WalletActions.setSelectedCoin(coin))
+  store.dispatch(walletApi.endpoints.setSelectedCoin.initiate(coin))
 
   // Updated Selected Account
   const selectedAccountAddress = coin === BraveWallet.CoinType.FIL
@@ -152,7 +150,9 @@ handler.on(WalletActions.initialize.type, async (store) => {
   // Initialize active origin state.
   const braveWalletService = getAPIProxy().braveWalletService
   const { originInfo } = await braveWalletService.getActiveOrigin()
-  store.dispatch(WalletActions.activeOriginChanged(originInfo))
+  store.dispatch(WalletActions.activeOriginChanged(
+    makeSerializableOriginInfo(originInfo)
+  ))
   await refreshWalletInfo(store)
 })
 
@@ -317,6 +317,17 @@ handler.on(WalletActions.addUserAsset.type, async (store: Store, payload: BraveW
   store.dispatch(WalletActions.addUserAssetError(!result.success))
 })
 
+handler.on(WalletActions.updateUserAsset.type, async (store: Store, payload: BraveWallet.BlockchainToken) => {
+  const { braveWalletService } = getAPIProxy()
+  const deleteResult = await braveWalletService.removeUserAsset(payload)
+  if (deleteResult.success) {
+    const addResult = await braveWalletService.addUserAsset(payload)
+    if (addResult.success) {
+      refreshBalancesPricesAndHistory(store)
+    }
+  }
+})
+
 handler.on(WalletActions.removeUserAsset.type, async (store: Store, payload: BraveWallet.BlockchainToken) => {
   const { braveWalletService } = getAPIProxy()
   await braveWalletService.removeUserAsset(payload)
@@ -338,11 +349,20 @@ handler.on(WalletActions.selectPortfolioTimeline.type, async (store: Store, payl
 
 handler.on(WalletActions.sendTransaction.type, async (
   store: Store,
-  payload: SendEthTransactionParams | SendFilTransactionParams | SendSolTransactionParams
+  payload:
+    | Omit<SendEthTransactionParams, 'hasEIP1559Support'>
+    | SendFilTransactionParams
+    | SendSolTransactionParams
 ) => {
+  const { wallet: walletState } = store.getState()
+
   let addResult
   if (payload.coin === BraveWallet.CoinType.ETH) {
-    addResult = await sendEthTransaction(store, payload as SendEthTransactionParams)
+    addResult = await sendEthTransaction({
+      ...payload,
+      hasEIP1559Support: !!walletState.selectedNetwork && !!walletState.selectedAccount &&
+        hasEIP1559Support(walletState.selectedAccount, walletState.selectedNetwork)
+    })
   } else if (payload.coin === BraveWallet.CoinType.FIL) {
     addResult = await sendFilTransaction(payload as SendFilTransactionParams)
   } else if (payload.coin === BraveWallet.CoinType.SOL) {
@@ -488,7 +508,7 @@ handler.on(WalletActions.refreshGasEstimates.type, async (store: Store, txInfo: 
     return
   }
 
-  if (selectedNetwork && !hasEIP1559Support(selectedAccount, selectedNetwork)) {
+  if (selectedNetwork && selectedAccount && !hasEIP1559Support(selectedAccount, selectedNetwork)) {
     return
   }
 
@@ -578,13 +598,13 @@ handler.on(WalletActions.updateUnapprovedTransactionNonce.type, async (store: St
 
 handler.on(WalletActions.removeSitePermission.type, async (store: Store, payload: RemoveSitePermissionPayloadType) => {
   const braveWalletService = getAPIProxy().braveWalletService
-  await braveWalletService.resetPermission(payload.coin, payload.origin, payload.account)
+  await braveWalletService.resetPermission(payload.coin, deserializeOrigin(payload.origin), payload.account)
   await refreshWalletInfo(store)
 })
 
 handler.on(WalletActions.addSitePermission.type, async (store: Store, payload: AddSitePermissionPayloadType) => {
   const braveWalletService = getAPIProxy().braveWalletService
-  await braveWalletService.addPermission(payload.coin, payload.origin, payload.account)
+  await braveWalletService.addPermission(payload.coin, deserializeOrigin(payload.origin), payload.account)
   await refreshWalletInfo(store)
 })
 

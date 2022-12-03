@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 
@@ -11,11 +11,11 @@ import BraveIcon from '../../../../assets/svg-icons/brave-icon.svg'
 import { URLText } from '../../shared-panel-styles'
 import CreateSiteOrigin from '../../../shared/create-site-origin'
 
-// Constants
-import { BraveWallet } from '../../../../constants/types'
+// Types
+import { SerializableOriginInfo } from '../../../../constants/types'
 
 interface Props {
-  originInfo: BraveWallet.OriginInfo
+  originInfo: SerializableOriginInfo
 }
 
 export function Origin (props: Props) {

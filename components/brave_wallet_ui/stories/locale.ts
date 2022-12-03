@@ -1,3 +1,7 @@
+// Copyright (c) 2021 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 import { provideStrings } from '../../../.storybook/locale'
 
 provideStrings({
@@ -73,6 +77,8 @@ provideStrings({
   // Actions
   braveWalletClickToSwitch: 'Click to switch',
   braveWalletEnterYourPassword: 'Enter your password',
+  braveWalletEnterAPassswordToContinue: 'Enter a password to continue',
+  braveWalletEnterYourPasswordToStartBackup: 'Enter your Brave Wallet password to start backing up wallet.',
 
   // BuySendSwap
   braveWalletBuy: 'Buy',
@@ -92,6 +98,22 @@ provideStrings({
   braveWalletSwapFeesNotice: 'Quote includes a $1 Brave fee.',
   braveWalletDecimalPlacesError: 'Too many decimal places',
   braveWalletBuyTapBuyNotSupportedMessage: 'Buy not supported for selected network',
+  braveWalletSearchingForDomain: 'Searching for domain...',
+
+  // Send Tab
+  braveWalletSendToken: 'Send token',
+  braveWalletSendNFT: 'Send NFT',
+  braveWalletSelectToken: 'Select token',
+  braveWalletSelectNFT: 'Select NFT',
+  braveWalletSendTabSelectTitle: 'Select a token to send',
+  braveWalletEnterRecipientAddress: 'Enter recipient address',
+  braveWalletNotEnoughFunds: 'Not enough funds',
+  braveWalletSendHalf: 'HALF',
+  braveWalletSendMax: 'MAX',
+  braveWalletReviewOrder: 'Review order',
+  braveWalletNoAvailableTokens: 'No available tokens',
+  braveWalletSearchTokens: 'Search token by name',
+  braveWalletSearchNFTs: 'Search NFT by name, id',
 
   // Create Account Tab
   braveWalletUnlockNeededToCreateAccount: 'Unlock needed to create an account',
@@ -300,7 +322,7 @@ provideStrings({
   braveWalletAccountSettingsRemove: 'Remove account',
   braveWalletWatchlistAddCustomAsset: 'Add custom asset',
   braveWalletWatchListTokenName: 'Token name',
-  braveWalletWatchListTokenAddress: 'Token contract address',
+  braveWalletWatchListTokenAddress: 'Token address',
   braveWalletWatchListTokenSymbol: 'Token symbol',
   braveWalletWatchListTokenDecimals: 'Decimals of percision',
   braveWalletWatchListAdd: 'Add',
@@ -623,6 +645,7 @@ provideStrings({
   braveWalletNFTDetailBlockchain: 'Blockchain',
   braveWalletNFTDetailTokenStandard: 'Token standard',
   braveWalletNFTDetailTokenID: 'Token ID',
+  braveWalletNFTDetailContractAddress: 'Contract address',
 
   // Sweepstakes
   braveWalletSweepstakesTitle: 'Brave Swap-stakes',

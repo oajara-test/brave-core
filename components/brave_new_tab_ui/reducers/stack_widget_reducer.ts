@@ -1,17 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import { Reducer } from 'redux'
 import { types } from '../constants/stack_widget_types'
 
 const widgets = {
   'rewards': 'showRewards',
-  'binance': 'showBinance',
-  'braveTalk': 'showBraveTalk',
-  'gemini': 'showGemini',
-  'cryptoDotCom': 'showCryptoDotCom',
-  'ftx': 'showFTX'
+  'braveTalk': 'showBraveTalk'
 }
 
 const removeStackWidget = (widget: NewTab.StackWidget, state: NewTab.State): NewTab.State => {

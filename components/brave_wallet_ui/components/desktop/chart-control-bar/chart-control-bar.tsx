@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 
@@ -13,11 +13,12 @@ import { BraveWallet, ChartTimelineObjectType } from '../../../constants/types'
 import RowReveal from '../../shared/animated-reveals/row-reveal'
 
 // Styled Components
-import { ToggleVisibilityButton } from '../../shared/style'
 import {
   StyledWrapper,
   ButtonText,
-  StyledButton
+  StyledButton,
+  ToggleVisibilityButton,
+  ToggleVisibilityIcon
 } from './chart-control-bar.style'
 
 export interface Props {
@@ -35,6 +36,8 @@ export const ChartControlBar = React.memo(({
   selectedTimeline,
   timelineOptions
 }: Props) => {
+  const toggleIsDisabled = () => onDisabledChanged?.(!disabled)
+
   return (
     <StyledWrapper>
 
@@ -57,12 +60,13 @@ export const ChartControlBar = React.memo(({
       </RowReveal>
 
       {onDisabledChanged &&
-        <StyledButton as="div">
-          <ToggleVisibilityButton
+        <ToggleVisibilityButton
+          onClick={toggleIsDisabled}
+        >
+          <ToggleVisibilityIcon
             isVisible={!disabled}
-            onClick={() => onDisabledChanged(!disabled)}
           />
-        </StyledButton>
+        </ToggleVisibilityButton>
       }
     </StyledWrapper>
   )

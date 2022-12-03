@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 // redux
 import { createStore, combineReducers } from 'redux'
@@ -14,6 +14,7 @@ import type WalletApiProxy from '../../wallet_api_proxy'
 
 // mocks
 import { mockWalletState } from '../../../stories/mock-data/mock-wallet-state'
+import { mockedMnemonic } from '../../../stories/mock-data/user-accounts'
 
 export const makeMockedStoreWithSpy = () => {
   const store = createStore(combineReducers({
@@ -55,7 +56,9 @@ export class MockedWalletApiProxy {
     sellAmount: '124067000000000000',
     allowanceTarget: '0x0000000000000000000000000000000000000000',
     sellTokenToEthRate: '1',
-    buyTokenToEthRate: '1720.180416'
+    buyTokenToEthRate: '1720.180416',
+    estimatedPriceImpact: '0.0782',
+    sources: []
   }
 
   mockTransaction = {
@@ -75,7 +78,9 @@ export class MockedWalletApiProxy {
     buyAmount: '0',
     sellAmount: '0',
     sellTokenToEthRate: '1',
-    buyTokenToEthRate: '1'
+    buyTokenToEthRate: '1',
+    estimatedPriceImpact: '0.0782',
+    sources: []
   }
 
   swapService: Partial<InstanceType<typeof BraveWallet.SwapServiceInterface>> = {
@@ -85,12 +90,16 @@ export class MockedWalletApiProxy {
       sellAmount,
       sellToken
     }: BraveWallet.SwapParams): Promise<{
-      success: boolean
-      errorResponse: any
       response: BraveWallet.SwapResponse
+      errorResponse: BraveWallet.SwapErrorResponse
+      errorString: string
     }> => ({
-      success: true,
-      errorResponse: {},
+      errorResponse: {
+        code: 0,
+        isInsufficientLiquidity: false,
+        reason: '',
+        validationErrors: []
+      },
       response: {
         ...this.mockQuote,
         buyTokenAddress: buyToken,
@@ -98,12 +107,13 @@ export class MockedWalletApiProxy {
         buyAmount: buyAmount || '',
         sellAmount: sellAmount || '',
         price: '1'
-      }
+      },
+      errorString: ''
     }),
     getPriceQuote: async () => ({
-      success: true,
+      response: this.mockTransaction,
       errorResponse: null,
-      response: this.mockTransaction
+      errorString: ''
     })
   }
 
@@ -120,7 +130,10 @@ export class MockedWalletApiProxy {
     ) => (password === 'password'
       ? { privateKey: 'secret-private-key', success: true }
       : { privateKey: '', success: false }
-    )
+    ),
+    async getMnemonicForDefaultKeyring (password) {
+      return password === 'password' ? { mnemonic: mockedMnemonic } : { mnemonic: '' }
+    }
   }
 
   ethTxManagerProxy: Partial<InstanceType<typeof BraveWallet.EthTxManagerProxyInterface>> = {
@@ -137,6 +150,11 @@ export class MockedWalletApiProxy {
         } as BraveWallet.GasEstimation1559 | null
       }
     }
+  }
+
+  braveWalletP3A: Partial<InstanceType<typeof BraveWallet.BraveWalletP3AInterface>> = {
+    reportOnboardingAction: () => {},
+    reportEthereumProvider: () => {}
   }
 
   assetRatioService: Partial<InstanceType<typeof BraveWallet.AssetRatioServiceInterface>> = {

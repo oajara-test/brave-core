@@ -1,7 +1,7 @@
 // Copyright (c) 2020 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import styled from 'styled-components'
 
@@ -160,7 +160,6 @@ export const StyledWidgetLink = styled('a')<WidgetButtonProps>`
 
 interface WidgetIconProps {
   isRefresh?: boolean
-  isBinance?: boolean
 }
 
 export const StyledEllipsis = styled('div')<WidgetVisibilityProps>`
@@ -181,8 +180,8 @@ export const StyledEllipsis = styled('div')<WidgetVisibilityProps>`
 export const StyledWidgetIcon = styled('div')<WidgetIconProps>`
   height: 13px;
   width: 13px;
-  margin: ${p => p.isBinance ? '0px 13px 0 12px' : '-7px 15px 0 10px'};
-  margin-left: ${p => p.isRefresh ? '13px' : p.isBinance ? '12px' : '10px'};
+  margin: -7px 15px 0 10px;
+  margin-left: ${p => p.isRefresh ? '13px' : '10px'};
 
   svg {
     fill: ${p => p.theme.color.contextMenuForeground};

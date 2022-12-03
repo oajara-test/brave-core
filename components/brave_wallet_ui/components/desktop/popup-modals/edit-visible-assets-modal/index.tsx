@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 import {
@@ -192,6 +192,11 @@ const EditVisibleAssetsModal = ({ onClose }: Props) => {
       return false
     }
 
+    // Any token with a tokenId should be considered a custom token.
+    if (token.tokenId !== '') {
+      return true
+    }
+
     return !fullTokenListAllChains
       .some(each => each.contractAddress.toLowerCase() === token.contractAddress.toLowerCase())
   }, [fullTokenListAllChains])
@@ -218,9 +223,14 @@ const EditVisibleAssetsModal = ({ onClose }: Props) => {
         if (token.isErc721) setTokenContractAddress(token.contractAddress)
         setUpdatedTokensList(addOrRemoveTokenFromList(selected, token))
       }
-    } else {
-      setUpdatedTokensList(addOrRemoveTokenFromList(selected, token))
+      return
     }
+    if (token.isErc721 || token.isNft) {
+      setShowAddCustomToken(true)
+      setTokenContractAddress(token.contractAddress)
+      return
+    }
+    setUpdatedTokensList(addOrRemoveTokenFromList(selected, token))
   }, [isUserToken, updatedTokensList, addOrRemoveTokenFromList])
 
   const toggleShowAddCustomToken = () => setShowAddCustomToken(prev => !prev)

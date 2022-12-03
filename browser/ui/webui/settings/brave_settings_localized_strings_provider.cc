@@ -96,20 +96,18 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_THEMES},
     {"appearanceSettingsShowBookmarksButton",
      IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_BOOKMARKS_BUTTON},
-    {"appearanceSettingsShowSidePanelButton",
-     IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_SIDE_PANEL_BUTTON},
     {"appearanceSettingsLocationBarIsWide",
      IDS_SETTINGS_APPEARANCE_SETTINGS_LOCATION_BAR_IS_WIDE},
     {"appearanceSettingsShowBraveRewardsButtonLabel",
      IDS_SETTINGS_SHOW_BRAVE_REWARDS_BUTTON_LABEL},
+    {"appearanceSettingsShowBraveNewsButtonLabel",
+     IDS_SETTINGS_SHOW_BRAVE_NEWS_BUTTON_LABEL},
     {"appearanceSettingsAlwaysShowBookmarkBarOnNTP",
      IDS_SETTINGS_ALWAYS_SHOW_BOOKMARK_BAR_ON_NTP},
     {"appearanceSettingsShowAutocompleteInAddressBar",
      IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_AUTOCOMPLETE_IN_ADDRESS_BAR},
     {"appearanceSettingsUseTopSiteSuggestions",
      IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_TOP_SITES},
-    {"appearanceSettingsUseBraveSuggestedSiteSuggestions",
-     IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_BRAVE_SUGGESTED_SITES},
     {"appearanceSettingsUseHistorySuggestions",
      IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_HISTORY},
     {"appearanceSettingsUseBookmarkSuggestions",
@@ -127,8 +125,11 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
     {"appearanceSettingsTabHoverModeTooltip",
      IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_HOVER_MODE_TOOLTIP},
 #if BUILDFLAG(ENABLE_SIDEBAR)
+    {"sideBar", IDS_SETTINGS_APPEARNCE_SETTINGS_SIDEBAR_PART_TITLE},
     {"appearanceSettingsShowOptionTitle",
      IDS_SETTINGS_SIDEBAR_SHOW_OPTION_TITLE},
+    {"appearanceSettingsShowSidebarButton",
+     IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_SIDEBAR_BUTTON},
     {"appearanceSettingsShowOptionAlways", IDS_SIDEBAR_SHOW_OPTION_ALWAYS},
     {"appearanceSettingsShowOptionMouseOver",
      IDS_SIDEBAR_SHOW_OPTION_MOUSEOVER},
@@ -363,6 +364,7 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_RESOLVE_UNSTOPPABLE_DOMAINS_DESC},
     {"resolveENSDesc", IDS_SETTINGS_RESOLVE_ENS_DESC},
     {"ensOffchainLookupTitle", IDS_SETTINGS_ENABLE_ENS_OFFCHAIN_LOOKUP_TITLE},
+    {"resolveSnsDesc", IDS_SETTINGS_RESOLVE_SNS_DESC},
     {"resolveIPFSURLDesc", IDS_SETTINGS_RESOLVE_IPFS_URLS_DESC},
     {"ipfsPublicGatewayDesc", IDS_SETTINGS_IPFS_PUBLIC_GATEWAY_DESC},
     {"ipfsNftPublicGatewayDesc", IDS_SETTINGS_IPFS_PUBLIC_NFT_GATEWAY_DESC},
@@ -394,6 +396,9 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
     {"torEnabledDesc", IDS_SETTINGS_ENABLE_TOR_DESC},
     {"torConnectionSettingsTitle", IDS_SETTINGS_TOR_CONNECTION_SETTINGS_TITLE},
     {"torConnectionSettingsDesc", IDS_SETTINGS_TOR_CONNECTION_SETTINGS_DESC},
+    {"torSnowflakeExtensionLabel", IDS_SETTINGS_TOR_SNOWFLAKE_EXTENSION_TITLE},
+    {"torSnowflakeExtensionDesc", IDS_SETTINGS_TOR_SNOWFLAKE_EXTENSION_DESC},
+    {"torSnowflakeInstallFailed", IDS_SETTINGS_TOR_SNOWFLAKE_INSTALL_FAILED},
     {"torUseBridgesTitle", IDS_SETTINGS_TOR_USE_BRIDGES_TITLE},
     {"torUseBridgesDesc", IDS_SETTINGS_TOR_USE_BRIDGES_DESC},
     {"torSelectBuiltInRadio", IDS_SETTINGS_TOR_SELECT_BUILT_IN_RADIO},
@@ -679,6 +684,10 @@ void BraveAddLocalizedStrings(content::WebUIDataSource* html_source,
       "isENSL2Enabled", base::FeatureList::IsEnabled(
                             brave_wallet::features::kBraveWalletENSL2Feature));
 
+  html_source->AddBoolean("isSnsEnabled",
+                          base::FeatureList::IsEnabled(
+                              brave_wallet::features::kBraveWalletSnsFeature));
+
   if (base::FeatureList::IsEnabled(
           net::features::kBraveFirstPartyEphemeralStorage)) {
     const webui::LocalizedString kSessionOnlyToEphemeralStrings[] = {
@@ -691,6 +700,10 @@ void BraveAddLocalizedStrings(content::WebUIDataSource* html_source,
     };
     html_source->AddLocalizedStrings(kSessionOnlyToEphemeralStrings);
   }
+
+  // Always disable upstream's side panel align option.
+  // We add our customized option at preferred position.
+  html_source->AddBoolean("showSidePanelOptions", false);
 }
 
 }  // namespace settings

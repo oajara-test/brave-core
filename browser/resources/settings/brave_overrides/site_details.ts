@@ -1,12 +1,12 @@
 // Copyright (c) 2021 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 // @ts-nocheck TODO(petemill): Define types and remove ts-nocheck
 
 import {RegisterPolymerTemplateModifications} from 'chrome://resources/polymer_overriding.js'
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js'
+import {I18nBehavior} from 'chrome://resources/i18n_behavior.js'
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 RegisterPolymerTemplateModifications({
@@ -18,6 +18,12 @@ RegisterPolymerTemplateModifications({
       } else {
         idleDetectionItem.hidden = true
       }
+    }
+    const adsItem = templateContent.querySelector('[category="[[contentSettingsTypesEnum_.ADS]]"]')
+    if (!adsItem) {
+      console.error(`[Brave Settings Overrides] Couldn't find ads item`)
+    } else {
+      adsItem.hidden = true
     }
     const firstPermissionItem = templateContent.querySelector('div.list-frame > site-details-permission:nth-child(1)')
     if (!firstPermissionItem) {

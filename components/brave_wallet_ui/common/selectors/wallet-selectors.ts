@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { WalletPageState } from '../../constants/types'
 
@@ -20,12 +20,10 @@ export const isFilecoinEnabled = ({ wallet }: State) => wallet.isFilecoinEnabled
 export const isLoadingCoinMarketData = ({ wallet }: State) => wallet.isLoadingCoinMarketData
 export const isMetaMaskInstalled = ({ wallet }: State) => wallet.isMetaMaskInstalled
 export const isSolanaEnabled = ({ wallet }: State) => wallet.isSolanaEnabled
-export const isTestNetworksEnabled = ({ wallet }: State) => wallet.isTestNetworksEnabled
 export const isWalletBackedUp = ({ wallet }: State) => wallet.isWalletBackedUp
 export const isWalletCreated = ({ wallet }: State) => wallet.isWalletCreated
 export const isWalletLocked = ({ wallet }: State) => wallet.isWalletLocked
 export const passwordAttempts = ({ wallet }: State) => wallet.passwordAttempts
-export const selectedCoin = ({ wallet }: State) => wallet.selectedCoin
 export const selectedPortfolioTimeline = ({ wallet }: State) => wallet.selectedPortfolioTimeline
 
 // unsafe selectors (will cause re-render if not strictly equal "===") (objects and lists)

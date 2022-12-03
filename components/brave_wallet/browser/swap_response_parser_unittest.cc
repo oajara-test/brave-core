@@ -80,7 +80,14 @@ TEST(SwapResponseParserUnitTest, ParsePriceQuote) {
       "sources":[],
       "allowanceTarget":"0xdef1c0ded9bec7f1a1670819833240f027b25eff",
       "sellTokenToEthRate":"1900.44962824532464391",
-      "buyTokenToEthRate":"1"
+      "buyTokenToEthRate":"1",
+      "estimatedPriceImpact": "0.7232",
+      "sources": [
+        {
+          "name": "Uniswap_V2",
+          "proportion": "1"
+        }
+      ]
     }
   )");
   mojom::SwapResponsePtr swap_response = ParseSwapResponse(json, false);
@@ -110,6 +117,10 @@ TEST(SwapResponseParserUnitTest, ParsePriceQuote) {
             "0xdef1c0ded9bec7f1a1670819833240f027b25eff");
   ASSERT_EQ(swap_response->sell_token_to_eth_rate, "1900.44962824532464391");
   ASSERT_EQ(swap_response->buy_token_to_eth_rate, "1");
+  ASSERT_EQ(swap_response->estimated_price_impact, "0.7232");
+  ASSERT_EQ(swap_response->sources.size(), 1UL);
+  ASSERT_EQ(swap_response->sources.at(0)->name, "Uniswap_V2");
+  ASSERT_EQ(swap_response->sources.at(0)->proportion, "1");
 
   json = R"({"price": "3"})";
   ASSERT_FALSE(ParseSwapResponse(json, false));
@@ -143,7 +154,14 @@ TEST(SwapResponseParserUnitTest, ParseTransactionPayload) {
       "sources":[],
       "allowanceTarget":"0xdef1c0ded9bec7f1a1670819833240f027b25eff",
       "sellTokenToEthRate":"1900.44962824532464391",
-      "buyTokenToEthRate":"1"
+      "buyTokenToEthRate":"1",
+      "estimatedPriceImpact": "0.7232",
+      "sources": [
+        {
+          "name": "Uniswap_V2",
+          "proportion": "1"
+        }
+      ]
     }
   )");
   mojom::SwapResponsePtr swap_response = ParseSwapResponse(json, true);
@@ -170,6 +188,10 @@ TEST(SwapResponseParserUnitTest, ParseTransactionPayload) {
             "0xdef1c0ded9bec7f1a1670819833240f027b25eff");
   ASSERT_EQ(swap_response->sell_token_to_eth_rate, "1900.44962824532464391");
   ASSERT_EQ(swap_response->buy_token_to_eth_rate, "1");
+  ASSERT_EQ(swap_response->estimated_price_impact, "0.7232");
+  ASSERT_EQ(swap_response->sources.size(), 1UL);
+  ASSERT_EQ(swap_response->sources.at(0)->name, "Uniswap_V2");
+  ASSERT_EQ(swap_response->sources.at(0)->proportion, "1");
 
   json = R"({"price": "3"})";
   ASSERT_FALSE(ParseSwapResponse(json, true));
@@ -275,6 +297,92 @@ TEST(SwapResponseParserUnitTest, ParseJupiterSwapTransactions) {
 
   ASSERT_FALSE(ParseJupiterSwapTransactions(""));
   ASSERT_FALSE(ParseJupiterSwapTransactions(R"({"foo": "bar"})"));
+}
+
+TEST(SwapResponseParserUnitTest, ParseSwapErrorResponse) {
+  {
+    std::string json(R"(
+    {
+      "code": 100,
+      "reason": "Validation Failed",
+      "validationErrors": [
+        {
+          "field": "buyAmount",
+          "code": 1004,
+          "reason": "INSUFFICIENT_ASSET_LIQUIDITY"
+        }
+      ]
+    })");
+
+    auto swap_error = ParseSwapErrorResponse(json);
+    EXPECT_EQ(swap_error->code, 100);
+    EXPECT_EQ(swap_error->reason, "Validation Failed");
+    EXPECT_EQ(swap_error->validation_errors.size(), 1u);
+    EXPECT_EQ(swap_error->validation_errors.front()->field, "buyAmount");
+    EXPECT_EQ(swap_error->validation_errors.front()->code, 1004);
+    EXPECT_EQ(swap_error->validation_errors.front()->reason,
+              "INSUFFICIENT_ASSET_LIQUIDITY");
+
+    EXPECT_TRUE(swap_error->is_insufficient_liquidity);
+  }
+  {
+    std::string json(R"(
+    {
+      "code": 100,
+      "reason": "Validation Failed",
+      "validationErrors": [
+        {
+          "field": "buyAmount",
+          "code": 1004,
+          "reason": "SOMETHING_ELSE"
+        }
+      ]
+    })");
+
+    auto swap_error = ParseSwapErrorResponse(json);
+    EXPECT_EQ(swap_error->code, 100);
+    EXPECT_EQ(swap_error->reason, "Validation Failed");
+    EXPECT_EQ(swap_error->validation_errors.size(), 1u);
+    EXPECT_EQ(swap_error->validation_errors.front()->field, "buyAmount");
+    EXPECT_EQ(swap_error->validation_errors.front()->code, 1004);
+    EXPECT_EQ(swap_error->validation_errors.front()->reason, "SOMETHING_ELSE");
+
+    EXPECT_FALSE(swap_error->is_insufficient_liquidity);
+  }
+}
+
+TEST(SwapResponseParserUnitTest, ParseJupiterErrorResponse) {
+  {
+    std::string json(R"(
+    {
+      "statusCode": "some code",
+      "error": "error",
+      "message": "No routes found for the input and output mints"
+    })");
+
+    auto jupiter_error = ParseJupiterErrorResponse(json);
+    EXPECT_EQ(jupiter_error->status_code, "some code");
+    EXPECT_EQ(jupiter_error->error, "error");
+    EXPECT_EQ(jupiter_error->message,
+              "No routes found for the input and output mints");
+
+    EXPECT_TRUE(jupiter_error->is_insufficient_liquidity);
+  }
+  {
+    std::string json(R"(
+    {
+      "statusCode": "some code",
+      "error": "error",
+      "message": "some message"
+    })");
+
+    auto jupiter_error = ParseJupiterErrorResponse(json);
+    EXPECT_EQ(jupiter_error->status_code, "some code");
+    EXPECT_EQ(jupiter_error->error, "error");
+    EXPECT_EQ(jupiter_error->message, "some message");
+
+    EXPECT_FALSE(jupiter_error->is_insufficient_liquidity);
+  }
 }
 
 }  // namespace brave_wallet

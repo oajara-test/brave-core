@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 import { CaratStrongLeftIcon } from 'brave-ui/components/icons'
@@ -115,7 +115,7 @@ function ContactSupport (props: Props) {
     }
     // Handle is valid, submit data
     setIsSubmitting(true)
-    const fullIssueBody = formData.problemBody + '\n' +
+    const fullIssueBody = `Message: \n${formData.problemBody}\n\n` +
       (formData.shareOsVersion ? `OS: ${supportData?.osVersion}\n` : '') +
       (formData.shareAppVersion ? `App version: ${supportData?.appVersion}\n` : '') +
       (formData.shareHostname ? `Hostname: ${supportData?.hostname}\n` : '')

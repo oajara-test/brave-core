@@ -11,7 +11,7 @@ use serde_json::Value;
 use sha2::Sha512;
 
 use crate::errors::{InternalError, SkusError};
-use crate::http::HttpHandler;
+use crate::http::{HttpHandler, delay_from_response};
 use crate::models::*;
 use crate::sdk::SDK;
 use crate::{HTTPClient, StorageClient};
@@ -85,7 +85,7 @@ where
     #[instrument]
     pub async fn submit_order_credentials_to_sign(&self, order_id: &str) -> Result<(), SkusError> {
         event!(Level::DEBUG, "submit order creds for signing");
-        let order = match self.client.get_order(order_id).await {
+        let mut order = match self.client.get_order(order_id).await {
             Ok(Some(order)) => order,
             _ => self.refresh_order(order_id).await?,
         };
@@ -97,12 +97,23 @@ where
         for item in order.items {
             match item.credential_type {
                 CredentialType::TimeLimitedV2 => {
+                    // if the order has no order metadata, attempt to refresh first
+                    if order.metadata.is_none() {
+                        order = self.refresh_order(order_id).await?;
+                        event!(Level::DEBUG, order=?order, "fetched order, no metadata");
+                    }
+
                     let mut num_creds: usize = 0;
                     if let Some(ref metadata) = order.metadata {
-                        let num_intervals = metadata.num_intervals.ok_or(InternalError::OrderMisconfiguration)?;
-                        let num_per_interval = metadata.num_per_interval.ok_or(InternalError::OrderMisconfiguration)?;
+                        let num_intervals =
+                            metadata.num_intervals.ok_or(InternalError::OrderMisconfiguration)?;
+                        let num_per_interval = metadata
+                            .num_per_interval
+                            .ok_or(InternalError::OrderMisconfiguration)?;
                         num_creds = num_intervals * num_per_interval;
                     }
+
+                    event!(Level::DEBUG, num_creds=?num_creds, "num_creds");
 
                     let blinded_creds: Vec<BlindedToken> =
                         match self.client.get_time_limited_v2_creds(&item.id).await? {
@@ -253,8 +264,13 @@ where
     #[instrument]
     pub async fn refresh_order_credentials(&self, order_id: &str) -> Result<(), SkusError> {
         let order = self.fetch_order(order_id).await?;
+
         if let Some(local_order) = self.client.get_order(order_id).await? {
-            if order.last_paid_at != local_order.last_paid_at {
+            // if we have no credentials at all for the order (prior to generated state)
+            // or the last_paid_at is different from the fetched order (resubscribe)
+            if !self.client.has_credentials(order_id).await?
+                || order.last_paid_at != local_order.last_paid_at
+            {
                 self.fetch_order_credentials(order_id).await?;
                 // store the latest retrieved order information after we've successfully fetched
                 self.client.upsert_order(&order).await?;
@@ -281,7 +297,7 @@ where
 
                 match resp.status() {
                     http::StatusCode::OK => Ok(resp),
-                    http::StatusCode::ACCEPTED => Err(InternalError::RetryLater(None)),
+                    http::StatusCode::ACCEPTED => Err(InternalError::RetryLater(delay_from_response(&resp))),
                     http::StatusCode::NOT_FOUND => Err(InternalError::NotFound),
                     _ => Err(resp.into()),
                 }
@@ -347,25 +363,40 @@ where
                         // creds that do not have a blinded token that match
                         // prior to the batch proof check.
                         let mut bucket_blinded_creds: Vec<BlindedToken> = Vec::new();
+                        let mut bucket_creds: Vec<Token> = Vec::new();
 
                         for sbc in blinded_creds {
                             // keep in our blinded_creds array the ones we matched
                             for bc in &my_blinded_creds {
-                                if bc.to_bytes() == sbc.to_bytes() {
+                                // find the blinded cred that matches what the server says
+                                // it signed and push it onto our bucket of blinded creds
+                                // for batch verification
+                                if bc.encode_base64() == sbc.encode_base64() {
                                     bucket_blinded_creds.push(*bc);
+                                    for t in &item_creds.creds{
+                                        // find the original token from our list of creds
+                                        // that matches up with this blinded token so we can
+                                        // add to our bucket creds for verification
+                                        if t.blind().encode_base64() == bc.encode_base64(){
+                                            bucket_creds.push(Token::from_bytes(&t.to_bytes()).unwrap());
+                                        }
+                                    }
                                 }
                             }
                         }
 
+                        // perform the batch proof of the bucket of blinded/signed creds
+                        // note this verify and unblind does not verify the bucket_creds
+                        // are the unblinded form of the bucket_blinded_creds
                         let unblinded_creds = batch_proof
                             .verify_and_unblind::<Sha512, _>(
-                                &item_creds.creds,
-                                &bucket_blinded_creds,
-                                &signed_creds,
-                                &public_key,
+                                &bucket_creds, // just the creds server says it signed
+                                &bucket_blinded_creds, // the blinded creds
+                                &signed_creds, // the signed creds from server
+                                &public_key, // the server's public key
                             )
                             .or(Err(InternalError::InvalidProof))?;
-                        event!(Level::DEBUG, "past batch proof verify");
+
                         // append the time limited v2 item credential to the store
                         self.client
                             .append_time_limited_v2_item_unblinded_creds(

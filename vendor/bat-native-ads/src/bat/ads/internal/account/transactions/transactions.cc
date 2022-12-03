@@ -5,8 +5,11 @@
 
 #include "bat/ads/internal/account/transactions/transactions.h"
 
-#include "base/bind.h"
+#include <utility>
+
 #include "base/check_op.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/time/time.h"
 #include "bat/ads/ad_type.h"
@@ -52,18 +55,21 @@ TransactionInfo Add(const std::string& creative_instance_id,
 
 void GetForDateRange(const base::Time from_time,
                      const base::Time to_time,
-                     const GetCallback& callback) {
+                     GetCallback callback) {
   const database::table::Transactions database_table;
   database_table.GetForDateRange(
       from_time, to_time,
-      [callback](const bool success, const TransactionList& transactions) {
-        if (!success) {
-          callback(/*success*/ false, {});
-          return;
-        }
+      base::BindOnce(
+          [](GetCallback callback, const bool success,
+             const TransactionList& transactions) {
+            if (!success) {
+              std::move(callback).Run(/*success*/ false, {});
+              return;
+            }
 
-        callback(/*success*/ true, transactions);
-      });
+            std::move(callback).Run(/*success*/ true, transactions);
+          },
+          std::move(callback)));
 }
 
 void RemoveAll(RemoveAllCallback callback) {

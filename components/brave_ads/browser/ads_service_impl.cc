@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/contains.h"
@@ -19,6 +17,8 @@
 #include "base/feature_list.h"  // IWYU pragma: keep
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
@@ -113,7 +113,7 @@ constexpr int kHttpUpgradeRequiredStatusResponseCode = 426;
 
 constexpr char kNotificationAdUrlPrefix[] = "https://www.brave.com/ads/?";
 
-const base::Feature kServing{"AdServing", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kServing, "AdServing", base::FEATURE_ENABLED_BY_DEFAULT);
 
 int GetDataResourceId(const std::string& name) {
   if (name == ads::data::resource::kCatalogJsonSchemaFilename) {
@@ -448,7 +448,7 @@ bool AdsServiceImpl::CanStartBatAdsService() const {
 void AdsServiceImpl::MaybeStartBatAdsService() {
   CancelRestartBatAdsService();
 
-  if (!CanStartBatAdsService()) {
+  if (bat_ads_service_.is_bound() || !CanStartBatAdsService()) {
     return;
   }
 
@@ -542,6 +542,10 @@ void AdsServiceImpl::InitializeDatabase() {
       base_path_.AppendASCII("database.sqlite"));
 }
 
+bool AdsServiceImpl::ShouldRewardUser() const {
+  return IsEnabled();
+}
+
 void AdsServiceImpl::InitializeRewardsWallet() {
   rewards_service_->GetRewardsWallet(
       base::BindOnce(&AdsServiceImpl::OnInitializeRewardsWallet, AsWeakPtr()));
@@ -553,13 +557,13 @@ void AdsServiceImpl::OnInitializeRewardsWallet(
     return;
   }
 
-  if (!wallet) {
+  if (wallet) {
+    bat_ads_->OnRewardsWalletDidChange(
+        wallet->payment_id, base::Base64Encode(wallet->recovery_seed));
+  } else if (ShouldRewardUser()) {
     VLOG(0) << "Failed to initialize Rewards wallet";
-    return;
+    return Shutdown();
   }
-
-  bat_ads_->OnRewardsWalletDidChange(wallet->payment_id,
-                                     base::Base64Encode(wallet->recovery_seed));
 
   InitializeBatAds();
 }
@@ -686,7 +690,7 @@ void AdsServiceImpl::InitializePrefChangeRegistrar() {
 }
 
 void AdsServiceImpl::OnEnabledPrefChanged() {
-  if (!IsEnabled()) {
+  if (!CanStartBatAdsService()) {
     return Shutdown();
   }
 

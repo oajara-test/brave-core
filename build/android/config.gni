@@ -14,7 +14,7 @@ brave_android_manifest_includes = [
 ]
 
 brave_chrome_java_deps = [
-  "//brave/android/java/org/chromium/chrome/browser/search_engines/settings:java",
+  "//brave/android/java/org/chromium/chrome/browser/search_engines:java",
   "//brave/browser/notifications/android:brave_java",
   "//brave/browser/notifications/android:java",
   "//brave/browser/safe_browsing/android/java/src/org/chromium/chrome/browser/safe_browsing/settings:java",
@@ -25,6 +25,7 @@ brave_chrome_java_deps = [
   "//brave/components/brave_today/common:mojom_java",
   "//brave/components/brave_wallet/common:mojom_java",
   "//brave/components/browser_ui/site_settings/android:java",
+  "//brave/components/safe_browsing/android:brave_safe_browsing_java",
   "//brave/components/variations/android:java",
   "//brave/third_party/android_deps:com_airbnb_android_java",
   "//brave/third_party/android_deps:com_android_billingclient_java",
@@ -34,6 +35,7 @@ brave_chrome_java_deps = [
   "//brave/third_party/android_deps:com_wireguard_android_java",
   "//brave/third_party/android_deps:google_play_services_safetynet_java",
   "//brave/third_party/zxing:zxing_java",
+  "//brave/vendor/bat-native-ledger/include/bat/ledger/public/interfaces:ledger_types_java",
   "//third_party/android_deps:google_play_services_vision_common_java",
   "//third_party/android_deps:google_play_services_vision_java",
   "//third_party/androidx:androidx_lifecycle_lifecycle_livedata_core_java",

@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "brave/components/brave_wallet/browser/json_rpc_response_parser.h"
+#include "brave/components/brave_wallet/browser/json_rpc_responses.h"
 #include "brave/components/ipfs/ipfs_utils.h"
 #include "components/grit/brave_components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -151,6 +152,21 @@ TEST(JsonRpcResponseParserUnitTest, ParseErrorResult) {
     EXPECT_EQ(solana_error_message,
               l10n_util::GetStringUTF8(IDS_WALLET_PARSING_ERROR));
   }
+
+  // Unknown error code.
+  json =
+      R"({
+       "jsonrpc": "2.0",
+       "id": 1,
+       "error": {
+         "code": 3
+       }
+     })";
+  ParseErrorResult<mojom::ProviderError>(json, &eth_error, &eth_error_message);
+  EXPECT_EQ(mojom::ProviderError::kUnknown, eth_error);
+  ParseErrorResult<mojom::SolanaProviderError>(json, &solana_error,
+                                               &solana_error_message);
+  EXPECT_EQ(mojom::SolanaProviderError::kUnknown, solana_error);
 }
 
 TEST(JsonRpcResponseParserUnitTest, ConvertUint64ToString) {
@@ -302,6 +318,45 @@ TEST(JsonRpcResponseParserUnitTest, ConvertInt64ToString) {
              }
             })";
   EXPECT_EQ(*ConvertInt64ToString("/result", json), json);
+}
+
+TEST(JsonRpcResponseParserUnitTest, RPCResponse) {
+  constexpr char json[] =
+      R"({
+       "jsonrpc": "2.0",
+       "id": 1,
+       "result": "hi"
+     })";
+
+  auto value = base::JSONReader::Read(json);
+  ASSERT_TRUE(value);
+  auto response = json_rpc_responses::RPCResponse::FromValue(*value);
+  ASSERT_TRUE(response);
+  EXPECT_EQ(response->jsonrpc, "2.0");
+  EXPECT_EQ(response->id, base::Value(1));
+  ASSERT_TRUE(response->result);
+  EXPECT_EQ(*response->result, base::Value("hi"));
+  EXPECT_FALSE(response->error);
+
+  constexpr char error_json[] =
+      R"({
+       "jsonrpc": "2.0",
+       "id": 2,
+       "error": {
+         "code":-32601,
+         "message":"method does not exist"
+       }
+     })";
+  value = base::JSONReader::Read(error_json);
+  ASSERT_TRUE(value);
+  response = json_rpc_responses::RPCResponse::FromValue(*value);
+  ASSERT_TRUE(response);
+  EXPECT_EQ(response->jsonrpc, "2.0");
+  EXPECT_EQ(response->id, base::Value(2));
+  EXPECT_EQ(response->result, absl::nullopt);
+  ASSERT_TRUE(response->error);
+  EXPECT_EQ(response->error->code, -32601);
+  EXPECT_EQ(response->error->message, "method does not exist");
 }
 
 }  // namespace brave_wallet

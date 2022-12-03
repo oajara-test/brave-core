@@ -5,8 +5,8 @@
 
 #include "bat/ads/internal/account/transactions/transactions_unittest_util.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/time/time.h"
 #include "bat/ads/ad_type.h"
@@ -50,11 +50,13 @@ int GetTransactionCount() {
 
   transactions::GetForDateRange(
       DistantPast(), DistantFuture(),
-      [&count](const bool success,
-               const TransactionList& transactions) mutable {
-        CHECK(success);
-        count = transactions.size();
-      });
+      base::BindOnce(
+          [](int* count, const bool success,
+             const TransactionList& transactions) mutable {
+            CHECK(success);
+            *count = transactions.size();
+          },
+          &count));
 
   return count;
 }

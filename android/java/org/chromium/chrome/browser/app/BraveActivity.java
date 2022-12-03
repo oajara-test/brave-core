@@ -66,6 +66,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_wallet.mojom.AccountInfo;
 import org.chromium.brave_wallet.mojom.AssetRatioService;
 import org.chromium.brave_wallet.mojom.BlockchainRegistry;
+import org.chromium.brave_wallet.mojom.BraveWalletConstants;
 import org.chromium.brave_wallet.mojom.BraveWalletService;
 import org.chromium.brave_wallet.mojom.CoinType;
 import org.chromium.brave_wallet.mojom.EthTxManagerProxy;
@@ -79,6 +80,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.BraveAdFreeCalloutDialogFragment;
 import org.chromium.chrome.browser.BraveAdaptiveCaptchaUtils;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.BraveFeatureUtil;
 import org.chromium.chrome.browser.BraveHelper;
 import org.chromium.chrome.browser.BraveRelaunchUtils;
@@ -106,9 +108,12 @@ import org.chromium.chrome.browser.crypto_wallet.JsonRpcServiceFactory;
 import org.chromium.chrome.browser.crypto_wallet.KeyringServiceFactory;
 import org.chromium.chrome.browser.crypto_wallet.SwapServiceFactory;
 import org.chromium.chrome.browser.crypto_wallet.TxServiceFactory;
+import org.chromium.chrome.browser.crypto_wallet.activities.AddAccountActivity;
 import org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletActivity;
 import org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletDAppsActivity;
 import org.chromium.chrome.browser.crypto_wallet.activities.NetworkSelectorActivity;
+import org.chromium.chrome.browser.crypto_wallet.model.CryptoAccountTypeInfo;
+import org.chromium.chrome.browser.crypto_wallet.util.AssetUtils;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.crypto_wallet.util.WalletUtils;
 import org.chromium.chrome.browser.custom_layout.popup_window_tooltip.PopupWindowTooltip;
@@ -117,6 +122,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.informers.BraveAndroidSyncDisabledInformer;
+import org.chromium.chrome.browser.notifications.BraveNotificationWarningDialog;
+import org.chromium.chrome.browser.notifications.BravePermissionUtils;
 import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionController;
 import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionRationaleDialogController;
 import org.chromium.chrome.browser.notifications.retention.RetentionNotificationUtil;
@@ -140,6 +147,8 @@ import org.chromium.chrome.browser.privacy.settings.BravePrivacySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rate.RateDialogFragment;
 import org.chromium.chrome.browser.rate.RateUtils;
+import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
+import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUtils;
 import org.chromium.chrome.browser.set_default_browser.OnBraveSetDefaultBrowserListener;
 import org.chromium.chrome.browser.settings.BraveNewsPreferences;
@@ -166,6 +175,7 @@ import org.chromium.chrome.browser.vpn.BraveVpnNativeWorker;
 import org.chromium.chrome.browser.vpn.BraveVpnObserver;
 import org.chromium.chrome.browser.vpn.activities.BraveVpnProfileActivity;
 import org.chromium.chrome.browser.vpn.fragments.BraveVpnCalloutDialogFragment;
+import org.chromium.chrome.browser.vpn.fragments.LinkVpnSubscriptionDialogFragment;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnApiResponseUtils;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnPrefUtils;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnProfileUtils;
@@ -175,11 +185,14 @@ import org.chromium.chrome.browser.vpn.wireguard.WireguardConfigUtils;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.safe_browsing.BraveSafeBrowsingApiHandler;
+import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.ui.permissions.PermissionConstants;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -196,7 +209,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @JNINamespace("chrome::android")
 public abstract class BraveActivity<C extends ChromeActivityComponent> extends ChromeActivity
         implements BrowsingDataBridge.OnClearBrowsingDataListener, BraveVpnObserver,
-                   OnBraveSetDefaultBrowserListener, ConnectionErrorHandler, PrefObserver {
+                   OnBraveSetDefaultBrowserListener, ConnectionErrorHandler, PrefObserver,
+                   BraveSafeBrowsingApiHandler.BraveSafeBrowsingApiHandlerDelegate {
     public static final String ADD_FUNDS_URL = "brave://rewards/#add-funds";
     public static final String BRAVE_REWARDS_SETTINGS_URL = "brave://rewards/";
     public static final String BRAVE_REWARDS_SETTINGS_WALLET_VERIFICATION_URL =
@@ -226,6 +240,8 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
 
     private static final List<String> yandexRegions =
             Arrays.asList("AM", "AZ", "BY", "KG", "KZ", "MD", "RU", "TJ", "TM", "UZ");
+
+    private BraveSafeBrowsingApiHandler mBraveSafeBrowsingApiHandler;
 
     private String mPurchaseToken = "";
     private String mProductId = "";
@@ -268,11 +284,11 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
 
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
-        Tab tab = getActivityTab();
-        if (tab != null) {
+        Profile profile = getCurrentTabModel().getProfile();
+        if (profile != null) {
             // Set proper active DSE whenever brave returns to foreground.
             // If active tab is private, set private DSE as an active DSE.
-            BraveSearchEngineUtils.updateActiveDSE(tab.isIncognito());
+            BraveSearchEngineUtils.updateActiveDSE(profile);
         }
 
         // The check on mNativeInitialized is mostly to ensure that mojo
@@ -285,6 +301,15 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
             }
             updateWalletBadgeVisibility();
         }
+        boolean safeBrowsingFlagEnabled =
+                ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
+        boolean safeBrowsingPrefEnabled =
+                SafeBrowsingBridge.getSafeBrowsingState() != SafeBrowsingState.NO_SAFE_BROWSING;
+        if (safeBrowsingFlagEnabled && safeBrowsingPrefEnabled) {
+            mBraveSafeBrowsingApiHandler.initSafeBrowsing();
+        } else if (!safeBrowsingFlagEnabled && safeBrowsingPrefEnabled) {
+            SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.NO_SAFE_BROWSING);
+        }
     }
 
     @Override
@@ -292,11 +317,11 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
         if (BraveVpnUtils.isBraveVpnFeatureEnable()) {
             BraveVpnNativeWorker.getInstance().removeObserver(this);
         }
-        Tab tab = getActivityTab();
-        if (tab != null && tab.isIncognito()) {
+        Profile profile = getCurrentTabModel().getProfile();
+        if (profile != null && profile.isOffTheRecord()) {
             // Set normal DSE as an active DSE when brave goes in background
             // because currently set DSE is used by outside of brave(ex, brave search widget).
-            BraveSearchEngineUtils.updateActiveDSE(false);
+            BraveSearchEngineUtils.updateActiveDSE(profile);
         }
         super.onPauseWithNative();
     }
@@ -569,6 +594,11 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
         }
     }
 
+    public void showAccountCreation(String keyringId) {
+        assert mWalletModel != null : " mWalletModel is null ";
+        mWalletModel.getDappsModel().addAccountCreationRequest(keyringId);
+    }
+
     private void updateWalletBadgeVisibility() {
         assert mWalletModel != null;
         mWalletModel.getDappsModel().updateWalletBadgeVisibility();
@@ -752,6 +782,18 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
 
         PostTask.postTask(
                 TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> { BraveStatsUtil.removeShareStatsFile(); });
+        if (mBraveSafeBrowsingApiHandler == null) {
+            mBraveSafeBrowsingApiHandler =
+                    new BraveSafeBrowsingApiHandler(this, BraveConfig.SAFEBROWSING_API_KEY, this);
+            SafeBrowsingApiBridge.setHandler(mBraveSafeBrowsingApiHandler);
+            SafeBrowsingApiBridge.ensureInitialized();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mBraveSafeBrowsingApiHandler.shutdownSafeBrowsing();
     }
 
     @Override
@@ -773,6 +815,11 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
     @Override
     public void onPreferenceChange() {
         maybeSolveAdaptiveCaptcha();
+    }
+
+    @Override
+    public void turnSafeBrowsingOff() {
+        SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.NO_SAFE_BROWSING);
     }
 
     public void maybeSolveAdaptiveCaptcha() {
@@ -850,7 +897,7 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
             BraveSyncWorker.get();
         }
 
-        checkForNotificationData();
+        checkAndshowNotificationWarningDialog();
 
         if (!RateUtils.getInstance(this).getPrefRateEnabled()) {
             RateUtils.getInstance(this).setPrefRateEnabled(true);
@@ -956,6 +1003,11 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
                         BraveVpnPrefUtils.getPurchaseToken(), BraveVpnPrefUtils.getProductId(),
                         BraveVpnUtils.SUBSCRIPTION_PARAM_TEXT, getPackageName());
             }
+        }
+        if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI)
+                && BraveVpnPrefUtils.isSubscriptionPurchase()
+                && !BraveVpnPrefUtils.isLinkSubscriptionDialogShown()) {
+            showLinkVpnSubscriptionDialog();
         }
         if (PackageUtils.isFirstInstall(this)
                 && (OnboardingPrefManager.getInstance().isDormantUsersEngagementEnabled()
@@ -1072,9 +1124,16 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
     private void showVpnCalloutDialog() {
         BraveVpnCalloutDialogFragment braveVpnCalloutDialogFragment =
                 new BraveVpnCalloutDialogFragment();
-        braveVpnCalloutDialogFragment.setCancelable(false);
         braveVpnCalloutDialogFragment.show(
                 getSupportFragmentManager(), "BraveVpnCalloutDialogFragment");
+    }
+
+    private void showLinkVpnSubscriptionDialog() {
+        LinkVpnSubscriptionDialogFragment linkVpnSubscriptionDialogFragment =
+                new LinkVpnSubscriptionDialogFragment();
+        linkVpnSubscriptionDialogFragment.setCancelable(false);
+        linkVpnSubscriptionDialogFragment.show(
+                getSupportFragmentManager(), "LinkVpnSubscriptionDialogFragment");
     }
 
     private void showAdFreeCalloutDialog() {
@@ -1083,7 +1142,6 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
 
         BraveAdFreeCalloutDialogFragment braveAdFreeCalloutDialogFragment =
                 new BraveAdFreeCalloutDialogFragment();
-        braveAdFreeCalloutDialogFragment.setCancelable(false);
         braveAdFreeCalloutDialogFragment.show(
                 getSupportFragmentManager(), "BraveAdFreeCalloutDialogFragment");
     }
@@ -1191,12 +1249,43 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
     private void checkForYandexSE() {
         String countryCode = Locale.getDefault().getCountry();
         if (yandexRegions.contains(countryCode)) {
-            TemplateUrl yandexTemplateUrl =
-                    BraveSearchEngineUtils.getTemplateUrlByShortName(OnboardingPrefManager.YANDEX);
+            Profile lastUsedRegularProfile = Profile.getLastUsedRegularProfile();
+            TemplateUrl yandexTemplateUrl = BraveSearchEngineUtils.getTemplateUrlByShortName(
+                    lastUsedRegularProfile, OnboardingPrefManager.YANDEX);
             if (yandexTemplateUrl != null) {
-                BraveSearchEngineUtils.setDSEPrefs(yandexTemplateUrl, false);
-                BraveSearchEngineUtils.setDSEPrefs(yandexTemplateUrl, true);
+                BraveSearchEngineUtils.setDSEPrefs(yandexTemplateUrl, lastUsedRegularProfile);
+                BraveSearchEngineUtils.setDSEPrefs(yandexTemplateUrl,
+                        lastUsedRegularProfile.getPrimaryOTRProfile(/* createIfNeeded= */ true));
             }
+        }
+    }
+
+    private void showNotificationWarningDialog() {
+        BraveNotificationWarningDialog notificationWarningDialog =
+                BraveNotificationWarningDialog.newInstance(
+                        BraveNotificationWarningDialog.FROM_LAUNCHED_BRAVE_ACTIVITY);
+        notificationWarningDialog.setCancelable(false);
+        notificationWarningDialog.setDismissListener(closeDialogListener);
+        notificationWarningDialog.show(getSupportFragmentManager(),
+                BraveNotificationWarningDialog.NOTIFICATION_WARNING_DIALOG_TAG);
+    }
+
+    private BraveNotificationWarningDialog.DismissListener closeDialogListener =
+            new BraveNotificationWarningDialog.DismissListener() {
+                @Override
+                public void onDismiss() {
+                    checkForNotificationData();
+                }
+            };
+
+    private void checkAndshowNotificationWarningDialog() {
+        if (BraveNotificationWarningDialog.shouldShowNotificationWarningDialog(this)
+                && !OnboardingPrefManager.getInstance()
+                            .isNotificationPermissionEnablingDialogShown()) {
+            showNotificationWarningDialog();
+            OnboardingPrefManager.getInstance().setNotificationPermissionEnablingDialogShown(true);
+        } else {
+            checkForNotificationData();
         }
     }
 
@@ -1427,8 +1516,39 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
                         updateWalletBadgeVisibility();
                     }
                 });
+
         mWalletModel.getDappsModel().mWalletIconNotificationVisible.observe(
                 this, visible -> { setWalletBadgeVisibility(visible); });
+
+        mWalletModel.getDappsModel().mPendingWalletAccountCreationRequest.observe(this, request -> {
+            if (request == null) return;
+            mWalletModel.getKeyringModel().isWalletLocked(isLocked -> {
+                // Cannot use mWalletModel.getKeyringModel().getKeyringInfo().isLocked as account
+                // creation request can be triggered when the wallet is locked and keyringInfo will
+                // be null
+                if (!BraveWalletPreferences.getPrefWeb3NotificationsEnabled()) return;
+                if (isLocked) {
+                    Tab tab = getActivityTab();
+                    if (tab != null) {
+                        walletInteractionDetected(tab.getWebContents());
+                    }
+                    showWalletPanel(false);
+                    return;
+                }
+                for (CryptoAccountTypeInfo info :
+                        mWalletModel.getCryptoModel().getSupportedCryptoAccountTypes()) {
+                    if (info.getCoinType() == request.getCoinType()) {
+                        Intent addAccountActivityIntent =
+                                new Intent(this, AddAccountActivity.class);
+                        addAccountActivityIntent.putExtra(AddAccountActivity.ACCOUNT, info);
+                        startActivity(addAccountActivityIntent);
+                        mWalletModel.getDappsModel().removeProcessedAccountCreationRequest(request);
+                        break;
+                    }
+                }
+            });
+        });
+
         mWalletModel.getCryptoModel().getNetworkModel().mNeedToCreateAccountForNetwork.observe(
                 this, networkInfo -> {
                     if (networkInfo == null) return;
@@ -1487,13 +1607,12 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
 
     private void showBraveRateDialog() {
         RateDialogFragment mRateDialogFragment = new RateDialogFragment();
-        mRateDialogFragment.setCancelable(false);
         mRateDialogFragment.show(getSupportFragmentManager(), "RateDialogFragment");
     }
 
     private void showCrossPromotionalDialog() {
-        CrossPromotionalModalDialogFragment mCrossPromotionalModalDialogFragment = new CrossPromotionalModalDialogFragment();
-        mCrossPromotionalModalDialogFragment.setCancelable(false);
+        CrossPromotionalModalDialogFragment mCrossPromotionalModalDialogFragment =
+                new CrossPromotionalModalDialogFragment();
         mCrossPromotionalModalDialogFragment.show(getSupportFragmentManager(), "CrossPromotionalModalDialogFragment");
     }
 
@@ -1502,7 +1621,6 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
                 && !BraveSetDefaultBrowserUtils.isBraveDefaultDontAsk()) {
             DormantUsersEngagementDialogFragment dormantUsersEngagementDialogFragment =
                     new DormantUsersEngagementDialogFragment();
-            dormantUsersEngagementDialogFragment.setCancelable(false);
             dormantUsersEngagementDialogFragment.setNotificationType(notificationType);
             dormantUsersEngagementDialogFragment.show(
                     getSupportFragmentManager(), "DormantUsersEngagementDialogFragment");
@@ -1533,7 +1651,13 @@ public abstract class BraveActivity<C extends ChromeActivityComponent> extends C
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        checkForNotificationData();
+        if (intent != null) {
+            String openUrl = intent.getStringExtra(BraveActivity.OPEN_URL);
+            if (!TextUtils.isEmpty(openUrl)) {
+                openNewOrSelectExistingTab(openUrl);
+            }
+        }
+        checkAndshowNotificationWarningDialog();
     }
 
     @Override

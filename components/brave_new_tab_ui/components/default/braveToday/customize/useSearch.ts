@@ -1,11 +1,10 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { api } from '../../../../api/brave_news/news'
-import { FeedSearchResultItem } from '../../../../api/brave_news'
+import getBraveNewsController, { FeedSearchResultItem } from '../../../../api/brave_news'
 import { useBraveNews, useChannels } from './Context'
 
 export const QUERY_MIN_LENGTH_FILTER_SOURCES = 2
@@ -39,11 +38,16 @@ export default function useSearch (query: string) {
         p.feedSource?.url?.toLocaleLowerCase().includes(lowerQuery)))
     const results = { publishers, direct: [] as FeedSearchResultItem[] }
     for (const result of directResults) {
-      const publisherMatch = publishers.find(p => p.feedSource.url === result.feedUrl.url)
-      if (publisherMatch && !publishers.some(p => p.publisherId === publisherMatch.publisherId)) {
-        results.publishers.push(publisherMatch)
-      } else {
+      // If we have any publisher with this feed url, we should prefer showing
+      // that to creating a new direct feed.
+      // Note: We should only add the publisher to the list of publisher matches
+      // if it isn't already matching. The canonical case here is
+      // news.com (redirects to cnet.com), so we should show the cnet.com feed.
+      const publisherMatch = context.sortedPublishers.find(p => p.feedSource.url === result.feedUrl.url)
+      if (!publisherMatch) {
         results.direct.push(result)
+      } else if (!results.publishers.some(p => p.publisherId === publisherMatch.publisherId)) {
+        results.publishers.push(publisherMatch)
       }
     }
     return {
@@ -100,7 +104,7 @@ export default function useSearch (query: string) {
     setLoading(true)
     let cancelled = false
 
-    api.controller.findFeeds({ url: feedUrlQuery.toString() }).then(({ results }) => {
+    getBraveNewsController().findFeeds({ url: feedUrlQuery.toString() }).then(({ results }) => {
       console.debug('News: received feed results', { results, cancelled })
       if (cancelled) return
 

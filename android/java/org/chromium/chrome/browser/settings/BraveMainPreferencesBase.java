@@ -6,16 +6,19 @@
 package org.chromium.chrome.browser.settings;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 
 import androidx.preference.Preference;
 
 import org.chromium.base.BraveFeatureList;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveConfig;
@@ -24,6 +27,7 @@ import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.settings.BraveHomepageSettings;
+import org.chromium.chrome.browser.notifications.BraveNotificationWarningDialog;
 import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBridge;
 import org.chromium.chrome.browser.ntp_background_images.util.NTPUtil;
 import org.chromium.chrome.browser.partnercustomizations.CloseBraveManager;
@@ -38,6 +42,7 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnPrefUtils;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnUtils;
 import org.chromium.chrome.browser.vpn.utils.InAppPurchaseWrapper;
+import org.chromium.chrome.browser.widget.quickactionsearchandbookmark.utils.BraveSearchWidgetUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -45,7 +50,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
 
-// This exculdes some settings in main settings screen.
+// This excludes some settings in main settings screen.
 public class BraveMainPreferencesBase
         extends BravePreferenceFragment implements Preference.OnPreferenceChangeListener {
     // sections
@@ -90,8 +95,11 @@ public class BraveMainPreferencesBase
     private static final String PREF_RATE_BRAVE = "rate_brave";
     private static final String PREF_BRAVE_STATS = "brave_stats";
     private static final String PREF_DOWNLOADS = "brave_downloads";
+    private static final String PREF_HOME_SCREEN_WIDGET = "home_screen_widget";
 
     private final HashMap<String, Preference> mRemovedPreferences = new HashMap<>();
+    private Preference mVpnCalloutPreference;
+    private boolean mNotificationClicked;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,6 +113,7 @@ public class BraveMainPreferencesBase
         overrideChromiumPreferences();
         initRateBrave();
         setPreferenceListeners();
+        notificationClick();
     }
 
     @Override
@@ -116,6 +125,38 @@ public class BraveMainPreferencesBase
         // Run updateBravePreferences() after fininshing MainPreferences::updatePreferences().
         // Otherwise, some prefs could be added after finishing updateBravePreferences().
         new Handler().post(() -> updateBravePreferences());
+        if (mNotificationClicked
+                && BraveNotificationWarningDialog.shouldShowNotificationWarningDialog(
+                        getActivity())) {
+            mNotificationClicked = false;
+            showNotificationWarningDialog();
+        }
+    }
+
+    private void showNotificationWarningDialog() {
+        BraveNotificationWarningDialog notificationWarningDialog =
+                BraveNotificationWarningDialog.newInstance(
+                        BraveNotificationWarningDialog.FROM_LAUNCHED_BRAVE_SETTINGS);
+        notificationWarningDialog.setCancelable(false);
+        notificationWarningDialog.show(getChildFragmentManager(),
+                BraveNotificationWarningDialog.NOTIFICATION_WARNING_DIALOG_TAG);
+    }
+
+    private void notificationClick() {
+        Preference notifications = findPreference(PREF_NOTIFICATIONS);
+        if (notifications != null) {
+            notifications.setOnPreferenceClickListener(preference -> {
+                mNotificationClicked = true;
+
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE,
+                        ContextUtils.getApplicationContext().getPackageName());
+                startActivity(intent);
+                // We handle the click so the default action isn't triggered.
+                return true;
+            });
+        }
     }
 
     private void updateBravePreferences() {
@@ -194,10 +235,14 @@ public class BraveMainPreferencesBase
         if (BraveVpnPrefUtils.shouldShowCallout() && !BraveVpnPrefUtils.isSubscriptionPurchase()
                 && BraveVpnUtils.isBraveVpnFeatureEnable()
                 && InAppPurchaseWrapper.getInstance().isSubscriptionSupported()) {
-            VpnCalloutPreference vpnCalloutPreference = new VpnCalloutPreference(getActivity());
-            vpnCalloutPreference.setKey(PREF_BRAVE_VPN_CALLOUT);
-            vpnCalloutPreference.setOrder(firstSectionOrder);
-            getPreferenceScreen().addPreference(vpnCalloutPreference);
+            if (getActivity() != null && mVpnCalloutPreference == null) {
+                mVpnCalloutPreference = new VpnCalloutPreference(getActivity());
+            }
+            if (mVpnCalloutPreference != null) {
+                mVpnCalloutPreference.setKey(PREF_BRAVE_VPN_CALLOUT);
+                mVpnCalloutPreference.setOrder(firstSectionOrder);
+                getPreferenceScreen().addPreference(mVpnCalloutPreference);
+            }
         }
 
         findPreference(PREF_FEATURES_SECTION).setOrder(++firstSectionOrder);
@@ -226,6 +271,12 @@ public class BraveMainPreferencesBase
         if (preference != null) {
             preference.setOrder(++generalOrder);
         }
+
+        if (BraveSearchWidgetUtils.isRequestPinAppWidgetSupported())
+            findPreference(PREF_HOME_SCREEN_WIDGET).setOrder(++generalOrder);
+        else
+            removePreferenceIfPresent(PREF_HOME_SCREEN_WIDGET);
+
         findPreference(PREF_PASSWORDS).setOrder(++generalOrder);
         findPreference(PREF_SYNC).setOrder(++generalOrder);
         findPreference(PREF_BRAVE_STATS).setOrder(++generalOrder);
@@ -361,12 +412,23 @@ public class BraveMainPreferencesBase
                 bundle.putBoolean(RateUtils.FROM_SETTINGS, true);
 
                 RateDialogFragment mRateDialogFragment = new RateDialogFragment();
-                mRateDialogFragment.setCancelable(false);
                 mRateDialogFragment.setArguments(bundle);
                 mRateDialogFragment.show(getParentFragmentManager(), "RateDialogFragment");
                 return true;
             }
         });
+
+        Preference homeScreenWidgetPreference = findPreference(PREF_HOME_SCREEN_WIDGET);
+        if (homeScreenWidgetPreference != null) {
+            homeScreenWidgetPreference.setOnPreferenceClickListener(
+                    new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            BraveSearchWidgetUtils.requestPinAppWidget();
+                            return true;
+                        }
+                    });
+        }
     }
 
     // TODO(simonhong): Make this static public with proper class.

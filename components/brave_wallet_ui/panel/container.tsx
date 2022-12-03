@@ -1,7 +1,7 @@
 // Copyright (c) 2021 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 import {
@@ -21,12 +21,8 @@ import {
   EncryptionKeyPanel
 } from '../components/extension'
 import {
-  Send,
-  Buy,
-  SelectAsset,
   SelectAccount,
   SelectNetworkWithHeader,
-  Swap,
   CreateAccountTab
 } from '../components/buy-send-swap/'
 import { AppList } from '../components/shared'
@@ -39,7 +35,6 @@ import {
   ConnectWithSiteWrapper
 } from '../stories/style'
 import {
-  SendWrapper,
   PanelWrapper,
   WelcomePanelWrapper
 } from './style'
@@ -51,16 +46,14 @@ import {
   BraveWallet,
   PanelTypes,
   WalletAccountType,
-  BuySendSwapViewTypes,
-  ToOrFromType
+  SerializableTransactionInfo
 } from '../constants/types'
 
 import { AppsList } from '../options/apps-list-options'
 import LockPanel from '../components/extension/lock-panel'
 import { getNetworkInfo } from '../utils/network-utils'
 import { isHardwareAccount } from '../utils/address-utils'
-import { useAssets, useSwap, useSend, useHasAccount, usePrevNetwork, useBalanceUpdater } from '../common/hooks'
-import { getUniqueAssets } from '../utils/asset-utils'
+import { useAssets, useHasAccount, usePrevNetwork, useBalanceUpdater } from '../common/hooks'
 import { isSolanaTransaction } from '../utils/tx-utils'
 import { ConfirmSolanaTransactionPanel } from '../components/extension/confirm-transaction-panel/confirm-solana-transaction-panel'
 import { SignTransactionPanel } from '../components/extension/sign-panel/sign-transaction-panel'
@@ -120,66 +113,17 @@ function Container () {
   // also using `React.lazy` to put all the main UI in a separate JS bundle and display
   // that loading indicator ASAP.
   const [filteredAppsList, setFilteredAppsList] = React.useState<AppsListType[]>(AppsList)
-  const [showSelectAsset, setShowSelectAsset] = React.useState<boolean>(false)
 
   const {
-    sendAssetOptions,
-    buyAssetOptions,
     panelUserAssetList
   } = useAssets()
 
-  const [selectedBuyAsset, setSelectedBuyAsset] = React.useState<BraveWallet.BlockchainToken>(buyAssetOptions[0])
-
   // hooks
   useBalanceUpdater()
-  const swap = useSwap()
-  const {
-    filteredAssetList,
-    isSwapSupported,
-    setSwapToOrFrom,
-    swapToOrFrom,
-    onSelectTransactAsset
-  } = swap
-
-  const {
-    selectSendAsset: onSelectSendAsset
-  } = useSend()
 
   const { needsAccount } = useHasAccount()
 
   const { prevNetwork } = usePrevNetwork()
-
-  const onChangeSendView = (view: BuySendSwapViewTypes) => {
-    if (view === 'assets') {
-      setShowSelectAsset(true)
-    }
-  }
-
-  const onChangeSwapView = (view: BuySendSwapViewTypes, option?: ToOrFromType) => {
-    if (view === 'assets') {
-      setShowSelectAsset(true)
-    }
-
-    if (option) {
-      setSwapToOrFrom(option)
-    }
-  }
-
-  const onHideSelectAsset = () => {
-    setShowSelectAsset(false)
-  }
-
-  const onSelectAsset = (asset: BraveWallet.BlockchainToken) => () => {
-    if (selectedPanel === 'buy') {
-      setSelectedBuyAsset(asset)
-    } else if (selectedPanel === 'swap') {
-      onSelectTransactAsset(asset, swapToOrFrom)
-    } else {
-      onSelectSendAsset(asset)
-    }
-
-    setShowSelectAsset(false)
-  }
 
   const unlockWallet = (password: string) => {
     dispatch(WalletActions.unlockWallet({ password }))
@@ -267,12 +211,12 @@ function Container () {
     }
   }
 
-  const viewTransactionDetail = React.useCallback((transaction: BraveWallet.TransactionInfo) => {
+  const viewTransactionDetail = React.useCallback((transaction: SerializableTransactionInfo) => {
     dispatch(WalletPanelActions.setSelectedTransaction(transaction))
     dispatch(WalletPanelActions.navigateTo('transactionDetails'))
   }, [])
 
-  const viewTransactionStatus = React.useCallback((transaction: BraveWallet.TransactionInfo) => {
+  const viewTransactionStatus = React.useCallback((transaction: SerializableTransactionInfo) => {
     dispatch(WalletPanelActions.setSelectedTransaction(transaction))
     dispatch(WalletPanelActions.navigateTo('transactionStatus'))
   }, [])
@@ -339,15 +283,15 @@ function Container () {
     })
   }
 
-  const onRetryTransaction = (transaction: BraveWallet.TransactionInfo) => {
+  const onRetryTransaction = (transaction: SerializableTransactionInfo) => {
     dispatch(WalletActions.retryTransaction(transaction))
   }
 
-  const onSpeedupTransaction = (transaction: BraveWallet.TransactionInfo) => {
+  const onSpeedupTransaction = (transaction: SerializableTransactionInfo) => {
     dispatch(WalletActions.speedupTransaction(transaction))
   }
 
-  const onCancelTransaction = (transaction: BraveWallet.TransactionInfo) => {
+  const onCancelTransaction = (transaction: SerializableTransactionInfo) => {
     dispatch(WalletActions.cancelTransaction(transaction))
   }
 
@@ -375,10 +319,6 @@ function Container () {
     navigateTo('buy')
   }, [])
 
-  const onShowCurrencySelection = React.useCallback(() => {
-    navigateTo('currencies')
-  }, [])
-
   const onSelectCurrency = React.useCallback(() => {
     dispatch(WalletPanelActions.navigateTo('buy'))
   }, [])
@@ -388,16 +328,6 @@ function Container () {
       dispatch(WalletPanelActions.navigateTo('createAccount'))
     }
   }, [needsAccount])
-
-  React.useEffect(() => {
-    if (buyAssetOptions.length > 0) {
-      setSelectedBuyAsset(buyAssetOptions[0])
-    }
-  }, [buyAssetOptions])
-
-  const filteredAssetOptions = React.useMemo(() => {
-    return getUniqueAssets(buyAssetOptions)
-  }, [buyAssetOptions])
 
   if (!hasInitialized || !accounts) {
     return null
@@ -438,7 +368,7 @@ function Container () {
     )
   }
 
-  if ((selectedPendingTransaction || signMessageData.length) &&
+  if (selectedAccount && (selectedPendingTransaction || signMessageData.length) &&
     selectedPanel === 'connectHardwareWallet') {
     return (
       <PanelWrapper isLonger={false}>
@@ -606,28 +536,6 @@ function Container () {
     )
   }
 
-  if (showSelectAsset) {
-    let assets: BraveWallet.BlockchainToken[]
-    if (selectedPanel === 'buy') {
-      assets = filteredAssetOptions
-    } else if (selectedPanel === 'send') {
-      assets = sendAssetOptions
-    } else { // swap
-      assets = filteredAssetList
-    }
-    return (
-      <PanelWrapper isLonger={false}>
-        <SelectContainer>
-          <SelectAsset
-            assets={assets}
-            onSelectAsset={onSelectAsset}
-            onBack={onHideSelectAsset}
-          />
-        </SelectContainer>
-      </PanelWrapper>
-    )
-  }
-
   if (selectedPanel === 'networks') {
     return (
       <PanelWrapper isLonger={false}>
@@ -700,69 +608,6 @@ function Container () {
     )
   }
 
-  if (selectedPanel === 'send') {
-    return (
-      <PanelWrapper isLonger={false}>
-        <StyledExtensionWrapper>
-          <Panel
-            navAction={navigateTo}
-            title={panelTitle}
-            useSearch={false}
-          >
-            <SendWrapper>
-              <Send
-                onChangeSendView={onChangeSendView}
-              />
-            </SendWrapper>
-          </Panel>
-        </StyledExtensionWrapper>
-      </PanelWrapper>
-    )
-  }
-
-  if (selectedPanel === 'buy') {
-    return (
-      <PanelWrapper isLonger={false}>
-        <StyledExtensionWrapper>
-          <Panel
-            navAction={navigateTo}
-            title={panelTitle}
-            useSearch={false}
-          >
-            <SendWrapper>
-              <Buy
-                onChangeBuyView={onChangeSendView}
-                selectedAsset={selectedBuyAsset}
-                onShowCurrencySelection={onShowCurrencySelection}
-              />
-            </SendWrapper>
-          </Panel>
-        </StyledExtensionWrapper>
-      </PanelWrapper>
-    )
-  }
-
-  if (selectedPanel === 'swap') {
-    return (
-      <PanelWrapper isLonger={false}>
-        <StyledExtensionWrapper>
-          <Panel
-            navAction={navigateTo}
-            title={panelTitle}
-            useSearch={false}
-          >
-            <SendWrapper>
-              <Swap
-                {...swap}
-                onChangeSwapView={onChangeSwapView}
-              />
-            </SendWrapper>
-          </Panel>
-        </StyledExtensionWrapper>
-      </PanelWrapper>
-    )
-  }
-
   if (selectedPanel === 'transactionDetails' && selectedTransaction) {
     return (
       <PanelWrapper isLonger={false}>
@@ -796,7 +641,7 @@ function Container () {
             <TransactionsPanel
               onSelectTransaction={viewTransactionDetail}
               selectedNetwork={selectedNetwork}
-              selectedAccountAddress={selectedAccount.address}
+              selectedAccountAddress={selectedAccount?.address}
             />
           </Panel>
         </StyledExtensionWrapper>
@@ -880,7 +725,6 @@ function Container () {
     <PanelWrapper isLonger={false}>
       <ConnectedPanel
         navAction={navigateTo}
-        isSwapSupported={isSwapSupported}
       />
     </PanelWrapper>
   )

@@ -119,6 +119,7 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
 import org.chromium.chrome.browser.util.BraveConstants;
 import org.chromium.chrome.browser.util.PackageUtils;
+import org.chromium.chrome.browser.widget.quickactionsearchandbookmark.promo.SearchWidgetPromoPanel;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -153,7 +154,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private static final String JAPAN_COUNTRY_CODE = "JP";
     private static final String YOUTUBE_DOMAIN = "youtube.com";
     private static final List<String> mBraveSearchEngineDefaultRegions =
-            Arrays.asList("CA", "DE", "FR", "GB", "US", "AT", "ES", "MX");
+            Arrays.asList("CA", "DE", "FR", "GB", "US", "AT", "ES", "MX", "BR", "AR");
     private static final long MB_10 = 10000000;
     private static final long MINUTES_10 = 10 * 60 * 1000;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP = 10;
@@ -193,6 +194,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private ColorStateList mDarkModeTint;
     private ColorStateList mLightModeTint;
 
+    private SearchWidgetPromoPanel mSearchWidgetPromoPanel;
+
     private final Set<Integer> mTabsWithWalletIcon =
             Collections.synchronizedSet(new HashSet<Integer>());
 
@@ -205,7 +208,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     @Override
-    void destroy() {
+    public void destroy() {
         if (mBraveShieldsContentSettings != null) {
             mBraveShieldsContentSettings.removeObserver(mBraveShieldsContentSettingsObserver);
         }
@@ -249,7 +252,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         mDarkModeTint = ThemeUtils.getThemedToolbarIconTint(getContext(), false);
         mLightModeTint =
                 ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.brave_white));
-
+        mSearchWidgetPromoPanel = new SearchWidgetPromoPanel(getContext());
         if (mHomeButton != null) {
             mHomeButton.setOnLongClickListener(this);
         }
@@ -276,7 +279,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         if (!mBraveShieldsHandler.isDisconnectEntityLoaded
                 && !BraveShieldsUtils.hasShieldsTooltipShown(
                         BraveShieldsUtils.PREF_SHIELDS_TOOLTIP)) {
-            mBraveShieldsHandler.loadDisconnectEntityList();
+            mBraveShieldsHandler.loadDisconnectEntityList(getContext());
         }
         mBraveShieldsHandler.addObserver(new BraveShieldsMenuObserver() {
             @Override
@@ -426,7 +429,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
-                showWalletIcon(false);
+                showWalletIcon(false, tab);
                 if (getToolbarDataProvider().getTab() == tab) {
                     updateBraveShieldsButtonState(tab);
                 }
@@ -508,7 +511,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 if (mBraveRewardsNativeWorker != null && !tab.isIncognito()) {
                     mBraveRewardsNativeWorker.OnNotifyFrontTabUrlChanged(
                             tab.getId(), tab.getUrl().getSpec());
-                    if (getToolbarDataProvider().getTab() == tab) {
+                    Tab providerTab = getToolbarDataProvider().getTab();
+                    if (providerTab != null && providerTab.getId() == tab.getId()) {
                         showWalletIcon(mTabsWithWalletIcon.contains(tab.getId()));
                     } else if (mWalletLayout != null) {
                         mWalletLayout.setVisibility(mTabsWithWalletIcon.contains(tab.getId())
@@ -887,14 +891,17 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         return mWalletLayout.getVisibility() == View.VISIBLE;
     }
 
-    public void showWalletIcon(boolean show) {
+    public void showWalletIcon(boolean show, Tab tab) {
         // The layout could be null in Custom Tabs layout
         if (mWalletLayout == null) {
             return;
         }
-        Tab currentTab = getToolbarDataProvider().getTab();
+        Tab currentTab = tab;
         if (currentTab == null) {
-            return;
+            currentTab = getToolbarDataProvider().getTab();
+            if (currentTab == null) {
+                return;
+            }
         }
         if (show) {
             mWalletLayout.setVisibility(View.VISIBLE);
@@ -903,6 +910,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mWalletLayout.setVisibility(View.GONE);
             mTabsWithWalletIcon.remove(currentTab.getId());
         }
+    }
+
+    public void showWalletIcon(boolean show) {
+        showWalletIcon(show, null);
     }
 
     public void hideRewardsOnboardingIcon() {
@@ -1043,6 +1054,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             Intent searchActivityIntent = new Intent(context, SearchActivity.class);
             context.startActivity(searchActivityIntent);
         }
+        if (hasFocus) mSearchWidgetPromoPanel.showIfNeeded(this);
+
         if (OnboardingPrefManager.getInstance().getUrlFocusCount() == 0) {
             OnboardingPrefManager.getInstance().updateUrlFocusCount();
         }

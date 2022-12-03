@@ -1,7 +1,7 @@
 /* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as BraveWallet from 'gen/brave/components/brave_wallet/common/brave_wallet.mojom.m.js'
 import {
@@ -168,11 +168,22 @@ export const getBatTokensFromList = (tokenList: BraveWallet.BlockchainToken[]) =
   }
 }
 
+export type GetBlockchainTokenIdArg = Pick<
+  BraveWallet.BlockchainToken,
+  | 'chainId'
+  | 'contractAddress'
+  | 'isErc721'
+  | 'symbol'
+  | 'tokenId'
+> & {
+  coingeckoId?: string | undefined
+}
+
 /**
  * @param asset The token to get an id for
  * @returns an id that can be used as a react element key
  */
-export const getAssetIdKey = (asset: BraveWallet.BlockchainToken) => {
+export const getAssetIdKey = (asset: GetBlockchainTokenIdArg) => {
   return asset.isErc721
     ? `${asset.contractAddress}-${asset.symbol}-${asset.tokenId}-${asset.chainId}`
     : `${asset.contractAddress}-${asset.symbol}-${asset.chainId}`
@@ -183,3 +194,12 @@ export const getAssetIdKey = (asset: BraveWallet.BlockchainToken) => {
  * @returns Boolean indicating sardine support
  */
 export const isSardineSupported = () => navigator.language.toLowerCase() === 'en-us'
+
+export const findTokenByContractAddress = (
+  contractAddress: string,
+  tokensList: BraveWallet.BlockchainToken[]
+) => {
+  return tokensList.find((token) =>
+    token.contractAddress.toLowerCase() === contractAddress.toLowerCase()
+  )
+}

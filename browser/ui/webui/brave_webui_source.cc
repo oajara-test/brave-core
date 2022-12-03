@@ -11,8 +11,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "brave/components/constants/url_constants.h"
-#include "brave/components/crypto_dot_com/browser/buildflags/buildflags.h"
-#include "brave/components/ftx/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -164,7 +162,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "showFrecencyMenuLabel", IDS_BRAVE_NEW_TAB_SHOW_FRECENCY_MENU_LABEL },
         { "showFavoritesMenuLabel", IDS_BRAVE_NEW_TAB_SHOW_FAVORITES_MENU_LABEL },  // NOLINT
         { "showRewards", IDS_BRAVE_NEW_TAB_SHOW_REWARDS },
-        { "showBinance", IDS_BRAVE_NEW_TAB_SHOW_BINANCE },
         { "cards", IDS_BRAVE_NEW_TAB_SHOW_CARDS },
         { "brandedWallpaperOptIn", IDS_BRAVE_NEW_TAB_BRANDED_WALLPAPER_OPT_IN },
         { "sponsoredImageOn", IDS_BRAVE_NEW_TAB_SPONSORED_IMAGE_ON},
@@ -189,11 +186,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "searchPromotionSearchBoxPlaceholderLabel", IDS_BRAVE_NEW_TAB_SEARCH_PROMOTION_SEARCH_BOX_PLACEHOLDER},  // NOLINT
 
         { "braveTodayTitle", IDS_BRAVE_TODAY_TITLE },
-        { "braveTodayIntroTitle", IDS_BRAVE_TODAY_INTRO_TITLE },
-        { "braveTodayIntroDescription", IDS_BRAVE_TODAY_INTRO_DESCRIPTION },
-        { "braveTodayOptInActionLabel", IDS_BRAVE_TODAY_OPT_IN_ACTION_LABEL },
-        { "braveTodayShowToolbarButton", IDS_BRAVE_TODAY_SHOW_TOOLBAR_BUTTON },
-        { "braveTodayOptOutActionLabel", IDS_BRAVE_TODAY_OPT_OUT_ACTION_LABEL },
         { "braveTodayStatusFetching", IDS_BRAVE_TODAY_STATUS_FETCHING},
         { "braveTodayActionRefresh", IDS_BRAVE_TODAY_ACTION_REFRESH},
         { "braveTodayScrollHint", IDS_BRAVE_TODAY_SCROLL_HINT},
@@ -206,13 +198,16 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "promoted", IDS_BRAVE_TODAY_PROMOTED },
         { "ad", IDS_BRAVE_TODAY_DISPLAY_AD_LABEL },
 
+        { "braveNewsIntroTitle", IDS_BRAVE_NEWS_INTRO_TITLE },
+        { "braveNewsIntroDescription", IDS_BRAVE_NEWS_INTRO_DESCRIPTION },
+        { "braveNewsIntroDescriptionTwo", IDS_BRAVE_NEWS_INTRO_DESCRIPTION_TWO },  // NOLINT
+        { "braveNewsOptInActionLabel", IDS_BRAVE_NEWS_OPT_IN_ACTION_LABEL },
+        { "braveNewsOptOutActionLabel", IDS_BRAVE_NEWS_OPT_OUT_ACTION_LABEL },
         { "braveNewsBackToDashboard", IDS_BRAVE_NEWS_BACK_TO_DASHBOARD },
-        { "braveNewsDisabledPlaceholderHeader", IDS_BRAVE_NEWS_DISABLED_PLACEHOLDER_HEADER },   // NOLINT
-        { "braveNewsDisabledPlaceholderSubtitle", IDS_BRAVE_NEWS_DISABLED_PLACEHOLDER_SUBTITLE },  // NOLINT
-        { "braveNewsDisabledPlaceholderEnableButton", IDS_BRAVE_NEWS_DISABLED_PLACEHOLDER_ENABLE_BUTTON },  // NOLINT
+        { "braveNewsBackButton", IDS_BRAVE_NEWS_BACK_BUTTON },
         { "braveNewsSearchPlaceholderLabel", IDS_BRAVE_NEWS_SEARCH_PLACEHOLDER_LABEL},  // NOLINT
         { "braveNewsChannelsHeader", IDS_BRAVE_NEWS_BROWSE_CHANNELS_HEADER},  // NOLINT
-        { "braveNewsShowMoreButton", IDS_BRAVE_NEWS_SHOW_MORE_BUTTON},
+        { "braveNewsViewAllButton", IDS_BRAVE_NEWS_VIEW_ALL_BUTTON},
         { "braveNewsAllSourcesHeader", IDS_BRAVE_NEWS_ALL_SOURCES_HEADER},
         { "braveNewsFeedsHeading", IDS_BRAVE_NEWS_FEEDS_HEADING},
         { "braveNewsFollowButtonFollowing", IDS_BRAVE_NEWS_FOLLOW_BUTTON_FOLLOWING},  // NOLINT
@@ -225,6 +220,12 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "braveNewsSearchQueryTooShort", IDS_BRAVE_NEWS_SEARCH_QUERY_TOO_SHORT},  // NOLINT
         { "braveNewsSuggestionsTitle", IDS_BRAVE_NEWS_SUGGESTIONS_TITLE},
         { "braveNewsSuggestionsSubtitle", IDS_BRAVE_NEWS_SUGGESTIONS_SUBTITLE},
+        { "braveNewsErrorHeading", IDS_BRAVE_NEWS_ERROR_HEADING},
+        { "braveNewsErrorMessage", IDS_BRAVE_NEWS_ERROR_MESSAGE},
+        { "braveNewsErrorActionLabel", IDS_BRAVE_NEWS_ERROR_ACTION_LABEL},
+        { "braveNewsNoContentHeading", IDS_BRAVE_NEWS_NO_CONTENT_HEADING},
+        { "braveNewsNoContentMessage", IDS_BRAVE_NEWS_NO_CONTENT_MESSAGE},
+        { "braveNewsNoContentActionLabel", IDS_BRAVE_NEWS_NO_CONTENT_ACTION_LABEL},  // NOLINT
         // Brave News Channels
         { "braveNewsChannel-Brave", IDS_BRAVE_NEWS_CHANNEL_BRAVE},
         { "braveNewsChannel-Business", IDS_BRAVE_NEWS_CHANNEL_BUSINESS},
@@ -232,19 +233,26 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "braveNewsChannel-Crypto", IDS_BRAVE_NEWS_CHANNEL_CRYPTO},
         { "braveNewsChannel-Culture", IDS_BRAVE_NEWS_CHANNEL_CULTURE},
         { "braveNewsChannel-Entertainment", IDS_BRAVE_NEWS_CHANNEL_ENTERTAINMENT}, // NOLINT
+        { "braveNewsChannel-Entertainment News", IDS_BRAVE_NEWS_CHANNEL_ENTERTAINMENT_NEWS}, // NOLINT
         { "braveNewsChannel-Fashion", IDS_BRAVE_NEWS_CHANNEL_FASHION},
+        { "braveNewsChannel-Film and TV", IDS_BRAVE_NEWS_CHANNEL_FILM_AND_TV},
         { "braveNewsChannel-Food", IDS_BRAVE_NEWS_CHANNEL_FOOD},
         { "braveNewsChannel-Fun", IDS_BRAVE_NEWS_CHANNEL_FUN},
         { "braveNewsChannel-Gaming", IDS_BRAVE_NEWS_CHANNEL_GAMING},
         { "braveNewsChannel-Health", IDS_BRAVE_NEWS_CHANNEL_HEALTH},
         { "braveNewsChannel-Home", IDS_BRAVE_NEWS_CHANNEL_HOME},
+        { "braveNewsChannel-Music", IDS_BRAVE_NEWS_CHANNEL_MUSIC},
         { "braveNewsChannel-Politics", IDS_BRAVE_NEWS_CHANNEL_POLITICS},
+        { "braveNewsChannel-Regional News", IDS_BRAVE_NEWS_CHANNEL_REGIONAL_NEWS},
         { "braveNewsChannel-Science", IDS_BRAVE_NEWS_CHANNEL_SCIENCE},
         { "braveNewsChannel-Sports", IDS_BRAVE_NEWS_CHANNEL_SPORTS},
         { "braveNewsChannel-Travel", IDS_BRAVE_NEWS_CHANNEL_TRAVEL},
         { "braveNewsChannel-Technology", IDS_BRAVE_NEWS_CHANNEL_TECHNOLOGY},
+        { "braveNewsChannel-Tech News", IDS_BRAVE_NEWS_CHANNEL_TECH_NEWS},
+        { "braveNewsChannel-Tech Reviews", IDS_BRAVE_NEWS_CHANNEL_TECH_REVIEWS},
         { "braveNewsChannel-Top News", IDS_BRAVE_NEWS_CHANNEL_TOP_NEWS},
         { "braveNewsChannel-Top Sources", IDS_BRAVE_NEWS_CHANNEL_TOP_SOURCES},
+        { "braveNewsChannel-US News", IDS_BRAVE_NEWS_CHANNEL_US_NEWS},
         { "braveNewsChannel-Weather", IDS_BRAVE_NEWS_CHANNEL_WEATHER},
         { "braveNewsChannel-World News", IDS_BRAVE_NEWS_CHANNEL_WORLD_NEWS},
         { "braveNewsPopularTitle", IDS_BRAVE_NEWS_POPULAR_TITLE},
@@ -253,14 +261,9 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "addWidget", IDS_BRAVE_NEW_TAB_WIDGET_ADD },
         { "hideWidget", IDS_BRAVE_NEW_TAB_WIDGET_HIDE },
         { "rewardsWidgetDesc", IDS_BRAVE_NEW_TAB_REWARDS_WIDGET_DESC },
-        { "binanceWidgetDesc", IDS_BRAVE_NEW_TAB_BINANCE_WIDGET_DESC },
-        { "geminiWidgetDesc", IDS_BRAVE_NEW_TAB_GEMINI_WIDGET_DESC },
         { "cardsToggleTitle", IDS_BRAVE_NEW_TAB_CARDS_TITLE },
         { "cardsToggleDesc", IDS_BRAVE_NEW_TAB_CARDS_DESC },
         { "editCardsTitle", IDS_EDIT_CARDS_TITLE },
-#if BUILDFLAG(CRYPTO_DOT_COM_ENABLED)
-        { "cryptoDotComWidgetDesc", IDS_BRAVE_NEW_TAB_CRYPTO_DOT_COM_WIDGET_DESC },              // NOLINT
-#endif
         { "braveRewardsTitle", IDS_BRAVE_NEW_TAB_BRAVE_REWARDS_TITLE },
         // Private Tab - General
         { "learnMore", IDS_BRAVE_PRIVATE_NEW_TAB_LEARN_MORE },
@@ -342,134 +345,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "braveTalkWidgetWelcomeTitle", IDS_BRAVE_TALK_WIDGET_WELCOME_TITLE },
         { "braveTalkWidgetStartButton", IDS_BRAVE_TALK_WIDGET_START_BUTTON },
         { "braveTalkWidgetAboutData", IDS_BRAVE_TALK_WIDGET_ABOUT_DATA },
-        // Binance Widget
-        { "binanceWidgetBuy", IDS_BINANCE_WIDGET_BUY },
-        { "binanceWidgetBuyCrypto", IDS_BINANCE_WIDGET_BUY_CRYPTO },
-        { "binanceWidgetBuyDefault", IDS_BINANCE_WIDGET_BUY_DEFAULT },
-        { "binanceWidgetWelcomeTitle", IDS_BINANCE_WIDGET_WELCOME_TITLE },
-        { "binanceWidgetSubText", IDS_BINANCE_WIDGET_SUB_TEXT },
-        { "binanceWidgetConnectText", IDS_BINANCE_WIDGET_CONNECT_TEXT },
-        { "binanceWidgetDismissText", IDS_BINANCE_WIDGET_DISMISS_TEXT },
-        { "binanceWidgetValueText", IDS_BINANCE_WIDGET_VALUE_TEXT },
-        { "binanceWidgetBTCTickerText" , IDS_BINANCE_BTC_TICKER_TEXT },
-        { "binanceWidgetViewDetails", IDS_BRAVE_UI_VIEW_DETAILS },
-        { "binanceWidgetDepositLabel", IDS_BINANCE_WIDGET_DEPOSIT_LABEL },
-        { "binanceWidgetTradeLabel", IDS_BINANCE_WIDGET_TRADE_LABEL },
-        { "binanceWidgetInvalidEntry", IDS_BINANCE_WIDGET_INVALID_ENTRY },
-        { "binanceWidgetValidatingCreds", IDS_BINANCE_WIDGET_VALIDATING_CREDS },    // NOLINT
-        { "binanceWidgetDisconnectTitle", IDS_BINANCE_WIDGET_DISCONNECT_TITLE },    // NOLINT
-        { "binanceWidgetDisconnectText" , IDS_BINANCE_WIDGET_DISCONNECT_TEXT },     // NOLINT
-        { "binanceWidgetDisconnectButton" , IDS_BINANCE_WIDGET_DISCONNECT_BUTTON }, // NOLINT
-        { "binanceWidgetCancelText" , IDS_BRAVE_UI_CANCEL },
-        { "binanceWidgetAccountDisconnected" , IDS_BINANCE_WIDGET_ACCOUNT_DISCONNECTED }, // NOLINT
-        { "binanceWidgetConfigureButton" , IDS_BINANCE_WIDGET_CONFIGURE_BUTTON },         // NOLINT
-        { "binanceWidgetConnect", IDS_BINANCE_WIDGET_CONNECT },
-        { "binanceWidgetConverted", IDS_BINANCE_WIDGET_CONVERTED },
-        { "binanceWidgetContinue", IDS_BINANCE_WIDGET_CONTINUE },
-        { "binanceWidgetUnableToConvert", IDS_BINANCE_WIDGET_UNABLE_TO_CONVERT },         // NOLINT
-        { "binanceWidgetRetry", IDS_BINANCE_WIDGET_RETRY },
-        { "binanceWidgetInsufficientFunds", IDS_BINANCE_WIDGET_INSUFFICIENT_FUNDS },      // NOLINT
-        { "binanceWidgetConversionFailed", IDS_BINANCE_WIDGET_CONVERSION_FAILED },        // NOLINT
-        { "binanceWidgetDone", IDS_BINANCE_WIDGET_DONE },
-        { "binanceWidgetCopy", IDS_BINANCE_WIDGET_COPY },
-        { "binanceWidgetSearch", IDS_BINANCE_WIDGET_SEARCH },
-        { "binanceWidgetAddressUnavailable", IDS_BINANCE_WIDGET_ADDRESS_UNAVAILABLE },    // NOLINT
-        { "binanceWidgetDepositAddress", IDS_BINANCE_WIDGET_DEPOSIT_ADDRESS },
-        { "binanceWidgetDepositMemo", IDS_BINANCE_WIDGET_DEPOSIT_MEMO },
-        { "binanceWidgetConfirmConversion", IDS_BINANCE_WIDGET_CONFIRM_CONVERSION },      // NOLINT
-        { "binanceWidgetConvert", IDS_BINANCE_WIDGET_CONVERT },
-        { "binanceWidgetRate", IDS_BINANCE_WIDGET_RATE },
-        { "binanceWidgetFee", IDS_BINANCE_WIDGET_FEE },
-        { "binanceWidgetWillReceive", IDS_BINANCE_WIDGET_WILL_RECEIVE },
-        { "binanceWidgetConfirm", IDS_BINANCE_WIDGET_CONFIRM },
-        { "binanceWidgetCancel", IDS_BINANCE_WIDGET_CANCEL },
-        { "binanceWidgetAvailable" , IDS_BINANCE_WIDGET_AVAILABLE },
-        { "binanceWidgetConvertIntent", IDS_BINANCE_WIDGET_CONVERT_INTENT },
-        { "binanceWidgetPreviewConvert", IDS_BINANCE_WIDGET_PREVIEW_CONVERT },
-        { "binanceWidgetSummary", IDS_BINANCE_WIDGET_SUMMARY },
-        { "binanceWidgetAuthInvalid", IDS_BINANCE_WIDGET_AUTH_INVALID },
-        { "binanceWidgetAuthInvalidCopy", IDS_BINANCE_WIDGET_AUTH_INVALID_COPY },         // NOLINT
-        { "binanceWidgetRefreshData", IDS_BINANCE_WIDGET_REFRESH_DATA },
-        { "binanceWidgetUnderMinimum", IDS_BINANCE_WIDGET_UNDER_MINIMUM },
-        // Gemini Widget
-        { "geminiWidgetAuthInvalid", IDS_BINANCE_WIDGET_AUTH_INVALID },
-        { "geminiWidgetAuthInvalidCopy", IDS_GEMINI_WIDGET_AUTH_INVALID_COPY },
-        { "geminiWidgetDone", IDS_BINANCE_WIDGET_DONE },
-        { "geminiWidgetCopy", IDS_BINANCE_WIDGET_COPY },
-        { "geminiWidgetRetry", IDS_BINANCE_WIDGET_RETRY },
-        { "geminiWidgetCancel", IDS_BINANCE_WIDGET_CANCEL },
-        { "geminiWidgetConfirm", IDS_BINANCE_WIDGET_CONFIRM },
-        { "geminiWidgetDisconnectTitle", IDS_BINANCE_WIDGET_DISCONNECT_TITLE },
-        { "geminiWidgetDisconnectText", IDS_BINANCE_WIDGET_DISCONNECT_TEXT },
-        { "geminiWidgetDisconnectButton", IDS_BINANCE_WIDGET_DISCONNECT_BUTTON },         // NOLINT
-        { "geminiWidgetCancelText", IDS_BINANCE_WIDGET_CANCEL },
-        { "geminiWidgetDismissText", IDS_BINANCE_WIDGET_DISMISS_TEXT },
-        { "geminiWidgetConnectTitle", IDS_GEMINI_WIDGET_CONNECT_TITLE },
-        { "geminiWidgetConnectCopy", IDS_GEMINI_WIDGET_CONNECT_COPY },
-        { "geminiWidgetConnectButton", IDS_GEMINI_WIDGET_CONNECT_BUTTON },
-        { "geminiWidgetFailedTrade", IDS_GEMINI_WIDGET_FAILED_TRADE },
-        { "geminiWidgetInsufficientFunds", IDS_BINANCE_WIDGET_INSUFFICIENT_FUNDS },       // NOLINT
-        { "geminiWidgetError", IDS_GEMINI_WIDGET_ERROR },
-        { "geminiWidgetConfirmTrade", IDS_GEMINI_WIDGET_CONFIRM_TRADE },
-        { "geminiWidgetBuy", IDS_BINANCE_WIDGET_BUY },
-        { "geminiWidgetSell", IDS_GEMINI_WIDGET_SELL },
-        { "geminiWidgetAvailable", IDS_BINANCE_WIDGET_AVAILABLE },
-        { "geminiWidgetGetQuote", IDS_GEMINI_WIDGET_GET_QUOTE },
-        { "geminiWidgetUnavailable", IDS_BINANCE_WIDGET_ADDRESS_UNAVAILABLE },
-        { "geminiWidgetDepositAddress", IDS_BINANCE_WIDGET_DEPOSIT_ADDRESS },
-        { "geminiWidgetSearch", IDS_BINANCE_WIDGET_SEARCH },
-        { "geminiWidgetDepositLabel", IDS_BINANCE_WIDGET_DEPOSIT_LABEL },
-        { "geminiWidgetTradeLabel", IDS_GEMINI_WIDGET_TRADE_LABEL },
-        { "geminiWidgetBalanceLabel", IDS_GEMINI_WIDGET_BALANCE_LABEL },
-        { "geminiWidgetBuying", IDS_GEMINI_WIDGET_BUYING },
-        { "geminiWidgetSelling", IDS_GEMINI_WIDGET_SELLING },
-        { "geminiWidgetContinue", IDS_BINANCE_WIDGET_CONTINUE },
-        { "geminiWidgetBought", IDS_GEMINI_WIDGET_BOUGHT },
-        { "geminiWidgetSold", IDS_GEMINI_WIDGET_SOLD },
-        { "geminiWidgetFee", IDS_BINANCE_WIDGET_FEE },
-        { "geminiWidgetUnitPrice", IDS_GEMINI_WIDGET_UNIT_PRICE },
-        { "geminiWidgetTotalPrice", IDS_GEMINI_WIDGET_TOTAL_PRICE },
-        { "geminiWidgetTotalAmount", IDS_GEMINI_WIDGET_TOTAL_AMOUNT },
-        { "geminiWidgetSummaryNoBalance", IDS_GEMINI_WIDGET_SUMMARY_NO_BALANCE},
-        { "cryptoConvertAmountPlaceholder", IDS_CRYPTO_CONVERT_AMOUNT_PLACEHOLDER },      // NOLINT
-#if BUILDFLAG(CRYPTO_DOT_COM_ENABLED)
-        { "cryptoDotComWidgetShowPrice", IDS_CRYPTO_DOT_COM_WIDGET_SHOW_PRICE },
-        { "cryptoDotComWidgetBuy", IDS_BINANCE_WIDGET_BUY },
-        { "cryptoDotComWidgetCopyOne", IDS_CRYPTO_DOT_COM_WIDGET_COPY_ONE },
-        { "cryptoDotComWidgetCopyTwo", IDS_CRYPTO_DOT_COM_WIDGET_COPY_TWO },
-        { "cryptoDotComWidgetBuyBtc", IDS_CRYPTO_DOT_COM_WIDGET_BUY_BTC },
-        { "cryptoDotComWidgetViewMarkets", IDS_CRYPTO_DOT_COM_WIDGET_VIEW_MARKETS },      // NOLINT
-        { "cryptoDotComWidgetGraph", IDS_CRYPTO_DOT_COM_WIDGET_GRAPH },
-        { "cryptoDotComWidgetPairs", IDS_CRYPTO_DOT_COM_WIDGET_PAIRS },
-        { "cryptoDotComWidgetVolume", IDS_CRYPTO_DOT_COM_WIDGET_VOLUME },
-#endif
-#if BUILDFLAG(ENABLE_FTX)
-        { "ftxMoreMarketsLink", IDS_FTX_MORE_MARKETS_LINK },
-        { "ftxWidgetDescription", IDS_FTX_WIDGET_DESCRIPTION },
-        { "ftxMarkets", IDS_FTX_MARKETS },
-        { "ftxConvert", IDS_FTX_CONVERT },
-        { "ftxSummary", IDS_FTX_SUMMARY },
-        { "ftxIntro", IDS_FTX_INTRO },
-        { "ftxViewMarkets", IDS_FTX_VIEW_MARKETS },
-        { "ftxConnect", IDS_FTX_CONNECT },
-        { "ftxGraphLabel", IDS_FTX_GRAPH_LABEL },
-        { "ftxVolumeLabel", IDS_FTX_VOLUME_LABEL },
-        { "ftxConversionPreviewLabel", IDS_FTX_CONVERSION_PREVIEW_LABEL },
-        { "ftxConversionPreviewTitle", IDS_FTX_CONVERSION_PREVIEW_TITLE },
-        { "ftxConversionQuantityLabel", IDS_FTX_CONVERSION_QUANTITY_LABEL },
-        { "ftxConversionPriceLabel", IDS_FTX_CONVERSION_PRICE_LABEL },
-        { "ftxConversionProceedsLabel", IDS_FTX_CONVERSION_PROCEEDS_LABEL },
-        { "ftxConversionSubmittingLabel", IDS_FTX_CONVERSION_SUBMITTING_LABEL },
-        { "ftxConversionConfirmLabel", IDS_FTX_CONVERSION_CONFIRM_LABEL },
-        { "ftxConversionCancelLabel", IDS_FTX_CONVERSION_CANCEL_LABEL },
-        { "ftxConversionSuccessTitle", IDS_FTX_CONVERSION_SUCCESS_TITLE },
-        { "ftxConversionDoneLabel", IDS_FTX_CONVERSION_DONE_LABEL },
-        { "ftxConversionBalanceNeeded", IDS_FTX_CONVERSION_BALANCE_NEEDED },
-        { "ftxConversionAmountAvailable", IDS_FTX_CONVERSION_AMOUNT_AVAILABLE },
-        { "ftxSummaryBlurLabel", IDS_FTX_SUMMARY_BLUR_LABEL },
-        { "ftxSummaryRevealLabel", IDS_FTX_SUMMARY_REVEAL_LABEL },
-        { "ftxSummaryNoBalance", IDS_FTX_SUMMARY_NO_BALANCE},
-#endif
       }
     }, {
       std::string("wallet"), {
@@ -481,37 +356,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "cryptoWalletsBraveRewards", IDS_BRAVE_WALLET_BRAVE_REWARDS },
         { "cryptoWalletsDownloading", IDS_BRAVE_WALLET_DOWNLOADING },
         { "cryptoWalletsDisclosureConfirm", IDS_BRAVE_WALLET_DISCLOSURE_CONFIRM }         // NOLINT
-      }
-    }, {
-      std::string("welcome"), {
-#if !BUILDFLAG(IS_ANDROID)
-        { "headerText", IDS_WELCOME_HEADER },
-#endif
-        { "welcome", IDS_BRAVE_WELCOME_PAGE_MAIN_TITLE },
-        { "whatIsBrave", IDS_BRAVE_WELCOME_PAGE_MAIN_DESC },
-        { "letsGo", IDS_BRAVE_WELCOME_PAGE_MAIN_BUTTON },
-        { "braveRewardsTitle", IDS_BRAVE_WELCOME_PAGE_REWARDS_TITLE },
-        { "setupBraveRewards", IDS_BRAVE_WELCOME_PAGE_REWARDS_DESC },
-        { "braveRewardsTerms", IDS_BRAVE_WELCOME_PAGE_REWARDS_TERMS },
-        { "braveRewardsNote", IDS_BRAVE_WELCOME_PAGE_REWARDS_NOTE },
-        { "enableRewards", IDS_BRAVE_WELCOME_PAGE_REWARDS_BUTTON },
-        { "importFromAnotherBrowser", IDS_BRAVE_WELCOME_PAGE_IMPORT_TITLE },
-        { "setupImport", IDS_BRAVE_WELCOME_PAGE_IMPORT_DESC },
-        { "import", IDS_BRAVE_WELCOME_PAGE_IMPORT_BUTTON },
-        { "importFrom", IDS_BRAVE_WELCOME_PAGE_IMPORT_FROM_DESC },
-        { "default", IDS_BRAVE_WELCOME_PAGE_DEFAULT_TEXT },
-        { "manageShields", IDS_BRAVE_WELCOME_PAGE_SHIELDS_TITLE },
-        { "adjustProtectionLevel", IDS_BRAVE_WELCOME_PAGE_SHIELDS_DESC },
-        { "shieldSettings", IDS_BRAVE_WELCOME_PAGE_SHIELDS_BUTTON },
-        { "setDefault", IDS_BRAVE_WELCOME_PAGE_SET_DEFAULT_SEARCH_BUTTON },
-        { "setDefaultSearchEngine", IDS_BRAVE_WELCOME_PAGE_SEARCH_TITLE },
-        { "chooseSearchEngine", IDS_BRAVE_WELCOME_PAGE_SEARCH_DESC },
-        { "selectSearchEngine", IDS_BRAVE_WELCOME_PAGE_SEARCH_SELECT },
-        { "skipWelcomeTour", IDS_BRAVE_WELCOME_PAGE_SKIP_BUTTON },
-        { "next", IDS_BRAVE_WELCOME_PAGE_NEXT_BUTTON },
-        { "done", IDS_BRAVE_WELCOME_PAGE_DONE_BUTTON },
-        { "privacyTitle", IDS_BRAVE_WELCOME_PAGE_PRIVACY_TITLE },
-        { "privacyDesc", IDS_BRAVE_WELCOME_PAGE_PRIVACY_DESC }
       }
     }, {
       std::string("rewards"), {
@@ -578,8 +422,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "monthlyTipsTitle",  IDS_BRAVE_REWARDS_LOCAL_MONTHLY_TIPS_TITLE },
         { "monthlyTipsDesc",  IDS_BRAVE_REWARDS_LOCAL_MONTHLY_TIPS_DESC },
         { "monthlyTipsEmpty", IDS_BRAVE_REWARDS_LOCAL_MONTHLY_TIPS_EMPTY },
-        { "walletRecoveryFail",  IDS_BRAVE_REWARDS_LOCAL_WALLET_RECOVERY_FAIL },                 // NOLINT
-        { "walletRecoveryOutdated",  IDS_BRAVE_REWARDS_LOCAL_WALLET_RECOVERY_OUTDATED },                 // NOLINT
         { "redirectModalError", IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_ERROR },
         { "redirectModalClose", IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_CLOSE },
         { "redirectModalDeviceLimitReachedText", IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_DEVICE_LIMIT_REACHED_TEXT},     // NOLINT
@@ -745,7 +587,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "reservedMoreLink", IDS_BRAVE_UI_RESERVED_MORE_LINK },
         { "reservedAllLink", IDS_BRAVE_UI_RESERVED_ALL_LINK },
         { "reset", IDS_BRAVE_UI_RESET },
-        { "restore", IDS_BRAVE_UI_RESTORE },
         { "clearExcludeList", IDS_BRAVE_UI_CLEAR_EXCLUDE_LIST },
         { "reviewSitesMsg", IDS_BRAVE_UI_REVIEW_SITE_MSG },
         { "rewardsAdGrantAmount", IDS_REWARDS_WIDGET_AD_GRANT_AMOUNT },
@@ -762,11 +603,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "rewardsPaymentCompleted", IDS_REWARDS_PAYMENT_COMPLETED },
         { "rewardsPaymentPending", IDS_REWARDS_PAYMENT_PENDING },
         { "rewardsPaymentProcessing", IDS_REWARDS_PAYMENT_PROCESSING },
-        { "rewardsViewQRCodeText1", IDS_BRAVE_UI_REWARDS_VIEW_QR_CODE_TEXT1 },
-        { "rewardsViewQRCodeText2", IDS_BRAVE_UI_REWARDS_VIEW_QR_CODE_TEXT2 },
-        { "rewardsRestoreText3", IDS_BRAVE_UI_REWARDS_RESTORE_TEXT3 },
-        { "rewardsRestoreText4", IDS_BRAVE_UI_REWARDS_RESTORE_TEXT4 },
-        { "rewardsRestoreWarning", IDS_BRAVE_UI_REWARDS_RESTORE_WARNING },
         { "rewardsResetConfirmation", IDS_BRAVE_UI_REWARDS_RESET_CONFIRMATION },
         { "rewardsResetTextFunds", IDS_BRAVE_UI_REWARDS_RESET_TEXT_FUNDS },
         { "rewardsResetTextNoFunds", IDS_BRAVE_UI_REWARDS_RESET_TEXT_NO_FUNDS },
@@ -783,7 +619,6 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "tokenGrantReceived", IDS_BRAVE_UI_TOKEN_GRANT_RECEIVED },
         { "token", IDS_BRAVE_UI_TOKEN },
         { "tokens", IDS_BRAVE_UI_TOKENS },
-        { "qrCodeLoading", IDS_BRAVE_UI_QR_CODE_LOADING },
         { "total", IDS_BRAVE_UI_TOTAL },
         { "transactions", IDS_BRAVE_UI_TRANSACTIONS },
         { "type", IDS_BRAVE_UI_TYPE },
@@ -851,9 +686,7 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "walletLogIntoYourAccount", IDS_REWARDS_WALLET_LOG_INTO_YOUR_ACCOUNT },  // NOLINT
         { "walletMonthlyTips", IDS_REWARDS_WALLET_MONTHLY_TIPS },
         { "walletOneTimeTips", IDS_REWARDS_WALLET_ONE_TIME_TIPS },
-        { "walletPending", IDS_REWARDS_WALLET_PENDING },
         { "walletPendingContributions", IDS_REWARDS_WALLET_PENDING_CONTRIBUTIONS },  // NOLINT
-        { "walletPendingText", IDS_REWARDS_WALLET_PENDING_TEXT },
         { "walletRewardsFromAds", IDS_REWARDS_WALLET_REWARDS_FROM_ADS },
         { "walletRewardsSummary", IDS_REWARDS_WALLET_REWARDS_SUMMARY },
         { "walletUnverified", IDS_REWARDS_WALLET_UNVERIFIED },
@@ -1092,12 +925,10 @@ void CustomizeWebUIHTMLSource(content::WebUI* web_ui,
         { "walletNotCreated", IDS_BRAVE_REWARDS_INTERNALS_WALLET_NOT_CREATED },
         { "walletPaymentId", IDS_BRAVE_REWARDS_INTERNALS_WALLET_PAYMENT_ID },
         { "walletStatus", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS },
-        { "walletStatusConnected", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_CONNECTED },    // NOLINT
         { "walletStatusNotConnected", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_NOT_CONNECTED },    // NOLINT
+        { "walletStatusNoWallet", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_NO_WALLET },    // NOLINT
         { "walletStatusVerified", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_VERIFIED },    // NOLINT
-        { "walletStatusDisconnectedNotVerified", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_DISCONNECTED_NOT_VERIFIED },    // NOLINT
         { "walletStatusDisconnectedVerified", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_DISCONNECTED_VERIFIED },    // NOLINT
-        { "walletStatusPending", IDS_BRAVE_REWARDS_INTERNALS_WALLET_STATUS_PENDING },    // NOLINT
       }
     }, {
 #if BUILDFLAG(ENABLE_TOR)

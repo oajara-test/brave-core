@@ -1054,26 +1054,10 @@ std::vector<mojom::NetworkInfoPtr> GetAllKnownChains(PrefService* prefs,
 GURL GetNetworkURL(PrefService* prefs,
                    const std::string& chain_id,
                    mojom::CoinType coin) {
-  if (coin == mojom::CoinType::ETH) {
-    if (auto custom_chain =
-            GetCustomChain(prefs, chain_id, mojom::CoinType::ETH)) {
-      return MaybeAddInfuraProjectId(GetActiveEndpointUrl(*custom_chain));
-    } else if (auto known_chain =
-                   GetKnownChain(prefs, chain_id, mojom::CoinType::ETH)) {
-      return MaybeAddInfuraProjectId(GetActiveEndpointUrl(*known_chain));
-    }
-  } else if (coin == mojom::CoinType::SOL) {
-    for (const auto* network : GetKnownSolNetworks()) {
-      if (base::CompareCaseInsensitiveASCII(network->chain_id, chain_id) == 0) {
-        return GetActiveEndpointUrl(*network);
-      }
-    }
-  } else if (coin == mojom::CoinType::FIL) {
-    for (const auto* network : GetKnownFilNetworks()) {
-      if (base::CompareCaseInsensitiveASCII(network->chain_id, chain_id) == 0) {
-        return GetActiveEndpointUrl(*network);
-      }
-    }
+  if (auto custom_chain = GetCustomChain(prefs, chain_id, coin)) {
+    return MaybeAddInfuraProjectId(GetActiveEndpointUrl(*custom_chain));
+  } else if (auto known_chain = GetKnownChain(prefs, chain_id, coin)) {
+    return MaybeAddInfuraProjectId(GetActiveEndpointUrl(*known_chain));
   }
   return GURL();
 }
@@ -1250,7 +1234,7 @@ bool GetShowWalletTestNetworks(PrefService* prefs) {
 }
 
 mojom::CoinType GetSelectedCoin(PrefService* prefs) {
-  return static_cast<brave_wallet::mojom::CoinType>(
+  return static_cast<mojom::CoinType>(
       prefs->GetInteger(kBraveWalletSelectedCoin));
 }
 
@@ -1263,11 +1247,11 @@ std::string GetDefaultBaseCryptocurrency(PrefService* prefs) {
 }
 
 GURL GetUnstoppableDomainsRpcUrl(const std::string& chain_id) {
-  if (base::CompareCaseInsensitiveASCII(
-          chain_id, brave_wallet::mojom::kMainnetChainId) == 0 ||
-      base::CompareCaseInsensitiveASCII(
-          chain_id, brave_wallet::mojom::kPolygonMainnetChainId) == 0) {
-    return AddInfuraProjectId(GURL(GetInfuraURLForKnownChainId(chain_id)));
+  if (base::CompareCaseInsensitiveASCII(chain_id, mojom::kMainnetChainId) ==
+          0 ||
+      base::CompareCaseInsensitiveASCII(chain_id,
+                                        mojom::kPolygonMainnetChainId) == 0) {
+    return AddInfuraProjectId(GetInfuraURLForKnownChainId(chain_id));
   }
 
   NOTREACHED();
@@ -1282,10 +1266,19 @@ std::string GetUnstoppableDomainsProxyReaderContractAddress(
   return "";
 }
 
+GURL GetEnsRpcUrl() {
+  return AddInfuraProjectId(
+      GetInfuraURLForKnownChainId(mojom::kMainnetChainId));
+}
+
 std::string GetEnsRegistryContractAddress(const std::string& chain_id) {
   std::string chain_id_lower = base::ToLowerASCII(chain_id);
-  DCHECK_EQ(chain_id_lower, brave_wallet::mojom::kMainnetChainId);
+  DCHECK_EQ(chain_id_lower, mojom::kMainnetChainId);
   return kEnsRegistryContractAddress;
+}
+
+GURL GetSnsRpcUrl() {
+  return GetSolMainnet()->rpc_endpoints.front();
 }
 
 void AddCustomNetwork(PrefService* prefs, const mojom::NetworkInfo& chain) {
@@ -1297,15 +1290,8 @@ void AddCustomNetwork(PrefService* prefs, const mojom::NetworkInfo& chain) {
   {  // Update needs to be done before GetNetworkId below.
     DictionaryPrefUpdate update(prefs, kBraveWalletCustomNetworks);
     base::Value::Dict& dict = update.Get()->GetDict();
-    // TODO(cdesouza): Once cr106 is merged, this FindList should be replaced
-    // with EnsureList.
-    base::Value::List* list = dict.FindList(GetPrefKeyForCoinType(chain.coin));
-    if (!list) {
-      list = dict.Set(GetPrefKeyForCoinType(chain.coin), base::Value::List())
-                 ->GetIfList();
-    }
-    CHECK(list);
-    list->Append(NetworkInfoToValue(chain));
+    dict.EnsureList(GetPrefKeyForCoinType(chain.coin))
+        ->Append(NetworkInfoToValue(chain));
   }
 
   if (chain.coin != mojom::CoinType::ETH)
@@ -1382,14 +1368,7 @@ void AddHiddenNetwork(PrefService* prefs,
                       const std::string& chain_id) {
   DictionaryPrefUpdate update(prefs, kBraveWalletHiddenNetworks);
   base::Value::Dict& dict = update.Get()->GetDict();
-  // TODO(cdesouza): Once cr106 is merged, this FindList should be replaced with
-  // EnsureList.
-  base::Value::List* list = dict.FindList(GetPrefKeyForCoinType(coin));
-  if (!list) {
-    list =
-        dict.Set(GetPrefKeyForCoinType(coin), base::Value::List())->GetIfList();
-  }
-  CHECK(list);
+  base::Value::List* list = dict.EnsureList(GetPrefKeyForCoinType(coin));
   std::string chain_id_lower = base::ToLowerASCII(chain_id);
   if (!base::Contains(*list, base::Value(chain_id_lower))) {
     list->Append(chain_id_lower);

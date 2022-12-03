@@ -1,7 +1,7 @@
 // Copyright (c) 2020 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 import { useDispatch } from 'react-redux'
@@ -21,8 +21,6 @@ import { PageSelectors } from './selectors'
 
 // types
 import {
-  BuySendSwapTypes,
-  WalletAccountType,
   WalletRoutes
 } from '../constants/types'
 
@@ -42,15 +40,15 @@ import {
 // components
 import { CryptoView, LockScreen, WalletPageLayout, WalletSubViewLayout } from '../components/desktop'
 import { Skeleton } from '../components/shared/loading-skeleton/styles'
-import BuySendSwap from '../stories/screens/buy-send-swap'
 import { OnboardingRoutes } from './screens/onboarding/onboarding.routes'
-import { BackupWallet } from './screens/backup-wallet/backup-wallet'
-import { SweepstakesBanner } from '../components/desktop/sweepstakes-banner'
+import { BackupWalletRoutes } from './screens/backup-wallet/backup-wallet.routes'
 import { FundWalletScreen } from './screens/fund-wallet/fund-wallet'
 import { OnboardingSuccess } from './screens/onboarding/onboarding-success/onboarding-success'
 import { DepositFundsScreen } from './screens/fund-wallet/deposit-funds'
 import { RestoreWallet } from './screens/restore-wallet/restore-wallet'
 import { Swap } from './screens/swap/swap'
+import { SendScreen } from './screens/send/send-page/send-screen'
+import { BuySendSwapDepositNav } from '../components/desktop/buy-send-swap-deposit-nav/buy-send-swap-deposit-nav'
 
 const featureRequestUrl = 'https://community.brave.com/tags/c/wallet/131/feature-request'
 
@@ -78,7 +76,6 @@ export const Container = () => {
   // state
   const [sessionRoute, setSessionRoute] = React.useState<string | undefined>(undefined)
   const [inputValue, setInputValue] = React.useState<string>('')
-  const [selectedWidgetTab, setSelectedWidgetTab] = React.useState<BuySendSwapTypes>('buy')
 
   // methods
   const onToggleShowRestore = React.useCallback(() => {
@@ -99,10 +96,6 @@ export const Container = () => {
     }
   }, [walletLocation])
 
-  const onSelectAccount = (account: WalletAccountType) => {
-    dispatch(WalletActions.selectAccount(account))
-  }
-
   const unlockWallet = React.useCallback(() => {
     dispatch(WalletActions.unlockWallet({ password: inputValue }))
     setInputValue('')
@@ -112,11 +105,6 @@ export const Container = () => {
       history.push(WalletRoutes.Portfolio)
     }
   }, [inputValue, sessionRoute])
-
-  const onHideBackup = React.useCallback(() => {
-    dispatch(WalletPageActions.showRecoveryPhrase({ show: false }))
-    history.goBack()
-  }, [])
 
   const handlePasswordChanged = React.useCallback((value: string) => {
     setInputValue(value)
@@ -168,7 +156,8 @@ export const Container = () => {
       walletLocation.includes(WalletRoutes.Portfolio) ||
       walletLocation.includes(WalletRoutes.Market) ||
       walletLocation.includes(WalletRoutes.Nfts) ||
-      walletLocation.includes(WalletRoutes.Swap)
+      walletLocation.includes(WalletRoutes.Swap) ||
+      walletLocation.includes(WalletRoutes.Send)
     ) {
       setSessionRoute(walletLocation)
     }
@@ -180,6 +169,7 @@ export const Container = () => {
     if (toobarElement && rootElement) {
       if (
         walletLocation === WalletRoutes.Swap ||
+        walletLocation === WalletRoutes.Send ||
         walletLocation.includes(WalletRoutes.DepositFundsPage) ||
         walletLocation.includes(WalletRoutes.FundWalletPage)
       ) {
@@ -194,6 +184,16 @@ export const Container = () => {
 
   React.useEffect(() => {
     document.title = getWalletLocationTitle(walletLocation)
+  }, [walletLocation])
+
+  React.useEffect(() => {
+    // clean recovery phrase if not backing up or onboarding on route change
+    if (
+      !walletLocation.includes(WalletRoutes.Backup) &&
+      !walletLocation.includes(WalletRoutes.Onboarding)
+    ) {
+      dispatch(WalletPageActions.recoveryWordsAvailable({ mnemonic: '' }))
+    }
   }, [walletLocation])
 
   // render
@@ -253,12 +253,15 @@ export const Container = () => {
               }
 
               {!isWalletLocked &&
-                <Route path={WalletRoutes.Backup} exact={true}>
+                <Route path={WalletRoutes.Send} exact={true}>
+                  <SendScreen />
+                </Route>
+              }
+
+              {!isWalletLocked &&
+                <Route path={WalletRoutes.Backup}>
                   <SimplePageWrapper>
-                    <BackupWallet
-                      isOnboarding={false}
-                      onCancel={onHideBackup}
-                    />
+                    <BackupWalletRoutes />
                   </SimplePageWrapper>
                 </Route>
               }
@@ -286,12 +289,7 @@ export const Container = () => {
 
       {showBuySendSwapSidebar &&
         <WalletWidgetStandIn>
-          <BuySendSwap
-            selectedTab={selectedWidgetTab}
-            onSelectAccount={onSelectAccount}
-            onSelectTab={setSelectedWidgetTab}
-          />
-          <SweepstakesBanner />
+          <BuySendSwapDepositNav />
         </WalletWidgetStandIn>
       }
 

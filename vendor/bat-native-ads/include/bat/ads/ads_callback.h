@@ -6,10 +6,10 @@
 #ifndef BRAVE_VENDOR_BAT_NATIVE_ADS_INCLUDE_BAT_ADS_ADS_CALLBACK_H_
 #define BRAVE_VENDOR_BAT_NATIVE_ADS_INCLUDE_BAT_ADS_ADS_CALLBACK_H_
 
-#include <functional>
 #include <string>
 
 #include "absl/types/optional.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #include "bat/ads/inline_content_ad_info.h"
 #include "bat/ads/new_tab_page_ad_info.h"
@@ -17,25 +17,26 @@
 
 namespace ads {
 
-using InitializeCallback = std::function<void(const bool)>;
-using ShutdownCallback = std::function<void(const bool)>;
+using InitializeCallback = base::OnceCallback<void(const bool)>;
+using ShutdownCallback = base::OnceCallback<void(const bool)>;
 
-using RemoveAllHistoryCallback = std::function<void(const bool)>;
+using RemoveAllHistoryCallback = base::OnceCallback<void(const bool)>;
 
 using MaybeServeNewTabPageAdCallback =
-    std::function<void(const absl::optional<NewTabPageAdInfo>&)>;
+    base::OnceCallback<void(const absl::optional<NewTabPageAdInfo>&)>;
 
 using MaybeServeInlineContentAdCallback =
-    std::function<void(const std::string&,
-                       const absl::optional<InlineContentAdInfo>&)>;
+    base::OnceCallback<void(const std::string&,
+                            const absl::optional<InlineContentAdInfo>&)>;
 
 using GetStatementOfAccountsCallback =
-    std::function<void(mojom::StatementInfoPtr statement)>;
+    base::OnceCallback<void(mojom::StatementInfoPtr statement)>;
 
 using GetDiagnosticsCallback =
-    std::function<void(absl::optional<base::Value::List> value)>;
+    base::OnceCallback<void(absl::optional<base::Value::List> value)>;
 
-using PurgeOrphanedAdEventsForTypeCallback = std::function<void(const bool)>;
+using PurgeOrphanedAdEventsForTypeCallback =
+    base::OnceCallback<void(const bool)>;
 
 }  // namespace ads
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2020 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
 import { Button } from 'brave-ui'
@@ -22,9 +22,6 @@ export interface Props {
   onClearPrefs: () => any
   showToday: boolean
   toggleShowToday: () => any
-  showBraveNewsButton: boolean
-  featureFlagBraveNewsSubscribeButtonEnabled: boolean
-  toggleShowBraveNewsButton: () => any
 }
 
 export default function BraveTodayPrefs (props: Props) {
@@ -61,16 +58,6 @@ export default function BraveTodayPrefs (props: Props) {
           />
         </SettingsRow>
       )}
-      {!category &&
-        props.showToday &&
-        props.featureFlagBraveNewsSubscribeButtonEnabled &&
-        <SettingsRow>
-          <SettingsText>{getLocale('braveTodayShowToolbarButton')}</SettingsText>
-          <Toggle
-            checked={props.showBraveNewsButton}
-            onChange={props.toggleShowBraveNewsButton}
-            size='large'/>
-        </SettingsRow>}
       {shouldShowSources &&
       <Sources category={category} setCategory={setCategory} {...props} />
       }

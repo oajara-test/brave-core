@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -42,10 +43,6 @@ constexpr double maxUInt64AsDouble = static_cast<double>(UINT64_MAX);
 
 inline uint64_t lfsr_next(uint64_t v) {
   return ((v >> 1) | (((v << 62) ^ (v << 61)) & (~(~zero << 63) << 62)));
-}
-
-float Identity(float value, size_t index) {
-  return value;
 }
 
 float ConstantMultiplier(double fudge_factor, float value, size_t index) {
@@ -84,18 +81,24 @@ blink::WebContentSettingsClient* GetContentSettingsClientFor(
   blink::WebContentSettingsClient* settings = nullptr;
   if (!context)
     return settings;
-  // Avoid blocking fingerprinting in WebUI pages.
+  // Avoid blocking fingerprinting in WebUI, extensions, etc.
   const String protocol = context->GetSecurityOrigin()->Protocol();
-  if (protocol == url::kAboutScheme || protocol == "chrome" ||
-      protocol == "brave") {
+  if (protocol == url::kAboutScheme || protocol == "chrome-extension" ||
+      blink::SchemeRegistry::ShouldTreatURLSchemeAsDisplayIsolated(protocol)) {
     return settings;
   }
   if (auto* window = blink::DynamicTo<blink::LocalDOMWindow>(context)) {
-    auto* frame = window->GetFrame();
-    if (!frame)
-      frame = window->GetDisconnectedFrame();
-    if (frame)
-      settings = frame->GetContentSettingsClient();
+    auto* local_frame = window->GetFrame();
+    if (!local_frame)
+      local_frame = window->GetDisconnectedFrame();
+    if (local_frame) {
+      if (auto* top_local_frame =
+              blink::DynamicTo<blink::LocalFrame>(&local_frame->Tree().Top())) {
+        settings = top_local_frame->GetContentSettingsClient();
+      } else {
+        settings = local_frame->GetContentSettingsClient();
+      }
+    }
   } else if (context->IsWorkerGlobalScope()) {
     settings =
         blink::To<blink::WorkerGlobalScope>(context)->ContentSettingsClient();
@@ -190,7 +193,7 @@ BraveSessionCache::BraveSessionCache(ExecutionContext& context)
   if (!origin || origin->IsOpaque())
     return;
   const auto host = origin->Host();
-  if (host.IsNull() || host.IsEmpty())
+  if (host.IsNull() || host.empty())
     return;
   const std::string domain =
       blink::network_utils::GetDomainAndRegistry(
@@ -231,7 +234,7 @@ void BraveSessionCache::Init() {
   RegisterAllowFontFamilyCallback(base::BindRepeating(&brave::AllowFontFamily));
 }
 
-AudioFarblingCallback BraveSessionCache::GetAudioFarblingCallback(
+OptionalAudioFarblingCallback BraveSessionCache::GetAudioFarblingCallback(
     blink::WebContentSettingsClient* settings) {
   if (farbling_enabled_ && settings) {
     switch (settings->GetBraveFarblingLevel()) {
@@ -251,7 +254,7 @@ AudioFarblingCallback BraveSessionCache::GetAudioFarblingCallback(
       }
     }
   }
-  return base::BindRepeating(&Identity);
+  return absl::nullopt;
 }
 
 void BraveSessionCache::PerturbPixels(blink::WebContentSettingsClient* settings,
@@ -373,7 +376,7 @@ bool BraveSessionCache::AllowFontFamily(
         return true;
       FarblingPRNG prng = MakePseudoRandomGenerator();
       prng.discard(family_name.Impl()->GetHash() % 16);
-      return ((prng() % 2) == 0);
+      return ((prng() % 20) == 0);
     }
     default:
       NOTREACHED();

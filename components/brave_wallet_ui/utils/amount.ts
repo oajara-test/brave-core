@@ -1,3 +1,7 @@
+// Copyright (c) 2022 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 import BigNumber from 'bignumber.js'
 
 import { CurrencySymbols } from './currency-symbols'
@@ -239,10 +243,16 @@ export default class Amount {
     let decimals
     let value
 
-    if (this.value === undefined || this.value.isNaN()) {
+    const valueDP = this.value && this.value.decimalPlaces()
+    if (
+        this.value === undefined ||
+        this.value.isNaN() ||
+        valueDP === null ||
+        valueDP === undefined
+    ) {
       return ''
     } else if (
-        this.value.decimalPlaces() < 2 || this.value.isGreaterThanOrEqualTo(10)
+        valueDP < 2 || this.value.isGreaterThanOrEqualTo(10)
     ) {
       decimals = 2
       value = this.value.toNumber()

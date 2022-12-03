@@ -155,6 +155,8 @@ const char kBraveWalletWeeklyHistogramName[] = "Brave.Wallet.UsageDaysInWeek";
 const char kBraveWalletMonthlyHistogramName[] = "Brave.Wallet.UsageMonthly.2";
 const char kBraveWalletNewUserReturningHistogramName[] =
     "Brave.Wallet.NewUserReturning";
+const char kBraveWalletLastUsageTimeHistogramName[] =
+    "Brave.Wallet.LastUsageTime";
 
 BraveWalletService::BraveWalletService(
     std::unique_ptr<BraveWalletServiceDelegate> delegate,
@@ -168,6 +170,7 @@ BraveWalletService::BraveWalletService(
       tx_service_(tx_service),
       prefs_(prefs),
       brave_wallet_p3a_(this, keyring_service, prefs),
+      asset_discovery_manager_(this, json_rpc_service, keyring_service, prefs),
       weak_ptr_factory_(this) {
   if (delegate_)
     delegate_->AddObserver(this);
@@ -951,6 +954,9 @@ void BraveWalletService::RecordWalletUsage(bool unlocked) {
   p3a_utils::RecordFeatureNewUserReturning(
       prefs_, kBraveWalletP3AFirstUnlockTime, kBraveWalletP3ALastUnlockTime,
       kBraveWalletP3AUsedSecondDay, kBraveWalletNewUserReturningHistogramName);
+  p3a_utils::RecordFeatureLastUsageTimeMetric(
+      prefs_, kBraveWalletP3ALastUnlockTime,
+      kBraveWalletLastUsageTimeHistogramName);
 }
 
 void BraveWalletService::WriteStatsToHistogram(base::Time wallet_last_used,
@@ -1112,6 +1118,17 @@ void BraveWalletService::OnActiveOriginChanged(
     const mojom::OriginInfoPtr& origin_info) {
   for (const auto& observer : observers_) {
     observer->OnActiveOriginChanged(origin_info.Clone());
+  }
+}
+
+void BraveWalletService::OnDiscoverAssetsCompleted(
+    std::vector<mojom::BlockchainTokenPtr> discovered_assets) {
+  for (const auto& observer : observers_) {
+    std::vector<mojom::BlockchainTokenPtr> discovered_assets_copy;
+    for (auto& asset : discovered_assets) {
+      discovered_assets_copy.push_back(asset.Clone());
+    }
+    observer->OnDiscoverAssetsCompleted(std::move(discovered_assets_copy));
   }
 }
 
@@ -1439,6 +1456,19 @@ void BraveWalletService::Base58Encode(
     encoded_addresses.push_back(brave_wallet::Base58Encode(address));
   }
   std::move(callback).Run(std::move(encoded_addresses));
+}
+
+void BraveWalletService::DiscoverAssetsOnAllSupportedChains() {
+  mojom::KeyringInfoPtr keyring_info = keyring_service_->GetKeyringInfoSync(
+      brave_wallet::mojom::kDefaultKeyringId);
+
+  std::vector<std::string> account_addresses;
+  for (auto& account_info : keyring_info->account_infos) {
+    account_addresses.push_back(account_info->address);
+  }
+
+  asset_discovery_manager_.DiscoverAssetsOnAllSupportedChainsRefresh(
+      account_addresses);
 }
 
 void BraveWalletService::CancelAllSuggestedTokenCallbacks() {

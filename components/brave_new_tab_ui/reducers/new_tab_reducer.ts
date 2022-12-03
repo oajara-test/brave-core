@@ -1,7 +1,7 @@
 // Copyright (c) 2020 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { Reducer } from 'redux'
 
@@ -46,10 +46,6 @@ export const newTabReducer: Reducer<NewTab.State | undefined> = (state: NewTab.S
         ...initialDataPayload.privateTabData,
         braveRewardsSupported: initialDataPayload.braveRewardsSupported,
         braveTalkSupported: initialDataPayload.braveTalkSupported,
-        geminiSupported: initialDataPayload.geminiSupported,
-        cryptoDotComSupported: initialDataPayload.cryptoDotComSupported,
-        ftxSupported: initialDataPayload.ftxSupported,
-        binanceSupported: initialDataPayload.binanceSupported,
         searchPromotionEnabled: initialDataPayload.searchPromotionEnabled,
         // Auto-dismiss of together prompt only
         // takes effect on the next page view and not the
@@ -100,9 +96,6 @@ export const newTabReducer: Reducer<NewTab.State | undefined> = (state: NewTab.S
         }
       })
 
-      if (state.currentStackWidget) {
-        state = storage.migrateStackWidgetSettings(state)
-      }
       state = storage.addNewStackWidget(state)
       state = storage.replaceStackWidgets(state)
 

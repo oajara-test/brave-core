@@ -143,8 +143,65 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-       <message name="IDS_TIP_AMOUNT_TEXT"  desc="Text for Tip amount">
+      <message name="IDS_TIP_AMOUNT_TEXT"  desc="Text for Tip amount">
         Tip amount:
+      </message>
+      <message name="IDS_SUPPORT_THIS_CREATOR"  desc="Text for Support this creator">
+        Support this creator
+      </message>
+      <message name="IDS_PENDING_TIP_TEXT"  desc="Text for Pending tip text">
+        You've set up a pending tip!
+      </message>
+      <message name="IDS_BRAVE_NOTIFICATION_PERMISSION_RATIONALE_DIALOG_TITLE" desc="The title of a dialog shown to users before asking for notification permission.">
+        Brave notifications make it easier
+      </message>
+      <message name="IDS_BRAVE_NOTIFICATION_PERMISSION_RATIONALE_DIALOG_MESSAGE" desc="The body text of a dialog explaining the benefits of enabling Brave notifications.">
+        Manage downloads, earn tokens, see weekly usage stats, and more.
+      </message>
+      <message name="IDS_NOTIFICATION_BRAVE_DIALOG_HEADER_BOTH_REWARDS_PRIVACY" desc="Text header for When BOTH Brave Rewards and Privacy Report are TURNED ON.">
+        You're not earning Rewards or receiving Privacy Reports
+      </message>
+      <message name="IDS_NOTIFICATION_BRAVE_DIALOG_HEADER_ONLY_REWARDS" desc="Text header for When ONLY Brave Rewards is TURNED ON.">
+        You're not earning Brave Rewards 
+      </message>
+      <message name="IDS_NOTIFICATION_BRAVE_DIALOG_HEADER_ONLY_PRIVACY" desc="Text header for When ONLY Privacy Report is TURNED ON.">
+        You're not receiving Privacy Reports
+      </message>
+      <message name="IDS_NOTIFICATION_BRAVE_DIALOG_DESCRIPTION_BOTH_REWARDS_PRIVACY" desc="Text description for When BOTH Brave Rewards and Privacy Report are TURNED ON.">
+        Turn notifications back on if you'd like to keep earning BAT and receiving weekly privacy reports.
+      </message>
+      <message name="IDS_NOTIFICATION_BRAVE_DIALOG_DESCRIPTION_ONLY_REWARDS" desc="Text description for When ONLY Brave Rewards is TURNED ON.">
+        Turn notifications back on if you'd like to keep earning BAT
+      </message>
+      <message name="IDS_NOTIFICATION_BRAVE_DIALOG_DESCRIPTION_ONLY_PRIVACY" desc="Text description for When ONLY Privacy Report is TURNED ON.">
+        Turn notifications back on if you\'d like to keep receiving weekly privacy reports.
+      </message>
+     <message name="IDS_NOTIFICATION_OS_DIALOG_HEADER_BOTH_REWARDS_PRIVACY" desc="Text header for When BOTH Brave Rewards and Privacy Report are TURNED ON.">
+        You're not earning Rewards or receiving Privacy Reports
+      </message>
+      <message name="IDS_NOTIFICATION_OS_DIALOG_HEADER_ONLY_REWARDS" desc="Text header for When ONLY Brave Rewards is TURNED ON.">
+        You're not earning Rewards
+      </message>
+      <message name="IDS_NOTIFICATION_OS_DIALOG_HEADER_ONLY_PRIVACY" desc="Text header for When ONLY Privacy Report is TURNED ON.">
+        You're not receiving Privacy Reports
+      </message>
+      <message name="IDS_NOTIFICATION_OS_DIALOG_DESCRIPTION_BOTH_REWARDS_PRIVACY" desc="Text description for When BOTH Brave Rewards and Privacy Report are TURNED ON.">
+        Enable device notifications to earn Brave Rewards and see Privacy Reports.
+      </message>
+      <message name="IDS_NOTIFICATION_OS_DIALOG_DESCRIPTION_ONLY_REWARDS" desc="Text description for When ONLY Brave Rewards is TURNED ON.">
+        Enable device notifications to earn Brave Rewards.
+      </message>
+      <message name="IDS_NOTIFICATION_OS_DIALOG_DESCRIPTION_ONLY_PRIVACY" desc="Text description for When ONLY Privacy Report is TURNED ON.">
+        Enable device notifications to get Brave Privacy Reports.
+      </message>
+      <message name="IDS_ENABLE_NOTIFICATIONS_FROM_BRAVE_TO_EARN_BRAVE_REWARDS" desc="Text description for Enable notifications from Brave to earn Brave Rewards.">
+        Enable notifications from Brave to earn Brave Rewards.
+      </message>
+      <message name="IDS_OPEN_SETTINGS_AND_TURN_ON_DEVICE_NOTIFICATIONS_FOR_BRAVE_ADS" desc="Text description for Open Settings and turn on device notifications for Brave Ads.">
+        Open Settings and turn on device notifications for Brave Ads.
+      </message>
+      <message name="IDS_TURN_ON_BRAVE_NOTIFICATIONS" desc="Text for button Turn on Brave notifications">
+        Turn on Brave notifications
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BRAVE_SHIELDS" desc="Content description for the button that is enable, disable Brave Shields.">
         Enable/Disable Brave Shields
@@ -332,8 +389,8 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_RESOLVE_METHOD_DISABLED" desc="Text for resolve method Disabled.">
         Disabled
       </message>
-      <message name="IDS_RESOLVE_METHOD_ETHEREUM" desc="Text for resolve method Ethereum.">
-        Ethereum
+      <message name="IDS_RESOLVE_METHOD_ENABLED" desc="Text for resolve method Enabled.">
+        Enabled
       </message>
       <message name="IDS_BRAVE_NEWS_OPTIN_TITLE" desc="Text for opt in card title">
         Today’s top stories in a completely private feed, just for you.
@@ -458,7 +515,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Closing all tabs closes Brave
       </message>
       <message name="IDS_PREFS_BACKGROUND_VIDEO_PLAYBACK_ON" desc="Text for background video playback is on">
-        Experimental. Enables play audio from video in background when tab is not active or device screen is turned off. Try to switch to desktop mode if this feature is not working.
+        Allows audio to continue playing when you switch to another tab in Brave, switch to another app, or your device screen is off.
       </message>
       <message name="IDS_TEXT_ENABLED" desc="Text indicating that an option is enabled">
         Enabled
@@ -1017,11 +1074,23 @@ Are you sure you want to do this?
       <message name="IDS_PREFS_NEW_TAB_PAGE" desc="Title of New Tab Page settings.">
         New Tab Page
       </message>
+      <message name="IDS_BACKGROUND_IMAGES" desc= "Category title of background images option.">
+        Background Images
+      </message>
       <message name="IDS_SHOW_BACKGROUND_IMAGES" desc= "Title of show background images option.">
         Show Background Images
       </message>
       <message name="IDS_SHOW_SPONSORED_IMAGES" desc ="Title of show sponsored images option.">
         Show Sponsored Images
+      </message>
+      <message name="IDS_WIDGETS" desc ="Categary of Widget option.">
+        Widgets
+      </message>
+      <message name="IDS_SHOW_TOP_SITES" desc="New tab page settings title">
+        Show Top Sites
+      </message>
+      <message name="IDS_SHOW_BRAVE_STATS" desc="New tab page settings title">
+        Show Brave Stats
       </message>
       <message name="IDS_PHOTO_BY" desc="Text for image credit for background images on NTP">
         Photo by <ph name="PHOTO_BY">%1$s</ph>
@@ -1098,9 +1167,6 @@ Are you sure you want to do this?
       <message name="IDS_VERIFY_WALLET_BRAVE_NOTE1">
         Brave Software Inc. does not process, store, or access any of the personal information that you provide to <ph name="WALLET_PROVIDER">%1$s</ph> when you establish an account with them.
       </message>
-      <message name="IDS_USER_WALLET_COMPLETE_VERIFICATION">
-        Complete wallet verification
-      </message>
       <message name="IDS_USER_WALLET_ACTIVITY_NAME">
         User Wallet
       </message>
@@ -1116,20 +1182,8 @@ Are you sure you want to do this?
       <message name="IDS_USER_WALLET_STATUS_NOT_CONNECTED">
         Not connected
       </message>
-      <message name="IDS_USER_WALLET_STATUS_CONNECTED">
-        Connected
-      </message>
       <message name="IDS_USER_WALLET_STATUS_VERIFIED">
         Verified
-      </message>
-      <message name="IDS_USER_WALLET_STATUS_DISCONNECTED_NOT_VERIFIED">
-        Disconnected not verified
-      </message>
-      <message name="IDS_USER_WALLET_STATUS_DISCONNECTED_VERIFIED">
-        Disconnected verified
-      </message>
-      <message name="IDS_USER_WALLET_STATUS_PENDING">
-        Pending
       </message>
       <message name="IDS_BRAVE_DEFAULT" desc="Text for brave default settings option.">
         Brave Default
@@ -1280,9 +1334,6 @@ Are you sure you want to do this?
       </message>
       <message name="IDS_AUTOCOMPLETE_TOP_SITES_TITLE" desc="The label for settings switch controlling whether or not top sites show up in autocomplete">
         Show top sites in autocomplete
-      </message>
-      <message name="IDS_AUTOCOMPLETE_BRAVE_SUGGESTED_SITES_TITLE" desc="The label for settings switch controlling whether or not Brave suggested sites show up in autocomplete">
-        Show suggested sites in autocomplete
       </message>
       <message name="IDS_UPDATE_NOTIFICATION_TITLE" desc="Title of notification on application update.">
         Save Data Online
@@ -2883,9 +2934,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_SETTINGS_SOLANA_TITLE" desc="Title for Solana section in site settings" translateable="false">
       Solana
     </message>
-    <message name="IDS_SHOW_TOP_SITES" desc="New tab page settings title">
-      Show Top Sites
-    </message>
     <message name="IDS_CONNECTED_TO_HOST" desc="Brave Vpn notification statistics text">
       Connected to <ph name="VALUE">%1$s</ph>
     </message>
@@ -3209,6 +3257,72 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     </message>
     <message name="IDS_BRAVE_WALLET_SOLANA_SKIP_PREFLIGHT" desc="Name of Solana instruction 'programID' param">
       Skip Preflight:
+    </message>
+    <message name="IDS_TOP_VISITED_SITE" desc="Content description of ImageView of tile in QuickActionSearchAndBookmarkWidget">
+      Top Visited Site
+    </message>
+    <message name="IDS_SEARCH_WITH_BRAVE" desc="String used in QuickActionSearchAndBookmarkWidget's search bar">
+      Search with Brave
+    </message>
+    <message name="IDS_SEARCH_WITH_SEARCH_ENGINE" desc="Dynamic string used in QuickActionSearchAndBookmarkWidget's search bar. Placeholder is replaced by default search engine.">
+      Search with <ph name="DEFAULT_SEARCH_ENGINE">%1$s</ph>
+    </message>
+    <message name="IDS_HOME_SCREEN_WIDGET" desc="Home scren widget option in settings">
+      Home screen widget
+    </message>
+    <message name="IDS_WIDGET_ADDED_TO_HOME_SCREEN" desc="Toast message to display that widget has been successfully added to the home screen">
+      Widget added to the home screen
+    </message>
+    <message name="IDS_TRY_BRAVE_SEARCH_WIDGET" desc="Title of Brave search widget promo">
+      Try the Brave search widget
+    </message>
+    <message name="IDS_TRY_BRAVE_SEARCH_WIDGET_DESCRIPTION" desc="Description of Brave search widget promo">
+      Access private, independent search right from your home screen.
+    </message>
+    <message name="IDS_ADD_WIDGET" desc="Add widget button text">
+      Add widget
+    </message>
+    <message name="IDS_BRAVE_QUICK_ACTION_SEARCH" desc="Description for Brave QuickActionSearchAndBookmarkWidget preview">
+      Brave quick action search
+    </message>
+    <message name="IDS_USE_BRAVE_TRANSLATE" desc="The label of the check-box that enables the prompt to translate a page.">
+      Use Brave Translate
+    </message>
+    <message name="IDS_WALLET_NON_ASCII_CHARACTERS" desc="A warning about Non-ASCII characters detected in a message">
+      NON-ASCII characters detected!
+    </message>
+    <message name="IDS_WALLET_NON_ASCII_CHARACTERS_ORIGINAL" desc="A title to view an original message if Unicode characters detected">
+      View original message
+    </message>
+    <message name="IDS_WALLET_NON_ASCII_CHARACTERS_ASCII" desc="A title to view an ASCII message if Unicode characters detected">
+      View message in ASCII encoding
+    </message>
+    <message name="IDS_WALLET_ADD_SOLANA_NFT_CHECKBOX" desc="A title for a Solana NFT custom assets checkbox" translateable="false">
+      NFT
+    </message>
+    <message name="IDS_WALLET_ADD_CUSTOM_ASSET_TOKEN_ADDRESS" desc="Add custom asset dialog Token contract address field for Solana NFT">
+      Token address
+    </message>
+    <message name="IDS_LINK_SUBSCRIPTION_TITLE" desc="Brave vpn link subscription settings title text">
+      Link purchase to your Brave account
+    </message>
+    <message name="IDS_LINK_SUBSCRIPTION_TEXT" desc="Brave vpn link subscription settings text">
+      Link your Play Store purchase to your Brave account to use Brave VPN on other devices.
+    </message>
+    <message name="IDS_LINK_SUBSCRIPTION_DIALOG_ACTION_TEXT" desc="Brave vpn link subscription dialog action text">
+      Link your VPN subscription
+    </message>
+    <message name="IDS_LINK_SUBSCRIPTION_DIALOG_TITLE" desc="Brave vpn link subscription dialog title">
+      Extend your Brave Firewall + VPN protection
+    </message>
+    <message name="IDS_LINK_SUBSCRIPTION_DIALOG_TEXT" desc="Brave vpn link subscription dialog text">
+      Your Brave VPN subscription can protect up to 5 devices, across Android, iOS, and desktop. Just link your Google Play subscription to your Brave account.
+    </message>
+    <message name="IDS_SAFE_BROWSING_NO_GOOGLE_PLAY_SERVICES_DIALOG_TITLE" desc="Brave no Google Play Services dialog title">
+      Cannot enable Safe Browsing
+    </message>
+    <message name="IDS_SAFE_BROWSING_NO_GOOGLE_PLAY_SERVICES_DIALOG_MESSAGE" desc="Brave no Google Play Services dialog message">
+      Safe Browsing has been disabled on your device. To enable it, ensure that Google Play Services is installed and that it's up to date.
     </message>
   </messages>
   </release>

@@ -1,12 +1,12 @@
 /* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import { createReducer } from 'redux-act'
 import {
   BraveWallet,
-  PanelState, PanelTypes
+  PanelState, PanelTypes, SerializableAddSuggestTokenRequest, SerializableDecryptRequest, SerializableGetEncryptionPublicKeyRequest, SerializableOriginInfo, SerializableSignMessageRequest, SerializableTransactionInfo
 } from '../../constants/types'
 import * as PanelActions from '../actions/wallet_panel_actions'
 import {
@@ -15,7 +15,7 @@ import {
 import { PanelTitles } from '../../options/panel-titles'
 import { HardwareWalletResponseCodeType } from '../../common/hardware/types'
 
-const defaultOriginInfo: BraveWallet.OriginInfo = {
+const defaultOriginInfo: SerializableOriginInfo = {
   origin: {
     scheme: '',
     host: '',
@@ -130,21 +130,21 @@ export const createPanelReducer = (initialState: PanelState) => {
     }
   })
 
-  reducer.on(PanelActions.getEncryptionPublicKey.type, (state: any, request: BraveWallet.GetEncryptionPublicKeyRequest) => {
+  reducer.on(PanelActions.getEncryptionPublicKey.type, (state: any, request: SerializableGetEncryptionPublicKeyRequest) => {
     return {
       ...state,
       getEncryptionPublicKeyRequest: request
     }
   })
 
-  reducer.on(PanelActions.decrypt.type, (state: any, request: BraveWallet.DecryptRequest) => {
+  reducer.on(PanelActions.decrypt.type, (state: any, request: SerializableDecryptRequest) => {
     return {
       ...state,
       decryptRequest: request
     }
   })
 
-  reducer.on(PanelActions.signMessage.type, (state, payload: BraveWallet.SignMessageRequest[]) => {
+  reducer.on(PanelActions.signMessage.type, (state, payload: SerializableSignMessageRequest[]) => {
     return {
       ...state,
       signMessageData: payload
@@ -172,13 +172,13 @@ export const createPanelReducer = (initialState: PanelState) => {
     }
   })
 
-  reducer.on(PanelActions.addSuggestToken.type, (state: PanelState, payload: BraveWallet.AddSuggestTokenRequest): PanelState => {
+  reducer.on(PanelActions.addSuggestToken.type, (state: PanelState, payload: SerializableAddSuggestTokenRequest): PanelState => {
     return {
       ...state,
       suggestedTokenRequest: payload
     }
   })
-  reducer.on(PanelActions.setSelectedTransaction.type, (state: PanelState, payload: BraveWallet.TransactionInfo | undefined): PanelState => {
+  reducer.on(PanelActions.setSelectedTransaction.type, (state: PanelState, payload: SerializableTransactionInfo): PanelState => {
     return {
       ...state,
       selectedTransaction: payload

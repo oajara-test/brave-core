@@ -207,6 +207,15 @@ void MdTextButton::SetLoading(bool loading) {
   UpdateColors();
 }
 
+void MdTextButton::UpdateBackgroundColor() {
+  // Handled via |UpdateColorsForBrave|.
+  if (kind_ != kOld) {
+    return;
+  }
+
+  MdTextButtonBase::UpdateBackgroundColor();
+}
+
 void MdTextButton::UpdateOldColorsForBrave() {
   if (GetProminent()) {
     return;
@@ -289,6 +298,10 @@ void MdTextButton::UpdateColorsForBrave() {
   SkColor bg_color = GetBgColorOverride().value_or(
       style.background_color.value_or(SK_ColorTRANSPARENT));
   SkColor stroke_color = style.border_color.value_or(SK_ColorTRANSPARENT);
+
+  // SubPixelRendering doesn't work if we have any background opacity.
+  SetTextSubpixelRenderingEnabled(opacity == 1 &&
+                                  SkColorGetA(bg_color) == 0xFF);
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateRoundRectWith1PxBorderPainter(
           AddOpacity(bg_color, opacity), AddOpacity(stroke_color, opacity),

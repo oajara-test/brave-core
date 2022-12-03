@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as React from 'react'
 import { StyledWidget, StyledWidgetContainer } from './styles'
@@ -20,8 +20,6 @@ export interface WidgetProps {
   isForeground?: boolean
   paddingType: 'none' | 'right' | 'default'
   onLearnMore?: () => void
-  onDisconnect?: () => void
-  onRefreshData?: () => void
   onAddSite?: () => void
   customLinksEnabled?: boolean
   onToggleCustomLinksEnabled?: () => void
@@ -43,8 +41,6 @@ export function Widget ({
   isForeground,
   paddingType,
   onLearnMore,
-  onDisconnect,
-  onRefreshData,
   onAddSite,
   customLinksEnabled,
   onToggleCustomLinksEnabled,
@@ -64,8 +60,6 @@ export function Widget ({
       <WidgetMenu
         widgetTitle={widgetTitle}
         onLearnMore={onLearnMore}
-        onDisconnect={onDisconnect}
-        onRefreshData={onRefreshData}
         onAddSite={onAddSite}
         customLinksEnabled={customLinksEnabled}
         onToggleCustomLinksEnabled={onToggleCustomLinksEnabled}

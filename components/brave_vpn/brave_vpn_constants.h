@@ -11,6 +11,8 @@
 #include "ui/base/webui/web_ui_util.h"
 
 namespace brave_vpn {
+
+#if !BUILDFLAG(IS_ANDROID)
 constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"braveVpn", IDS_BRAVE_VPN},
     {"braveVpnConnect", IDS_BRAVE_VPN_CONNECT},
@@ -71,6 +73,7 @@ constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"braveVpnSupportSubmit", IDS_BRAVE_VPN_SUPPORT_SUBMIT},
     {"braveVpnConnectNotAllowed", IDS_BRAVE_VPN_CONNECT_NOT_ALLOWED},
 };
+#endif
 
 constexpr char kManageUrlProd[] = "https://account.brave.com/account/";
 constexpr char kManageUrlStaging[] =
@@ -87,6 +90,10 @@ constexpr char kRegionNameKey[] = "name";
 constexpr char kRegionNamePrettyKey[] = "name-pretty";
 constexpr char kRegionCountryIsoCodeKey[] = "country-iso-code";
 constexpr char kCreateSupportTicket[] = "api/v1.2/partners/support-ticket";
+constexpr char kSupportTicketEmailKey[] = "email";
+constexpr char kSupportTicketSubjectKey[] = "subject";
+constexpr char kSupportTicketSupportTicketKey[] = "support-ticket";
+constexpr char kSupportTicketPartnerClientIdKey[] = "partner-client-id";
 
 constexpr char kVpnHost[] = "connect-api.guardianapp.com";
 constexpr char kAllServerRegions[] = "api/v1/servers/all-server-regions";

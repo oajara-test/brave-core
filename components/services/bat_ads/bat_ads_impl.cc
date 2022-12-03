@@ -5,7 +5,7 @@
 
 #include "brave/components/services/bat_ads/bat_ads_impl.h"
 
-#include <functional>
+#include <utility>
 
 #include "base/check.h"
 #include "bat/ads/ad_content_info.h"
@@ -45,20 +45,11 @@ BatAdsImpl::BatAdsImpl(
 BatAdsImpl::~BatAdsImpl() = default;
 
 void BatAdsImpl::Initialize(InitializeCallback callback) {
-  auto* holder =
-      new CallbackHolder<InitializeCallback>(AsWeakPtr(), std::move(callback));
-
-  ads_->Initialize(
-      std::bind(BatAdsImpl::OnInitialize, holder, std::placeholders::_1));
+  ads_->Initialize(std::move(callback));
 }
 
 void BatAdsImpl::Shutdown(ShutdownCallback callback) {
-  auto* holder =
-      new CallbackHolder<ShutdownCallback>(AsWeakPtr(), std::move(callback));
-
-  auto shutdown_callback =
-      std::bind(BatAdsImpl::OnShutdown, holder, std::placeholders::_1);
-  ads_->Shutdown(shutdown_callback);
+  ads_->Shutdown(std::move(callback));
 }
 
 void BatAdsImpl::OnLocaleDidChange(const std::string& locale) {
@@ -149,12 +140,18 @@ void BatAdsImpl::TriggerNotificationAdEvent(
 
 void BatAdsImpl::MaybeServeNewTabPageAd(
     MaybeServeNewTabPageAdCallback callback) {
-  auto* holder = new CallbackHolder<MaybeServeNewTabPageAdCallback>(
-      AsWeakPtr(), std::move(callback));
+  ads_->MaybeServeNewTabPageAd(base::BindOnce(
+      [](MaybeServeNewTabPageAdCallback callback,
+         const absl::optional<ads::NewTabPageAdInfo>& ad) {
+        if (!ad) {
+          std::move(callback).Run(/*ad*/ absl::nullopt);
+          return;
+        }
 
-  auto maybe_serve_new_tab_page_ad_callback = std::bind(
-      BatAdsImpl::OnMaybeServeNewTabPageAd, holder, std::placeholders::_1);
-  ads_->MaybeServeNewTabPageAd(maybe_serve_new_tab_page_ad_callback);
+        absl::optional<base::Value::Dict> dict = ads::NewTabPageAdToValue(*ad);
+        std::move(callback).Run(std::move(dict));
+      },
+      std::move(callback)));
 }
 
 void BatAdsImpl::TriggerNewTabPageAdEvent(
@@ -180,14 +177,22 @@ void BatAdsImpl::TriggerPromotedContentAdEvent(
 void BatAdsImpl::MaybeServeInlineContentAd(
     const std::string& dimensions,
     MaybeServeInlineContentAdCallback callback) {
-  auto* holder = new CallbackHolder<MaybeServeInlineContentAdCallback>(
-      AsWeakPtr(), std::move(callback));
+  ads_->MaybeServeInlineContentAd(
+      dimensions, base::BindOnce(
+                      [](MaybeServeInlineContentAdCallback callback,
+                         const std::string& dimensions,
+                         const absl::optional<ads::InlineContentAdInfo>& ad) {
+                        if (!ad) {
+                          std::move(callback).Run(dimensions,
+                                                  /*ads*/ absl::nullopt);
+                          return;
+                        }
 
-  auto maybe_serve_inline_content_ads_callback =
-      std::bind(BatAdsImpl::OnMaybeServeInlineContentAd, holder,
-                std::placeholders::_1, std::placeholders::_2);
-  ads_->MaybeServeInlineContentAd(dimensions,
-                                  maybe_serve_inline_content_ads_callback);
+                        absl::optional<base::Value::Dict> dict =
+                            ads::InlineContentAdToValue(*ad);
+                        std::move(callback).Run(dimensions, std::move(dict));
+                      },
+                      std::move(callback)));
 }
 
 void BatAdsImpl::TriggerInlineContentAdEvent(
@@ -213,24 +218,11 @@ void BatAdsImpl::PurgeOrphanedAdEventsForType(
     PurgeOrphanedAdEventsForTypeCallback callback) {
   DCHECK(ads::mojom::IsKnownEnumValue(ad_type));
 
-  auto* holder = new CallbackHolder<PurgeOrphanedAdEventsForTypeCallback>(
-      AsWeakPtr(), std::move(callback));
-
-  auto purge_ad_events_for_type_callback =
-      std::bind(BatAdsImpl::OnPurgeOrphanedAdEventsForType, holder,
-                std::placeholders::_1);
-
-  ads_->PurgeOrphanedAdEventsForType(ad_type,
-                                     purge_ad_events_for_type_callback);
+  ads_->PurgeOrphanedAdEventsForType(ad_type, std::move(callback));
 }
 
 void BatAdsImpl::RemoveAllHistory(RemoveAllHistoryCallback callback) {
-  auto* holder = new CallbackHolder<RemoveAllHistoryCallback>(
-      AsWeakPtr(), std::move(callback));
-
-  auto remove_all_history_callback =
-      std::bind(BatAdsImpl::OnRemoveAllHistory, holder, std::placeholders::_1);
-  ads_->RemoveAllHistory(remove_all_history_callback);
+  ads_->RemoveAllHistory(std::move(callback));
 }
 
 void BatAdsImpl::OnRewardsWalletDidChange(const std::string& payment_id,
@@ -250,19 +242,11 @@ void BatAdsImpl::GetHistory(const base::Time from_time,
 
 void BatAdsImpl::GetStatementOfAccounts(
     GetStatementOfAccountsCallback callback) {
-  auto* holder = new CallbackHolder<GetStatementOfAccountsCallback>(
-      AsWeakPtr(), std::move(callback));
-
-  ads_->GetStatementOfAccounts(std::bind(BatAdsImpl::OnGetStatementOfAccounts,
-                                         holder, std::placeholders::_1));
+  ads_->GetStatementOfAccounts(std::move(callback));
 }
 
 void BatAdsImpl::GetDiagnostics(GetDiagnosticsCallback callback) {
-  auto* holder = new CallbackHolder<GetDiagnosticsCallback>(
-      AsWeakPtr(), std::move(callback));
-
-  ads_->GetDiagnostics(
-      std::bind(BatAdsImpl::OnGetDiagnostics, holder, std::placeholders::_1));
+  ads_->GetDiagnostics(std::move(callback));
 }
 
 void BatAdsImpl::ToggleAdThumbUp(base::Value::Dict value,
@@ -313,104 +297,6 @@ void BatAdsImpl::ToggleFlaggedAd(base::Value::Dict value,
 
 void BatAdsImpl::OnDidUpdateResourceComponent(const std::string& id) {
   ads_->OnDidUpdateResourceComponent(id);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void BatAdsImpl::OnInitialize(CallbackHolder<InitializeCallback>* holder,
-                              const bool success) {
-  if (holder->is_valid()) {
-    std::move(holder->get()).Run(success);
-  }
-
-  delete holder;
-}
-
-void BatAdsImpl::OnShutdown(CallbackHolder<ShutdownCallback>* holder,
-                            const bool success) {
-  if (holder->is_valid()) {
-    std::move(holder->get()).Run(success);
-  }
-
-  delete holder;
-}
-
-// static
-void BatAdsImpl::OnMaybeServeNewTabPageAd(
-    CallbackHolder<MaybeServeNewTabPageAdCallback>* holder,
-    const absl::optional<ads::NewTabPageAdInfo>& ad) {
-  DCHECK(holder);
-  if (holder->is_valid()) {
-    if (!ad) {
-      std::move(holder->get()).Run(/*ad*/ absl::nullopt);
-      return;
-    }
-
-    absl::optional<base::Value::Dict> dict = ads::NewTabPageAdToValue(*ad);
-    std::move(holder->get()).Run(std::move(dict));
-  }
-
-  delete holder;
-}
-
-void BatAdsImpl::OnMaybeServeInlineContentAd(
-    CallbackHolder<MaybeServeInlineContentAdCallback>* holder,
-    const std::string& dimensions,
-    const absl::optional<ads::InlineContentAdInfo>& ad) {
-  if (holder->is_valid()) {
-    if (!ad) {
-      std::move(holder->get()).Run(dimensions, /*ads*/ absl::nullopt);
-      return;
-    }
-
-    absl::optional<base::Value::Dict> dict = ads::InlineContentAdToValue(*ad);
-    std::move(holder->get()).Run(dimensions, std::move(dict));
-  }
-
-  delete holder;
-}
-
-void BatAdsImpl::OnPurgeOrphanedAdEventsForType(
-    CallbackHolder<PurgeOrphanedAdEventsForTypeCallback>* holder,
-    const bool success) {
-  if (holder->is_valid()) {
-    std::move(holder->get()).Run(success);
-  }
-
-  delete holder;
-}
-
-void BatAdsImpl::OnRemoveAllHistory(
-    CallbackHolder<RemoveAllHistoryCallback>* holder,
-    const bool success) {
-  if (holder->is_valid()) {
-    std::move(holder->get()).Run(success);
-  }
-
-  delete holder;
-}
-
-void BatAdsImpl::OnGetStatementOfAccounts(
-    CallbackHolder<GetStatementOfAccountsCallback>* holder,
-    ads::mojom::StatementInfoPtr statement) {
-  if (holder->is_valid()) {
-    std::move(holder->get()).Run(std::move(statement));
-  }
-
-  delete holder;
-}
-
-// static
-void BatAdsImpl::OnGetDiagnostics(
-    CallbackHolder<GetDiagnosticsCallback>* holder,
-    absl::optional<base::Value::List> value) {
-  DCHECK(holder);
-
-  if (holder->is_valid()) {
-    std::move(holder->get()).Run(std::move(value));
-  }
-
-  delete holder;
 }
 
 }  // namespace bat_ads

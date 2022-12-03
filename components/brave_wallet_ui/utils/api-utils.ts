@@ -1,17 +1,29 @@
+// Copyright (c) 2021 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at https://mozilla.org/MPL/2.0/.
 import { BraveWallet, WalletAccountType, GetFlattenedAccountBalancesReturnInfo } from '../constants/types'
 
-export const getTokenParam = (token: BraveWallet.BlockchainToken): string => {
-  if (token.coingeckoId) {
+export type GetTokenParamArg = Pick<
+  BraveWallet.BlockchainToken,
+  | 'chainId'
+  | 'contractAddress'
+  | 'symbol'
+> & {
+  coingeckoId?: string | undefined
+}
+
+export const getTokenParam = (token: GetTokenParamArg): string => {
+  if (token?.coingeckoId) {
     return token.coingeckoId
   }
 
   const isEthereumNetwork = token.chainId === BraveWallet.MAINNET_CHAIN_ID
 
-  if (!isEthereumNetwork) {
-    return token.symbol.toLowerCase()
-  }
-
-  if (token.contractAddress === '') {
+  if (
+    !isEthereumNetwork ||
+    token.contractAddress === ''
+  ) {
     return token.symbol.toLowerCase()
   }
 

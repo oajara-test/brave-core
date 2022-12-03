@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/time/time.h"
 #include "bat/ads/ad_info.h"
 #include "bat/ads/ad_type.h"
@@ -42,23 +42,25 @@ void LogAdEvent(const AdEventInfo& ad_event, AdEventCallback callback) {
   RecordAdEvent(ad_event);
 
   database::table::AdEvents database_table;
-  database_table.LogEvent(
-      ad_event, base::BindOnce([](const AdEventCallback& callback,
-                                  const bool success) { callback(success); },
-                               callback));
+  database_table.LogEvent(ad_event,
+                          base::BindOnce(
+                              [](AdEventCallback callback, const bool success) {
+                                std::move(callback).Run(success);
+                              },
+                              std::move(callback)));
 }
 
 void PurgeExpiredAdEvents(AdEventCallback callback) {
   const database::table::AdEvents database_table;
   database_table.PurgeExpired(base::BindOnce(
-      [](const AdEventCallback& callback, const bool success) {
+      [](AdEventCallback callback, const bool success) {
         if (success) {
           RebuildAdEventHistoryFromDatabase();
         }
 
-        callback(success);
+        std::move(callback).Run(success);
       },
-      callback));
+      std::move(callback)));
 }
 
 void PurgeOrphanedAdEvents(const mojom::AdType ad_type,
@@ -68,14 +70,14 @@ void PurgeOrphanedAdEvents(const mojom::AdType ad_type,
   const database::table::AdEvents database_table;
   database_table.PurgeOrphaned(
       ad_type, base::BindOnce(
-                   [](const AdEventCallback& callback, const bool success) {
+                   [](AdEventCallback callback, const bool success) {
                      if (success) {
                        RebuildAdEventHistoryFromDatabase();
                      }
 
-                     callback(success);
+                     std::move(callback).Run(success);
                    },
-                   callback));
+                   std::move(callback)));
 }
 
 void RebuildAdEventHistoryFromDatabase() {
