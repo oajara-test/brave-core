@@ -5,6 +5,6 @@
 
 #define BRAVE_UPDATE_MAX_SIZE max_size_ = work_area.size();
 
-#include "src/chrome/browser/ui/views/overlay/overlay_window_views.cc"
+#include "src/chrome/browser/ui/views/overlay/video_overlay_window_views.cc"
 
 #undef BRAVE_UPDATE_MAX_SIZE
