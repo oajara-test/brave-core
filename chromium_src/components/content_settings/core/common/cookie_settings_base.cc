@@ -161,22 +161,14 @@ bool CookieSettingsBase::IsFullCookieAccessAllowed(
       query_reason);
 }
 
-bool CookieSettingsBase::IsFullCookieAccessAllowed(
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    CookieSettingsBase::QueryReason query_reason) const {
-  return IsCookieAccessAllowedImpl(url, site_for_cookies, top_frame_origin,
-                                   query_reason);
-}
-
 bool CookieSettingsBase::IsCookieAccessAllowedImpl(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     CookieSettingsBase::QueryReason query_reason) const {
   bool allow = IsChromiumFullCookieAccessAllowed(
-      url, site_for_cookies, top_frame_origin, query_reason);
+      url, site_for_cookies, top_frame_origin, net::CookieSettingOverrides(),
+      query_reason);
 
   const bool is_1p_ephemeral_feature_enabled = base::FeatureList::IsEnabled(
       net::features::kBraveFirstPartyEphemeralStorage);
