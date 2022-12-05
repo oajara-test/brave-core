@@ -99,7 +99,7 @@ function AdvancedControlsContent () {
 
   const adsListCount = siteBlockInfo?.adsList.length ?? 0
   const jsListCount = siteBlockInfo?.jsList.length ?? 0
-  const isHttpsByDefaultEnabled = loadTimeData.getBoolean('isHttpsByDefaultEnabled');
+  const isHttpsByDefaultEnabled = loadTimeData.getBoolean('isHttpsByDefaultEnabled')
 
   return (
     <section

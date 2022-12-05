@@ -1,4 +1,4 @@
-/* Copyright 2022 The Brave Authors. All rights reserved.
+/* Copyright (c) 2022 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -71,9 +71,12 @@ class BraveShieldsPage extends BraveShieldsPageBase {
           type: Array,
           value: function () {
             return [
-                { value: 'block', name: loadTimeData.getString('strictHttpsUpgrade') },
-                { value: 'block_third_party', name: loadTimeData.getString('standardHttpsUpgrade') },
-                { value: 'allow', name: loadTimeData.getString('disabledHttpsUpgrade') }
+                { value: 'block',
+                  name: loadTimeData.getString('strictHttpsUpgrade') },
+                { value: 'block_third_party',
+                  name: loadTimeData.getString('standardHttpsUpgrade') },
+                { value: 'allow',
+                  name: loadTimeData.getString('disabledHttpsUpgrade') }
             ];
           }
       },
@@ -107,7 +110,8 @@ class BraveShieldsPage extends BraveShieldsPageBase {
     this.onAdControlChange_ = this.onAdControlChange_.bind(this)
     this.onCookieControlChange_ = this.onCookieControlChange_.bind(this)
     this.onFingerprintingControlChange_ = this.onFingerprintingControlChange_.bind(this)
-    this.onHttpsUpgradeControlChange_ = this.onHttpsUpgradeControlChange_.bind(this)
+    this.onHttpsUpgradeControlChange_ =
+      this.onHttpsUpgradeControlChange_.bind(this)
     this.onNoScriptControlChange_ = this.onNoScriptControlChange_.bind(this)
     Promise.all([this.browserProxy_.isAdControlEnabled(), this.browserProxy_.isFirstPartyCosmeticFilteringEnabled()])
       .then(([adControlEnabled, hide1pContent]) => {
@@ -163,7 +167,8 @@ class BraveShieldsPage extends BraveShieldsPageBase {
   }
 
   onHttpsUpgradeControlChange_ () {
-    this.browserProxy_.setHttpsUpgradeControlType(this.$.httpsUpgradeControlType.value)
+    this.browserProxy_.setHttpsUpgradeControlType(
+      this.$.httpsUpgradeControlType.value)
   }
 
   onNoScriptControlChange_ () {
