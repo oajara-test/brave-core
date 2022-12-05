@@ -66,7 +66,7 @@ export default {
           adBlockMode: AdBlockMode.ALLOW,
           fingerprintMode: FingerprintMode.ALLOW,
           cookieBlockMode: CookieBlockMode.ALLOW,
-          httpsUpgradeMode: HttpsUpgradeMode.ALLOW,
+          httpsUpgradeMode: HttpsUpgradeMode.DISABLED,
           isNoscriptEnabled: false
         },
         viewType: ViewType.Main
