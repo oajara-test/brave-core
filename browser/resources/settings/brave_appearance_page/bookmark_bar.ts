@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at http://mozilla.org/MPL/2.0/.
+// You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js'
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js'
@@ -10,9 +10,10 @@ import '../settings_shared.css.js'
 import '../settings_vars.css.js'
 import {getTemplate} from './bookmark_bar.html.js'
 
-const SettingsBraveAppearanceBookmarkBarElementBase = PrefsMixin(I18nMixin(PolymerElement)) as {
-  new (): PolymerElement & I18nMixinInterface & PrefsMixinInterface
-}
+const SettingsBraveAppearanceBookmarkBarElementBase =
+  PrefsMixin(I18nMixin(PolymerElement)) as {
+    new (): PolymerElement & I18nMixinInterface & PrefsMixinInterface
+  }
 
 enum BookmarkBarState {
   ALWAYS = 0,
@@ -27,7 +28,8 @@ const kShowOnAllTabsPrefName = 'bookmark_bar.show_on_all_tabs'
  * 'settings-brave-appearance-bookmark-bar' is the settings page area containing
  * brave's bookmark bar visibility settings in appearance settings.
  */
-export class SettingsBraveAppearanceBookmarkBarElement extends SettingsBraveAppearanceBookmarkBarElementBase {
+export class SettingsBraveAppearanceBookmarkBarElement
+    extends SettingsBraveAppearanceBookmarkBarElementBase {
   static get is() {
     return 'settings-brave-appearance-bookmark-bar'
   }
@@ -56,15 +58,25 @@ export class SettingsBraveAppearanceBookmarkBarElement extends SettingsBraveAppe
   bookmarkBarStatePref_: chrome.settingsPrivate.PrefObject
 
   private bookmarkBarShowOptions_ = [
-    {value: BookmarkBarState.ALWAYS, name: this.i18n('appearanceSettingsBookmarBarAlways')},
-    {value: BookmarkBarState.NONE, name: this.i18n('appearanceSettingsBookmarBarNever')},
-    {value: BookmarkBarState.NTP, name: this.i18n('appearanceSettingsBookmarBarNTP')}
+    {
+      value: BookmarkBarState.ALWAYS,
+      name: this.i18n('appearanceSettingsBookmarBarAlways')
+    },
+    {
+      value: BookmarkBarState.NONE,
+      name: this.i18n('appearanceSettingsBookmarBarNever')
+    },
+    {
+      value: BookmarkBarState.NTP,
+      name: this.i18n('appearanceSettingsBookmarBarNTP')
+    }
   ]
   private bookmarkBarShowEnabledLabel_: string
 
   static get observers() {
     return [
-      'onPrefsChanged_(prefs.bookmark_bar.show_on_all_tabs.value, prefs.brave.always_show_bookmark_bar_on_ntp.value)'
+      'onPrefsChanged_(prefs.bookmark_bar.show_on_all_tabs.value,' +
+      ' prefs.brave.always_show_bookmark_bar_on_ntp.value)'
     ]
   }
 
@@ -113,11 +125,14 @@ export class SettingsBraveAppearanceBookmarkBarElement extends SettingsBraveAppe
   private onShowOptionChanged_() {
     const state = this.bookmarkBarStatePref_.value
     if (state === BookmarkBarState.ALWAYS) {
-      this.bookmarkBarShowEnabledLabel_ = this.i18n('appearanceSettingsBookmarBarAlwaysDesc')
+      this.bookmarkBarShowEnabledLabel_ =
+        this.i18n('appearanceSettingsBookmarBarAlwaysDesc')
     } else if (state === BookmarkBarState.NTP) {
-      this.bookmarkBarShowEnabledLabel_ = this.i18n('appearanceSettingsBookmarBarNTPDesc')
+      this.bookmarkBarShowEnabledLabel_ =
+        this.i18n('appearanceSettingsBookmarBarNTPDesc')
     } else {
-      this.bookmarkBarShowEnabledLabel_ = this.i18n('appearanceSettingsBookmarBarNeverDesc')
+      this.bookmarkBarShowEnabledLabel_ =
+        this.i18n('appearanceSettingsBookmarBarNeverDesc')
     }
 
     this.saveBookmarkBarStateToPrefs(this.bookmarkBarStatePref_.value)
@@ -125,4 +140,5 @@ export class SettingsBraveAppearanceBookmarkBarElement extends SettingsBraveAppe
 
 }
 
-customElements.define(SettingsBraveAppearanceBookmarkBarElement.is, SettingsBraveAppearanceBookmarkBarElement)
+customElements.define(SettingsBraveAppearanceBookmarkBarElement.is,
+  SettingsBraveAppearanceBookmarkBarElement)

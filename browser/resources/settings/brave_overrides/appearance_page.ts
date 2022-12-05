@@ -61,11 +61,13 @@ RegisterPolymerTemplateModifications({
       console.error(`[Brave Settings Overrides] Couldn't find bookmark bar toggle`)
     } else {
       bookmarkBarToggle.insertAdjacentHTML('beforebegin', `
-        <settings-brave-appearance-bookmark-bar prefs="{{prefs}}"></settings-brave-appearance-bookmark-bar>
+        <settings-brave-appearance-bookmark-bar prefs="{{prefs}}">
+        </settings-brave-appearance-bookmark-bar>
       `)
 
       bookmarkBarToggle.insertAdjacentHTML('afterend', `
-        <settings-brave-appearance-toolbar prefs="{{prefs}}"></settings-brave-appearance-toolbar>
+        <settings-brave-appearance-toolbar prefs="{{prefs}}">
+        </settings-brave-appearance-toolbar>
       `)
       // Remove Chromium bookmark toggle becasue it is replaced by
       // settings-brave-appearance-bookmark-bar
