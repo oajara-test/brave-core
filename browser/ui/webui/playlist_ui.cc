@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/strings/strcat.h"
 #include "brave/browser/playlist/playlist_service_factory.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/browser/ui/webui/playlist_page_handler.h"
@@ -41,8 +42,7 @@ class UntrustedPlayerUI : public ui::UntrustedWebUIController {
     source->OverrideContentSecurityPolicy(
         network::mojom::CSPDirectiveName::MediaSrc,
         std::string("media-src 'self' chrome-untrusted://playlist-data "
-                    "https://*.googlevideo.com "
-                    "http://127.0.0.1:*;"));
+                    "https://*.googlevideo.com:*;"));
     source->OverrideContentSecurityPolicy(
         network::mojom::CSPDirectiveName::StyleSrc,
         std::string("style-src chrome-untrusted://resources "
@@ -98,7 +98,7 @@ PlaylistUI::PlaylistUI(content::WebUI* web_ui, const std::string& name)
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc,
-      std::string("frame-src ") + kPlaylistPlayerURL + ";");
+      base::StrCat({"frame-src ", kPlaylistPlayerURL, ";"}));
 }
 
 PlaylistUI::~PlaylistUI() = default;

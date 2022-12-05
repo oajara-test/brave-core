@@ -1,15 +1,14 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* Copyright (c) 2022 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-import { action } from 'typesafe-actions'
-
+import {Playlist} from 'components/definitions/playlist'
 import * as PlaylistMojo from 'gen/brave/components/playlist/mojom/playlist.mojom.m.js'
-
-import { Playlist } from 'components/definitions/playlist'
+import {action} from 'typesafe-actions'
 
 // Constants
-import { types } from '../constants/playlist_types'
+import {types} from '../constants/playlist_types'
 
 export const playlistLoaded = (playlists: PlaylistMojo.Playlist[]) =>
     action(types.PLAYLIST_LOADED, playlists)
@@ -23,8 +22,10 @@ export const selectPlaylistItem = (playlist: PlaylistMojo.PlaylistItem) =>
 export const playerStateChanged = (playerState: Playlist.PlayerState) =>
     action(types.PLAYLIST_PLAYER_STATE_CHANGED, playerState)
 
-export const playerStartedPlayingItem = (playlist: PlaylistMojo.PlaylistItem | undefined) =>
-    action(types.PLAYER_STARTED_PLAYING_ITEM)
+export const playerStartedPlayingItem =
+    (playlist: PlaylistMojo.PlaylistItem|undefined) =>
+        action(types.PLAYER_STARTED_PLAYING_ITEM)
 
-export const playerStoppedPlayingItem = (playlist: PlaylistMojo.PlaylistItem | undefined) =>
-    action(types.PLAYER_STOPPED_PLAYING_ITEM)
+export const playerStoppedPlayingItem =
+    (playlist: PlaylistMojo.PlaylistItem|undefined) =>
+        action(types.PLAYER_STOPPED_PLAYING_ITEM)

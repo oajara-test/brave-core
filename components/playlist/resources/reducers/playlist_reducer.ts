@@ -1,4 +1,5 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* Copyright (c) 2022 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
@@ -12,7 +13,7 @@ import * as PlaylistMojo from 'gen/brave/components/playlist/mojom/playlist.mojo
 const playlistReducer: Reducer<Playlist.State|undefined> =
     (state: Playlist.State|undefined, action) => {
       if (state === undefined) {
-        state = { lists: [], currentList: undefined, lastPlayerState: undefined }
+        state = {lists: [], currentList: undefined, lastPlayerState: undefined}
       }
 
       switch (action.type) {
