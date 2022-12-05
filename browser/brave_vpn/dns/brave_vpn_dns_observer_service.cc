@@ -57,6 +57,7 @@ BraveVpnDnsObserverService::BraveVpnDnsObserverService(
     : local_state_(local_state), profile_prefs_(profile_prefs) {
   DCHECK(profile_prefs_);
   DCHECK(local_state_);
+  pref_registrar_.Init(local_state_);
 }
 
 BraveVpnDnsObserverService::~BraveVpnDnsObserverService() = default;
@@ -79,20 +80,32 @@ void BraveVpnDnsObserverService::ShowPolicyWarningMessage() {
 }
 
 void BraveVpnDnsObserverService::ShowVpnNotificationDialog() {
-  if (skip_notification_dialog_for_testing_)
+  if (dialog_callback_) {
+    dialog_callback_.Run();
     return;
+  }
   VpnNotificationDialogView::Show(chrome::FindLastActive());
 }
 
 void BraveVpnDnsObserverService::UnlockDNS() {
+  pref_registrar_.RemoveAll();
   local_state_->ClearPref(::prefs::kBraveVpnDnsConfig);
   // Read DNS config to initiate update of actual state.
   SystemNetworkContextManager::GetStubResolverConfigReader()
       ->UpdateNetworkService(false);
 }
 
-bool BraveVpnDnsObserverService::IsLocked() const {
-  return !local_state_->GetDict(::prefs::kBraveVpnDnsConfig).empty();
+// Users are able to change the DNS mode when VPN is enabled if the dns settings
+// was not locked, we are watching for the prefs and warn users about unsecure
+// modes.
+void BraveVpnDnsObserverService::OnDnsModePrefChanged() {
+  if (local_state_->GetString(::prefs::kBraveVpnDnsConfig).empty())
+    return;
+
+  ShowVpnNotificationDialog();
+  // The DNS pref on settings page becomes locked and users will not be able
+  // to change it anymore until VPN disconnected.
+  pref_registrar_.RemoveAll();
 }
 
 void BraveVpnDnsObserverService::LockDNS() {
@@ -117,6 +130,13 @@ void BraveVpnDnsObserverService::LockDNS() {
     } else {
       ShowVpnNotificationDialog();
     }
+  } else {
+    // Subscribe for pref changes because we do not override settings for secure
+    // mode and we have to warn users if prefs will be changed.
+    pref_registrar_.Add(
+        ::prefs::kDnsOverHttpsMode,
+        base::BindRepeating(&BraveVpnDnsObserverService::OnDnsModePrefChanged,
+                            base::Unretained(this)));
   }
 }
 

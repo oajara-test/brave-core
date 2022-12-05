@@ -44,14 +44,14 @@ class BraveVpnDnsObserverService : public brave_vpn::BraveVPNServiceObserver,
   void OnConnectionStateChanged(
       brave_vpn::mojom::ConnectionState state) override;
 
-  bool IsLocked() const;
-
   void SetPolicyNotificationCallbackForTesting(base::OnceClosure callback) {
     policy_callback_ = std::move(callback);
   }
-  void SkipNotificationDialogForTesting(bool value) {
-    skip_notification_dialog_for_testing_ = value;
+
+  void SetVPNNotificationCallbackForTesting(base::RepeatingClosure callback) {
+    dialog_callback_ = std::move(callback);
   }
+
   void SetPrefServiceForTesting(PrefService* service) {
     pref_service_for_testing_ = service;
   }
@@ -59,12 +59,16 @@ class BraveVpnDnsObserverService : public brave_vpn::BraveVPNServiceObserver,
  private:
   friend class BraveVpnDnsObserverServiceUnitTest;
 
+  void OnPrefChanged();
   void LockDNS();
   void UnlockDNS();
   void ShowPolicyWarningMessage();
   void ShowVpnNotificationDialog();
+  void OnDnsModePrefChanged();
 
   base::OnceClosure policy_callback_;
+  base::RepeatingClosure dialog_callback_;
+  PrefChangeRegistrar pref_registrar_;
   bool skip_notification_dialog_for_testing_ = false;
   raw_ptr<PrefService> local_state_;
   raw_ptr<PrefService> profile_prefs_;
