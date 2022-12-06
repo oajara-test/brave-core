@@ -101,6 +101,14 @@
     Allow all cookies
   </message>
 
+  <message name="IDS_BRAVE_SHIELDS_CROSS_COOKIES_ALLOWED" desc="Option that would allow only cross website cookies.">
+    Allow only cross-site cookies
+  </message>
+
+  <message name="IDS_BRAVE_SHIELDS_COOKIES_EXCLAMATION" desc="Exclamation message when the effective cookie block mode doesn't equal to the selected one">
+    The actual cookies blocking mode is '<ph name="STATE">$1</ph>'.
+  </message>
+
   <message name="IDS_BRAVE_SHIELDS_FINGERPRINTING_BLOCKED" desc="An accessible label for expand/collapse button.">
     Fingerprinting blocked
   </message>

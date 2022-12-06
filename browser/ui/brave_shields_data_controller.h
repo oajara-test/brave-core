@@ -23,6 +23,7 @@
 
 using brave_shields::mojom::AdBlockMode;
 using brave_shields::mojom::CookieBlockMode;
+using brave_shields::mojom::EffectiveCookieBlockMode;
 using brave_shields::mojom::FingerprintMode;
 using content::NavigationEntry;
 
@@ -63,6 +64,7 @@ class BraveShieldsDataController
   AdBlockMode GetAdBlockMode();
   FingerprintMode GetFingerprintMode();
   CookieBlockMode GetCookieBlockMode();
+  EffectiveCookieBlockMode GetEffectiveCookieBlockMode();
   bool IsBraveShieldsManaged();
   bool GetHTTPSEverywhereEnabled();
   bool GetNoScriptEnabled();

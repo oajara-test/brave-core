@@ -136,3 +136,20 @@ export const CountButton = styled.button`
   }
 
 `
+
+export const ExclamationMark = styled.div`
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  text-align: right;
+  font-family: ${(p) => p.theme.fontFamily.heading};
+  font-size: 18px;
+  font-weight: 500;
+  color: ${(p) => p.theme.color.errorText};
+  padding: 5px 6px;
+  max-width: 100%;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+
+`

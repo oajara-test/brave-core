@@ -80,6 +80,38 @@ function AdvancedControlsContent () {
     if (getSiteSettings) getSiteSettings()
   }
 
+  const effectiveCookieBlockModeMatchesCurrentBlockMode = () => {
+    if (!siteSettings) {
+      return true
+    }
+
+    const effective = siteSettings.effectiveCookieBlockMode
+    const current = siteSettings.cookieBlockMode
+    if (current === CookieBlockMode.ALLOW) {
+      return !effective.blockFirstParty && !effective.blockThirdParty
+    } else if (current === CookieBlockMode.BLOCKED) {
+      return effective.blockFirstParty && effective.blockThirdParty
+    } else {
+      return !effective.blockFirstParty && effective.blockThirdParty
+    }
+  }
+
+  const getEffectiveCookieBlockModeText = () => {
+    if (!siteSettings) {
+      return ''
+    }
+    const effective = siteSettings.effectiveCookieBlockMode
+    if (effective.blockFirstParty && effective.blockThirdParty) {
+      return getLocale('braveShieldsCookiesBlockAll')
+    } else if (effective.blockFirstParty && !effective.blockThirdParty) {
+      return getLocale('braveShieldsCookiesCrossCookiesAllowed')
+    } else if (effective.blockThirdParty) {
+      return getLocale('braveShieldsCrossCookiesBlocked')
+    } else {
+      return getLocale('braveShieldsCookiesAllowedAll')
+    }
+  }
+
   const handleIsNoScriptEnabledChange = (isEnabled: boolean) => {
     getPanelBrowserAPI().dataHandler.setIsNoScriptsEnabled(isEnabled)
     if (getSiteSettings) getSiteSettings()
@@ -93,6 +125,7 @@ function AdvancedControlsContent () {
   const adsListCount = siteBlockInfo?.adsList.length ?? 0
   const httpRedirectsListCount = siteBlockInfo?.httpRedirectsList.length ?? 0
   const jsListCount = siteBlockInfo?.jsList.length ?? 0
+  const showCookieExclamationMark = !effectiveCookieBlockModeMatchesCurrentBlockMode()
 
   return (
     <section
@@ -197,6 +230,13 @@ function AdvancedControlsContent () {
               })}
             </Select>
             </div>
+          {showCookieExclamationMark ? (
+            <S.ExclamationMark
+              title={getLocale('braveShieldsCookiesExclamation').replace('$1', getEffectiveCookieBlockModeText())}
+            >
+              <span>!</span>
+            </S.ExclamationMark>
+          ) : null}
         </S.ControlGroup>
         <S.SettingsDesc>
           <p>*{getLocale('braveShieldSettingsDescription')}</p>

@@ -29,6 +29,8 @@ provideStrings({
   braveShieldsCrossCookiesBlocked: 'Block cross-site cookies',
   braveShieldsCookiesBlockAll: 'Block all cookies',
   braveShieldsCookiesAllowedAll: 'Allow all cookies',
+  braveShieldsCookiesCrossCookiesAllowed: 'Allow only cross-site cookies',
+  braceShieldsCookiesExclamation: 'The actual cookies blocking mode is \'$1\'.',
   braveShieldsFingerprintingBlocked: 'Fingerprinting blocked',
   braveShieldsFingerprintingBlockedStd: 'Block fingerprinting',
   braveShieldsFingerprintingBlockedAgg: 'Aggressively block fingerprinting',

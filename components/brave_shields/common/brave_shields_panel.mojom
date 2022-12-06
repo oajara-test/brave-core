@@ -63,6 +63,7 @@ struct SiteSettings {
   AdBlockMode ad_block_mode;
   FingerprintMode fingerprint_mode;
   CookieBlockMode cookie_block_mode;
+  EffectiveCookieBlockMode effective_cookie_block_mode;
   bool is_https_everywhere_enabled;
   bool is_noscript_enabled;
 };
@@ -83,4 +84,9 @@ enum CookieBlockMode {
   CROSS_SITE_BLOCKED,
   BLOCKED,
   ALLOW
+};
+
+struct EffectiveCookieBlockMode {
+  bool block_first_party;
+  bool block_third_party;
 };

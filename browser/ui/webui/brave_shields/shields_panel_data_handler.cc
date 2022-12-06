@@ -69,6 +69,8 @@ void ShieldsPanelDataHandler::GetSiteSettings(
       active_shields_data_controller_->GetFingerprintMode();
   settings.cookie_block_mode =
       active_shields_data_controller_->GetCookieBlockMode();
+  settings.effective_cookie_block_mode =
+      active_shields_data_controller_->GetEffectiveCookieBlockMode().Clone();
   settings.is_https_everywhere_enabled =
       active_shields_data_controller_->GetHTTPSEverywhereEnabled();
   settings.is_noscript_enabled =
