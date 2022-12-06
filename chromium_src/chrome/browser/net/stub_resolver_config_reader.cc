@@ -19,14 +19,13 @@
 #include "brave/components/brave_vpn/features.h"
 #endif
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_BRAVE_VPN)
 namespace {
 
 bool ShouldOverride(net::SecureDnsMode secure_dns_mode,
                     PrefService* local_state,
                     SecureDnsConfig::ManagementMode management_mode,
                     bool is_managed) {
-#if BUILDFLAG(ENABLE_BRAVE_VPN)
   if (!base::FeatureList::IsEnabled(
           brave_vpn::features::kBraveVPNDnsProtection)) {
     return false;
@@ -46,9 +45,6 @@ bool ShouldOverride(net::SecureDnsMode secure_dns_mode,
     return false;
   auto* servers_to_override = value->GetIfString();
   return servers_to_override && !servers_to_override->empty();
-#else   // BUILDFLAG(ENABLE_BRAVE_VPN)
-  return false;
-#endif  // BUILDFLAG(ENABLE_BRAVE_VPN)
 }
 
 bool MaybeOverrideDnsClientEnabled(
@@ -130,9 +126,9 @@ SecureDnsConfig::ManagementMode MaybeOverrideForcedManagementMode(
                              local_state_, forced_management_mode,             \
                              is_managed),                                      \
       ADDITIONAL_DNS_TYPES_ENABLED)
-#endif
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_BRAVE_VPN)
 #include "src/chrome/browser/net/stub_resolver_config_reader.cc"
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_BRAVE_VPN)
 #undef ConfigureStubHostResolver
 #undef SecureDnsConfig
-#endif
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_BRAVE_VPN)
