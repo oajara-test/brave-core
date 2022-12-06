@@ -20,6 +20,7 @@
 #include "brave/browser/ui/views/frame/vertical_tab_strip_region_view.h"
 #include "brave/browser/ui/views/frame/vertical_tab_strip_widget_delegate_view.h"
 #include "brave/browser/ui/views/location_bar/brave_location_bar_view.h"
+#include "brave/browser/ui/views/omnibox/brave_omnibox_view_views.h"
 #include "brave/browser/ui/views/sidebar/sidebar_container_view.h"
 #include "brave/browser/ui/views/tabs/features.h"
 #include "brave/browser/ui/views/toolbar/bookmark_button.h"
@@ -403,6 +404,10 @@ speedreader::SpeedreaderBubbleView* BraveBrowserView::ShowSpeedreaderBubble(
 #else
   return nullptr;
 #endif
+}
+
+bool BraveBrowserView::HasSelectedURL() const {
+  return GetLocationBarView()->omnibox_view()->SelectedTextIsURL();
 }
 
 WalletButton* BraveBrowserView::GetWalletButton() {

@@ -194,6 +194,7 @@ void CloseWalletBubble(Browser* browser) {
 }
 
 void CopySanitizedURL(Browser* browser, const GURL& url) {
+  LOG(ERROR) << "CopySanitizedURL";
   GURL sanitized_url = brave::URLSanitizerServiceFactory::GetForBrowserContext(
                            browser->profile())
                            ->SanitizeURL(url);
@@ -269,6 +270,14 @@ void ToggleActiveTabAudioMute(Browser* browser) {
   bool mute_tab = !contents->IsAudioMuted();
   chrome::SetTabAudioMuted(contents, mute_tab, TabMutedReason::AUDIO_INDICATOR,
                            std::string());
+}
+
+bool HasSelectedURL(Browser* browser) {
+#if defined(TOOLKIT_VIEWS)
+  return static_cast<BraveBrowserView*>(browser->window())->HasSelectedURL();
+#else
+  return false;
+#endif
 }
 
 }  // namespace brave
