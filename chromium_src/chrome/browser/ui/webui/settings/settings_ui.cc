@@ -5,7 +5,10 @@
 
 #include "brave/browser/ui/webui/settings/brave_import_data_handler.h"
 #include "brave/browser/ui/webui/settings/brave_search_engines_handler.h"
+#include "brave/browser/ui/webui/settings/brave_settings_secure_dns_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 
+#define SecureDnsHandler BraveSecureDnsHandler
 #define ImportDataHandler BraveImportDataHandler
 #define SearchEnginesHandler BraveSearchEnginesHandler
 #include "src/chrome/browser/ui/webui/settings/settings_ui.cc"
