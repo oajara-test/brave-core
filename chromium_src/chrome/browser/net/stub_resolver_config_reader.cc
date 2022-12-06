@@ -39,14 +39,7 @@ bool ShouldOverride(net::SecureDnsMode secure_dns_mode,
     // there is already a managed policy or parental control in place
     return false;
   }
-  auto* pref = local_state->FindPreference(prefs::kBraveVpnDnsConfig);
-  if (!pref)
-    return false;
-  auto* value = pref->GetValue();
-  if (!value)
-    return false;
-  auto* servers_to_override = value->GetIfString();
-  return servers_to_override && !servers_to_override->empty();
+  return !local_state->GetString(prefs::kBraveVpnDnsConfig).empty();
 }
 
 bool MaybeOverrideDnsClientEnabled(
