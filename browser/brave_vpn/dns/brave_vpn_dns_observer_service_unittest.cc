@@ -20,12 +20,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/country_codes/country_codes.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
-#include "net/dns/public/doh_provider_entry.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,7 +100,7 @@ class BraveVpnDnsObserverServiceUnitTest : public testing::Test {
     EXPECT_EQ(current_mode, mode);
     EXPECT_EQ(current_servers, doh_providers);
   }
-  void SetPolicyValue(const std::string& name, const std::string& value) {
+  void SetManagedMode(const std::string& value) {
     local_state_.SetManagedPref(::prefs::kDnsOverHttpsMode,
                                 std::make_unique<base::Value>(value));
   }
@@ -202,7 +199,7 @@ TEST_F(BraveVpnDnsObserverServiceUnitTest, AutoEnable) {
 }
 
 TEST_F(BraveVpnDnsObserverServiceUnitTest, DoHConfiguredByPolicy) {
-  SetPolicyValue(policy::key::kDnsOverHttpsMode, SecureDnsConfig::kModeOff);
+  SetManagedMode(SecureDnsConfig::kModeOff);
 
   SetDNSMode(SecureDnsConfig::kModeOff, "");
   EXPECT_FALSE(
@@ -218,8 +215,7 @@ TEST_F(BraveVpnDnsObserverServiceUnitTest, DoHConfiguredByPolicy) {
       WasPolicyNotificationShownForState(mojom::ConnectionState::DISCONNECTED));
   ExpectDNSMode(SecureDnsConfig::kModeOff, "");
 
-  SetPolicyValue(policy::key::kDnsOverHttpsMode,
-                 SecureDnsConfig::kModeAutomatic);
+  SetManagedMode(SecureDnsConfig::kModeAutomatic);
 
   SetDNSMode(SecureDnsConfig::kModeAutomatic, "");
   EXPECT_FALSE(
@@ -235,7 +231,7 @@ TEST_F(BraveVpnDnsObserverServiceUnitTest, DoHConfiguredByPolicy) {
       WasPolicyNotificationShownForState(mojom::ConnectionState::DISCONNECTED));
   ExpectDNSMode(SecureDnsConfig::kModeAutomatic, "");
 
-  SetPolicyValue(policy::key::kDnsOverHttpsMode, SecureDnsConfig::kModeSecure);
+  SetManagedMode(SecureDnsConfig::kModeSecure);
   SetDNSMode(SecureDnsConfig::kModeSecure, "");
   EXPECT_FALSE(
       WasPolicyNotificationShownForState(mojom::ConnectionState::CONNECTING));
@@ -265,7 +261,7 @@ TEST_F(BraveVpnDnsObserverServiceUnitTest, DoHConfiguredByPolicy) {
   ExpectDNSMode(SecureDnsConfig::kModeSecure, kCustomServersURLs);
 
   // Do not show dialog option enabled
-  SetPolicyValue(policy::key::kDnsOverHttpsMode, SecureDnsConfig::kModeOff);
+  SetManagedMode(SecureDnsConfig::kModeOff);
   pref_service()->SetBoolean(prefs::kBraveVPNShowDNSPolicyWarningDialog, false);
   SetDNSMode(SecureDnsConfig::kModeOff, "");
   EXPECT_FALSE(
