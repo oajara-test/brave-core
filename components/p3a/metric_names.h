@@ -1,7 +1,7 @@
-/* Copyright 2022 The Brave Authors. All rights reserved.
+/* Copyright (c) 2022 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #ifndef BRAVE_COMPONENTS_P3A_METRIC_NAMES_H_
 #define BRAVE_COMPONENTS_P3A_METRIC_NAMES_H_
@@ -33,6 +33,7 @@ constexpr inline auto kCollectedTypicalHistograms =
     "Brave.Core.PagesLoaded",
     "Brave.Core.TabCount",
     "Brave.Core.TorEverUsed",
+    "Brave.Core.WeeklyUsage",
     "Brave.Core.WindowCount.2",
     "Brave.Importer.ImporterSource.2",
     "Brave.NTP.CustomizeUsageStatus",

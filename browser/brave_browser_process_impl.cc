@@ -116,8 +116,6 @@ BraveBrowserProcessImpl::BraveBrowserProcessImpl(StartupData* startup_data)
   // early initialize referrals
   brave_referrals_service();
 #endif
-  // early initialize brave stats
-  brave_stats_updater();
 
   // Disabled on mobile platforms, see for instance issues/6176
 #if BUILDFLAG(BRAVE_P3A_ENABLED)
@@ -126,6 +124,9 @@ BraveBrowserProcessImpl::BraveBrowserProcessImpl(StartupData* startup_data)
   brave_p3a_service();
   histogram_braveizer_ = brave::HistogramsBraveizer::Create();
 #endif  // BUILDFLAG(BRAVE_P3A_ENABLED)
+
+  // early initialize brave stats
+  brave_stats_updater();
 }
 
 void BraveBrowserProcessImpl::Init() {

@@ -7,5 +7,6 @@
 #define BRAVE_COMPONENTS_CORE_METRICS_PREF_NAMES_H_
 
 extern const char kCoreMetricsPagesLoadedCount[];
+extern const char kMiscMetricsBrowserUsageList[];
 
 #endif  // BRAVE_COMPONENTS_CORE_METRICS_PREF_NAMES_H_

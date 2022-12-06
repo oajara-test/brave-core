@@ -6,3 +6,4 @@
 #include "brave/components/core_metrics/pref_names.h"
 
 const char kCoreMetricsPagesLoadedCount[] = "brave.core_metrics.pages_loaded";
+const char kMiscMetricsBrowserUsageList[] = "brave.misc_metrics.browser_usage";

@@ -21,6 +21,7 @@
 #include "brave/components/brave_wallet/browser/pref_names.h"
 #include "brave/components/constants/network_constants.h"
 #include "brave/components/constants/pref_names.h"
+#include "brave/components/core_metrics/general_browser_usage.h"
 #include "brave/components/rpill/common/rpill.h"
 #include "brave/components/version_info/version_info.h"
 #include "chrome/browser/browser_process.h"
@@ -116,6 +117,9 @@ BraveStatsUpdater::BraveStatsUpdater(PrefService* pref_service)
     DCHECK_EQ(0U,
               g_browser_process->profile_manager()->GetLoadedProfiles().size());
   }
+
+  general_browser_usage_p3a_ =
+      std::make_unique<core_metrics::GeneralBrowserUsage>(pref_service);
 }
 
 BraveStatsUpdater::~BraveStatsUpdater() = default;
