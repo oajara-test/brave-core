@@ -6,6 +6,10 @@
 import * as React from 'react'
 import { useHistory } from 'react-router'
 import { WalletRoutes } from '../../../constants/types'
+import UploadingLightGif from '../../../assets/svg-icons/nft-ipfs/uploading-light.gif'
+import UploadingDarkGif from '../../../assets/svg-icons/nft-ipfs/uploading-dark.gif'
+import SuccessLightGif from '../../../assets/svg-icons/nft-ipfs/success-light.gif'
+import SuccessDarkGif from '../../../assets/svg-icons/nft-ipfs/success-dark.gif'
 
 export type BannerStatus = 'start' | 'uploading' | 'success'
 
@@ -19,10 +23,11 @@ import {
   StyledWrapper,
   Ipfs,
   IpfsUploading,
-  IpfsSuccess,
   Text,
   LearnMore,
-  CloseButton
+  CloseButton,
+  GifWrapper,
+  StatusGif
 } from './nft-ipfs-banner.style'
 
 export const NftIpfsBanner = ({ status, onDismiss }: Props) => {
@@ -37,9 +42,14 @@ export const NftIpfsBanner = ({ status, onDismiss }: Props) => {
       {status === 'start' ? (
         <Ipfs />
       ) : status === 'uploading' ? (
-        <IpfsUploading />
+        <GifWrapper>
+          <StatusGif src={window.matchMedia('(prefers-color-scheme: dark)').matches ? UploadingDarkGif : UploadingLightGif} />
+          <IpfsUploading />
+        </GifWrapper>
       ) : (
-        <IpfsSuccess />
+        <GifWrapper>
+          <StatusGif src={window.matchMedia('(prefers-color-scheme: dark)').matches ? SuccessDarkGif : SuccessLightGif} />
+        </GifWrapper>
       )}
       <Text status={status}>
         Now you can run your IPFS and be part of web 3. Your NFT data will stay

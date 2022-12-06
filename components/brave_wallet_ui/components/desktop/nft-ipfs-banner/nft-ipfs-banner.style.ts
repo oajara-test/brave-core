@@ -24,6 +24,21 @@ export const StyledWrapper = styled.div<{ status: BannerStatus }>`
   border-width: 0;
 `
 
+export const GifWrapper = styled.div`
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+`
+
+export const StatusGif = styled.img`
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+`
+
 const BannerLeftIcon = styled.div`
   display: flex;
   align-items: center;
@@ -52,6 +67,10 @@ export const IpfsUploading = styled(BannerLeftIcon)`
   background-size: cover;
   background-position: 0 0;
   background-color: transparent;
+  z-index: 2;
+  position: absolute;
+  top: 25%;
+  left: 25%;
 `
 
 export const Text = styled.p<{ status: BannerStatus}>`

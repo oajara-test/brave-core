@@ -145,7 +145,7 @@ export const _NftIpfsBanner = () => {
 
   return (
     <div style={{ width: '855px' }}>
-      {showBanner && <NftIpfsBanner onDismiss={onDismiss} status='start' />}
+      {showBanner && <NftIpfsBanner onDismiss={onDismiss} status='success' />}
     </div>
   )
 }
