@@ -33,7 +33,7 @@ std::unique_ptr<RichHoverButton> CreateButton(
 
   return std::make_unique<RichHoverButton>(
       std::move(callback), ui::ImageModel::FromImageSkia(ipfs_logo),
-      text_resource_id, std::u16string(),
+      l10n_util::GetStringUTF16(text_resource_id), std::u16string(),
       PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
       tooltip, std::u16string());
 }
