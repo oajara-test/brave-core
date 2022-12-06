@@ -17,6 +17,3 @@
   DependsOn
 #endif
 #include "src/chrome/browser/sync/bookmark_sync_service_factory.cc"
-#if !BUILDFLAG(IS_ANDROID)
-#undef DependsOn
-#endif

@@ -7,4 +7,3 @@
 
 #define BookmarkContextMenu BraveBookmarkContextMenu
 #include "src/chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.cc"
-#undef BookmarkContextMenu

@@ -10,6 +10,5 @@
 #define RecentTabsSubMenuModel BraveRecentTabsSubMenuModel
 #define BookmarkSubMenuModel BraveBookmarkSubMenuModel
 #include "src/chrome/browser/ui/toolbar/app_menu_model.cc"
-#undef BookmarkSubMenuModel
 
 #undef RecentTabsSubMenuModel

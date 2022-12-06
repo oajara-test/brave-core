@@ -74,5 +74,4 @@ void InstallNoHighlightPathGenerator(View* view) {
 #define InstallPillHighlightPathGenerator InstallNoHighlightPathGenerator
 #include "src/chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc"
 #undef InstallPillHighlightPathGenerator
-#undef BookmarkContextMenu
 #undef BRAVE_LAYOUT
