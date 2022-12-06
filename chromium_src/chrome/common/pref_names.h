@@ -9,6 +9,10 @@
 #include "build/build_config.h"
 
 namespace prefs {
+// Used by BraveVpnDnsObserverService to save cloudflare server url when
+// BraveVPN is connected, otherwise this pref is empty. Final decision
+// about whether or not to override actual DNS state will be made in
+// stub_resolver_config_reader.
 extern const char kBraveVpnDnsConfig[];
 }  // namespace prefs
 
