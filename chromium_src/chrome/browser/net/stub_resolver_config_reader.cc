@@ -30,8 +30,10 @@ bool ShouldOverride(net::SecureDnsMode secure_dns_mode,
           brave_vpn::features::kBraveVPNDnsProtection)) {
     return false;
   }
-  if (secure_dns_mode == net::SecureDnsMode::kSecure)
+  if (secure_dns_mode == net::SecureDnsMode::kSecure) {
+    // No need to override if the user already has already configured doh
     return false;
+  }
   if (management_mode != SecureDnsConfig::ManagementMode::kNoOverride ||
       is_managed) {
     // there is already a managed policy or parental control in place
