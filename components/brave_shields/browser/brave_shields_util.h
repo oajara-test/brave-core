@@ -29,6 +29,11 @@ namespace brave_shields {
 
 enum ControlType { ALLOW = 0, BLOCK, BLOCK_THIRD_PARTY, DEFAULT, INVALID };
 
+struct CookiesState {
+  bool block_first_party = false;
+  bool block_third_party = false;
+};
+
 // List of possible blocking modes when accessing blocked websites.
 enum class DomainBlockingType {
   // Don't block a website, open as is.
@@ -86,6 +91,9 @@ void SetCookieControlType(HostContentSettingsMap* map,
                           PrefService* local_state = nullptr);
 ControlType GetCookieControlType(
     HostContentSettingsMap* map,
+    content_settings::CookieSettings* cookie_settings,
+    const GURL& url);
+CookiesState GetEffectiveCookiesState(
     content_settings::CookieSettings* cookie_settings,
     const GURL& url);
 
