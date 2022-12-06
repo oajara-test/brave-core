@@ -99,6 +99,7 @@ import { WalletActions } from '../../../../common/actions'
 import { HideTokenModal } from './components/hide-token-modal/hide-token-modal'
 import { NftModal } from './components/nft-modal/nft-modal'
 import { ChartControlBar } from '../../chart-control-bar/chart-control-bar'
+import { IpfsNodeStatus } from './components/ipfs-node-status/ipfs-node-status'
 
 const AssetIconWithPlaceholder = withPlaceholderIcon(AssetIcon, { size: 'big', marginLeft: 0, marginRight: 12 })
 const rainbowbridgeLink = 'https://rainbowbridge.app'
@@ -587,8 +588,9 @@ export const PortfolioAsset = (props: Props) => {
   return (
     <StyledWrapper onClick={onHideMore}>
       <TopRow>
-        <BalanceRow>
+        <BalanceRow gap='16px'>
           <BackButton onSubmit={goBack} />
+          <IpfsNodeStatus />
         </BalanceRow>
         <BalanceRow>
           {!isNftAsset &&
